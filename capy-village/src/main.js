@@ -16,8 +16,12 @@ const scene = new THREE.Scene();
 
 // Camera
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(3, 2, 5);
-camera.lookAt(0, 0.4, 0);
+camera.position.set(0, 2.5, 4.5);
+camera.lookAt(0, 0.5, 0);
+
+const CAM_OFFSET = new THREE.Vector3(0, 2.5, 4.5);
+const CAM_LERP = 0.1;
+const camTarget = new THREE.Vector3();
 
 // Lights
 const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -139,6 +143,14 @@ function animate() {
       // Face movement direction
       capy.rotation.y = Math.atan2(moveDir.x, moveDir.z);
     }
+  }
+
+  // Camera follow
+  if (capy) {
+    const desired = capy.position.clone().add(CAM_OFFSET);
+    camera.position.lerp(desired, CAM_LERP);
+    camTarget.copy(capy.position).y += 0.5;
+    camera.lookAt(camTarget);
   }
 
   if (mixer) mixer.update(delta);
