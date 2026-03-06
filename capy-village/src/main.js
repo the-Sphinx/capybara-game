@@ -57,7 +57,7 @@ const furMaterial = new THREE.MeshStandardMaterial({
 });
 
 loader.load(
-  '/capy_idle.glb',
+  `${import.meta.env.BASE_URL}capy_idle.glb`,
   (gltf) => {
     const model = gltf.scene;
     scene.add(model);
