@@ -66,31 +66,59 @@ function collides(nx, nz) {
   return false;
 }
 
+// ─── Occlusion system ────────────────────────────────────────────────────────
+// Each entry: { mesh: THREE.Mesh, targetOpacity: number }
+// Buildings register their wall+roof meshes here with transparent materials.
+const occluders = [];
+const raycaster  = new THREE.Raycaster();
+
+function updateOcclusion() {
+  if (!capy) return;
+
+  // Aim ray at capy upper body
+  const capyEye = new THREE.Vector3(
+    capy.position.x,
+    capy.position.y + 0.5,
+    capy.position.z
+  );
+  const dir     = capyEye.clone().sub(camera.position).normalize();
+  const maxDist = camera.position.distanceTo(capyEye);
+  raycaster.set(camera.position, dir);
+
+  const meshList   = occluders.map(o => o.mesh);
+  const hits       = raycaster.intersectObjects(meshList, false);
+  const inTheWay   = new Set(
+    hits.filter(h => h.distance < maxDist).map(h => h.object)
+  );
+
+  for (const occ of occluders) {
+    occ.targetOpacity = inTheWay.has(occ.mesh) ? 0.3 : 1.0;
+    occ.mesh.material.opacity = THREE.MathUtils.lerp(
+      occ.mesh.material.opacity,
+      occ.targetOpacity,
+      0.12
+    );
+  }
+}
+
 // ─── Interaction system ───────────────────────────────────────────────────────
-// Each trigger zone: { x, z, hw, hd } — placed in front of the building entrance.
-// hw/hd are half-extents so zone spans [x±hw, z±hd].
 const interactables = [
   {
     id:      'boutique',
     label:   'Boutique',
     message: 'This building will open the fashion boutique later.',
-    // Boutique at (-6,-6), d=2.6 → south collider edge at z=-4.4.
-    // Zone placed just outside that edge, facing south toward plaza.
     zone: { x: -6.0, z: -3.5, hw: 1.3, hd: 0.9 },
   },
   {
     id:      'capy-store',
     label:   'Capy Store',
     message: 'This building will open the capy customization screen later.',
-    // Capy Store at (6,-6), d=3.2 → south collider edge at z=-4.1.
     zone: { x: 6.0, z: -3.1, hw: 1.9, hd: 1.0 },
   },
   {
     id:      'bakery',
     label:   'Bakery',
     message: 'This building will open the bakery shop later.',
-    // Bakery at (0,7), d=3.6 → north collider edge at z=4.9.
-    // Zone placed just outside that edge, facing north toward plaza.
     zone: { x: 0.0, z: 4.0, hw: 2.2, hd: 0.9 },
   },
 ];
@@ -101,9 +129,7 @@ let modalOpen    = false;
 function getActiveInteractable(cx, cz) {
   for (const b of interactables) {
     const z = b.zone;
-    if (Math.abs(cx - z.x) < z.hw && Math.abs(cz - z.z) < z.hd) {
-      return b;
-    }
+    if (Math.abs(cx - z.x) < z.hw && Math.abs(cz - z.z) < z.hd) return b;
   }
   return null;
 }
@@ -111,39 +137,21 @@ function getActiveInteractable(cx, cz) {
 // ─── Interaction UI ───────────────────────────────────────────────────────────
 const promptEl = document.createElement('div');
 Object.assign(promptEl.style, {
-  display:        'none',
-  position:       'fixed',
-  bottom:         '60px',
-  left:           '50%',
-  transform:      'translateX(-50%)',
-  background:     'rgba(0,0,0,0.65)',
-  color:          'white',
-  padding:        '10px 24px',
-  borderRadius:   '8px',
-  fontFamily:     'sans-serif',
-  fontSize:       '16px',
-  pointerEvents:  'none',
-  whiteSpace:     'nowrap',
-  zIndex:         '10',
+  display: 'none', position: 'fixed', bottom: '60px', left: '50%',
+  transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.65)',
+  color: 'white', padding: '10px 24px', borderRadius: '8px',
+  fontFamily: 'sans-serif', fontSize: '16px',
+  pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: '10',
 });
 document.body.appendChild(promptEl);
 
 const modalEl = document.createElement('div');
 Object.assign(modalEl.style, {
-  display:      'none',
-  position:     'fixed',
-  top:          '50%',
-  left:         '50%',
-  transform:    'translate(-50%, -50%)',
-  background:   'rgba(20,20,30,0.92)',
-  color:        'white',
-  padding:      '40px 52px',
-  borderRadius: '14px',
-  fontFamily:   'sans-serif',
-  minWidth:     '300px',
-  textAlign:    'center',
-  zIndex:       '20',
-  boxSizing:    'border-box',
+  display: 'none', position: 'fixed', top: '50%', left: '50%',
+  transform: 'translate(-50%, -50%)', background: 'rgba(20,20,30,0.92)',
+  color: 'white', padding: '40px 52px', borderRadius: '14px',
+  fontFamily: 'sans-serif', minWidth: '300px', textAlign: 'center',
+  zIndex: '20', boxSizing: 'border-box',
 });
 document.body.appendChild(modalEl);
 
@@ -163,28 +171,28 @@ function closeModal() {
 }
 
 // ─── Village helpers ──────────────────────────────────────────────────────────
+
 function makeBuilding(wallColor, roofColor, w, h, d, x, z) {
   const group = new THREE.Group();
 
-  const walls = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d),
-    new THREE.MeshLambertMaterial({ color: wallColor })
-  );
+  // Each building gets its own material instances for independent opacity control
+  const wallMat = new THREE.MeshLambertMaterial({ color: wallColor, transparent: true });
+  const walls   = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
   walls.position.y = h / 2;
   walls.castShadow = true;
   walls.receiveShadow = true;
   group.add(walls);
+  occluders.push({ mesh: walls, targetOpacity: 1.0 });
 
-  const roofR = Math.max(w, d) * 0.72;
-  const roofH = h * 0.55;
-  const roof = new THREE.Mesh(
-    new THREE.ConeGeometry(roofR, roofH, 4),
-    new THREE.MeshLambertMaterial({ color: roofColor })
-  );
+  const roofR   = Math.max(w, d) * 0.72;
+  const roofH   = h * 0.55;
+  const roofMat = new THREE.MeshLambertMaterial({ color: roofColor, transparent: true });
+  const roof    = new THREE.Mesh(new THREE.ConeGeometry(roofR, roofH, 4), roofMat);
   roof.position.y = h + roofH * 0.5;
   roof.rotation.y = Math.PI / 4;
   roof.castShadow = true;
   group.add(roof);
+  occluders.push({ mesh: roof, targetOpacity: 1.0 });
 
   group.position.set(x, 0, z);
   scene.add(group);
@@ -193,7 +201,6 @@ function makeBuilding(wallColor, roofColor, w, h, d, x, z) {
 
 function makeTree(x, z) {
   const group = new THREE.Group();
-
   const trunk = new THREE.Mesh(
     new THREE.CylinderGeometry(0.14, 0.18, 1.2, 8),
     new THREE.MeshLambertMaterial({ color: 0x8B6040 })
@@ -201,7 +208,6 @@ function makeTree(x, z) {
   trunk.position.y = 0.6;
   trunk.castShadow = true;
   group.add(trunk);
-
   const foliage = new THREE.Mesh(
     new THREE.ConeGeometry(0.85, 1.8, 8),
     new THREE.MeshLambertMaterial({ color: 0x4A8C40 })
@@ -209,7 +215,6 @@ function makeTree(x, z) {
   foliage.position.y = 2.1;
   foliage.castShadow = true;
   group.add(foliage);
-
   group.position.set(x, 0, z);
   scene.add(group);
   addCollider(x, z, 0.45, 0.45);
@@ -253,12 +258,11 @@ function makeBench(x, z, rotY = 0) {
 
 // ─── Village layout ───────────────────────────────────────────────────────────
 const pathMat = new THREE.MeshLambertMaterial({ color: 0xD4B896 });
-
-const ewPath = new THREE.Mesh(new THREE.BoxGeometry(22, 0.02, 3.2), pathMat);
+const ewPath  = new THREE.Mesh(new THREE.BoxGeometry(22, 0.02, 3.2), pathMat);
 ewPath.position.y = 0.01;
 scene.add(ewPath);
 
-const nsPath = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.02, 22), pathMat);
+const nsPath  = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.02, 22), pathMat);
 nsPath.position.y = 0.01;
 scene.add(nsPath);
 
@@ -269,53 +273,42 @@ const plaza = new THREE.Mesh(
 plaza.position.y = 0.015;
 scene.add(plaza);
 
-// Buildings
 makeBuilding(0xF0A8B8, 0x9040A0,  2.6, 4.5, 2.6,  -6.0, -6.0); // Boutique
 makeBuilding(0xF0D060, 0xC05030,  3.8, 3.5, 3.2,   6.0, -6.0);  // Capy Store
 makeBuilding(0xD4905C, 0x883020,  4.5, 2.8, 3.6,   0.0,  7.0);  // Bakery
 
-// Trees
 makeTree(-3.5, -3.5);
 makeTree( 3.5, -3.5);
 makeTree(-4.0,  3.2);
 makeTree( 4.0,  3.8);
 makeTree(-7.0,  1.5);
 
-// Bushes (passable)
 makeBush(-1.8, -5.0, 0.50);
 makeBush( 1.8, -5.0, 0.44);
 makeBush(-5.0,  0.8, 0.52);
 makeBush( 5.5,  0.8, 0.46);
 
-// Rocks
 makeRock(-4.5,  3.8, 0.42);
 makeRock( 2.0,  6.0, 0.36);
 makeRock( 7.0, -1.5, 0.38);
 
-// Bench
 makeBench(2.0, 1.2, -0.3);
 
 // ─── Keyboard ────────────────────────────────────────────────────────────────
 const keys = {};
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
-
   if (e.code === 'KeyE') {
-    if (modalOpen) {
-      closeModal();
-    } else if (activeTarget) {
-      openModal(activeTarget);
-    }
+    if (modalOpen) closeModal();
+    else if (activeTarget) openModal(activeTarget);
   }
-  if (e.code === 'Escape' && modalOpen) {
-    closeModal();
-  }
+  if (e.code === 'Escape' && modalOpen) closeModal();
 });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
 // ─── Movement constants ───────────────────────────────────────────────────────
 const MOVE_SPEED = 2.0;
-const BOUND = 8;
+const BOUND      = 8;
 
 // ─── Model ───────────────────────────────────────────────────────────────────
 let capy    = null;
@@ -333,7 +326,6 @@ loader.load(
   (gltf) => {
     capy = gltf.scene;
     scene.add(capy);
-
     capy.traverse((node) => {
       if (node.isMesh) {
         node.material = furMaterial;
@@ -341,13 +333,11 @@ loader.load(
         node.receiveShadow = true;
       }
     });
-
     const box  = new THREE.Box3().setFromObject(capy);
     const size = new THREE.Vector3();
     box.getSize(size);
     groundY = size.y / 2;
     capy.position.y = groundY;
-
     if (gltf.animations?.length > 0) {
       mixer = new THREE.AnimationMixer(capy);
       const action = mixer.clipAction(gltf.animations[0]);
@@ -374,7 +364,6 @@ function animate() {
   const delta = clock.getDelta();
 
   if (capy) {
-    // Movement (locked while modal is open)
     if (!modalOpen) {
       moveDir.set(0, 0, 0);
       if (keys['KeyW'] || keys['ArrowUp'])    moveDir.z -= 1;
@@ -385,29 +374,22 @@ function animate() {
       if (moveDir.lengthSq() > 0) {
         moveDir.normalize();
         capy.rotation.y = Math.atan2(moveDir.x, moveDir.z);
-
         const nx = Math.max(-BOUND, Math.min(BOUND, capy.position.x + moveDir.x * MOVE_SPEED * delta));
         const nz = Math.max(-BOUND, Math.min(BOUND, capy.position.z + moveDir.z * MOVE_SPEED * delta));
-
         if (!collides(nx, capy.position.z)) capy.position.x = nx;
         if (!collides(capy.position.x, nz)) capy.position.z = nz;
-
         capy.position.y = groundY;
       }
     }
 
-    // Interaction zone check (not while modal is open)
     if (!modalOpen) {
       activeTarget = getActiveInteractable(capy.position.x, capy.position.z);
-      if (activeTarget) {
-        promptEl.textContent = `Press [E] to enter ${activeTarget.label}`;
-        promptEl.style.display = 'block';
-      } else {
-        promptEl.style.display = 'none';
-      }
+      promptEl.textContent = activeTarget ? `Press [E] to enter ${activeTarget.label}` : '';
+      promptEl.style.display = activeTarget ? 'block' : 'none';
     }
 
-    // Camera follow
+    updateOcclusion();
+
     const desired = capy.position.clone().add(CAM_OFFSET);
     camera.position.lerp(desired, CAM_LERP);
     camTarget.copy(capy.position);
