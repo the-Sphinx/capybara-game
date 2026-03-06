@@ -45,6 +45,19 @@ ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
+// Keyboard state
+const keys = {};
+window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+window.addEventListener('keyup',   (e) => { keys[e.code] = false; });
+
+// Movement constants
+const MOVE_SPEED = 2.0;
+const BOUND = 6;
+
+// Model reference & ground offset
+let capy = null;
+let groundY = 0;
+
 // Load model
 let mixer = null;
 const clock = new THREE.Clock();
@@ -59,10 +72,10 @@ const furMaterial = new THREE.MeshStandardMaterial({
 loader.load(
   `${import.meta.env.BASE_URL}capy_idle.glb`,
   (gltf) => {
-    const model = gltf.scene;
-    scene.add(model);
+    capy = gltf.scene;
+    scene.add(capy);
 
-    model.traverse((node) => {
+    capy.traverse((node) => {
       if (node.isMesh) {
         node.material = furMaterial;
         node.castShadow = true;
@@ -70,13 +83,14 @@ loader.load(
       }
     });
 
-    const box = new THREE.Box3().setFromObject(model);
+    const box = new THREE.Box3().setFromObject(capy);
     const size = new THREE.Vector3();
     box.getSize(size);
-    model.position.y = size.y / 2;
+    groundY = size.y / 2;
+    capy.position.y = groundY;
 
     if (gltf.animations && gltf.animations.length > 0) {
-      mixer = new THREE.AnimationMixer(model);
+      mixer = new THREE.AnimationMixer(capy);
       const action = mixer.clipAction(gltf.animations[0]);
       action.setLoop(THREE.LoopRepeat);
       action.play();
@@ -94,9 +108,39 @@ window.addEventListener('resize', () => {
 });
 
 // Animation loop
+const moveDir = new THREE.Vector3();
+
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+
+  if (capy) {
+    // Build movement direction from keyboard state
+    moveDir.set(0, 0, 0);
+    if (keys['KeyW'] || keys['ArrowUp'])    moveDir.z -= 1;
+    if (keys['KeyS'] || keys['ArrowDown'])  moveDir.z += 1;
+    if (keys['KeyA'] || keys['ArrowLeft'])  moveDir.x -= 1;
+    if (keys['KeyD'] || keys['ArrowRight']) moveDir.x += 1;
+
+    if (moveDir.lengthSq() > 0) {
+      moveDir.normalize();
+
+      // Move
+      capy.position.x += moveDir.x * MOVE_SPEED * delta;
+      capy.position.z += moveDir.z * MOVE_SPEED * delta;
+
+      // Clamp to bounds
+      capy.position.x = Math.max(-BOUND, Math.min(BOUND, capy.position.x));
+      capy.position.z = Math.max(-BOUND, Math.min(BOUND, capy.position.z));
+
+      // Keep grounded
+      capy.position.y = groundY;
+
+      // Face movement direction
+      capy.rotation.y = Math.atan2(moveDir.x, moveDir.z);
+    }
+  }
+
   if (mixer) mixer.update(delta);
   renderer.render(scene, camera);
 }
