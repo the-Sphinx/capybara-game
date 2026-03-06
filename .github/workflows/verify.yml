@@ -1,0 +1,67 @@
+name: Step Verification
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: capy-village/package-lock.json
+
+      - name: Build app
+        run: |
+          cd capy-village
+          npm ci
+          npm run build
+
+      - name: Start preview server
+        run: |
+          cd capy-village
+          npm run preview &
+          echo "Waiting for preview server on port 4173..."
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:4173 > /dev/null 2>&1; then
+              echo "Server is up!"
+              break
+            fi
+            echo "Attempt $i/30 — waiting 2s..."
+            sleep 2
+          done
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install anthropic playwright requests
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Run verification script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERIFY_ISSUE_NUMBER: ${{ vars.VERIFY_ISSUE_NUMBER }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: python scripts/verify.py
