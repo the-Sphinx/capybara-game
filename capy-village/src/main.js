@@ -11,10 +11,10 @@ renderer.setClearColor(0xBFE3FF);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
-// ─── Scene ────────────────────────────────────────────────────────────────────
+// ─── Scene ───────────────────────────────────────────────────────────────────
 const scene = new THREE.Scene();
 
-// ─── Camera ───────────────────────────────────────────────────────────────────
+// ─── Camera ──────────────────────────────────────────────────────────────────
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 2.5, 4.5);
 camera.lookAt(0, 0.5, 0);
@@ -23,7 +23,7 @@ const CAM_OFFSET = new THREE.Vector3(0, 2.5, 4.5);
 const CAM_LERP   = 0.1;
 const camTarget  = new THREE.Vector3();
 
-// ─── Lights ───────────────────────────────────────────────────────────────────
+// ─── Lights ──────────────────────────────────────────────────────────────────
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
 const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -39,7 +39,7 @@ dirLight.shadow.camera.top    =  14;
 dirLight.shadow.camera.bottom = -14;
 scene.add(dirLight);
 
-// ─── Ground ───────────────────────────────────────────────────────────────────
+// ─── Ground ──────────────────────────────────────────────────────────────────
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(30, 30),
   new THREE.MeshLambertMaterial({ color: 0x88CC88 })
@@ -49,14 +49,14 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 // ─── Collision system ─────────────────────────────────────────────────────────
-const colliders = []; // { x, z, hw, hd }
+const colliders = [];
 
 function addCollider(x, z, hw, hd) {
   colliders.push({ x, z, hw, hd });
 }
 
 function collides(nx, nz) {
-  const r = 0.35; // capy footprint radius
+  const r = 0.35;
   for (const c of colliders) {
     if (nx + r > c.x - c.hw && nx - r < c.x + c.hw &&
         nz + r > c.z - c.hd && nz - r < c.z + c.hd) {
@@ -66,8 +66,103 @@ function collides(nx, nz) {
   return false;
 }
 
-// ─── Village helpers ──────────────────────────────────────────────────────────
+// ─── Interaction system ───────────────────────────────────────────────────────
+// Each trigger zone: { x, z, hw, hd } — placed in front of the building entrance.
+// hw/hd are half-extents so zone spans [x±hw, z±hd].
+const interactables = [
+  {
+    id:      'boutique',
+    label:   'Boutique',
+    message: 'This building will open the fashion boutique later.',
+    // Boutique at (-6,-6), d=2.6 → south collider edge at z=-4.4.
+    // Zone placed just outside that edge, facing south toward plaza.
+    zone: { x: -6.0, z: -3.5, hw: 1.3, hd: 0.9 },
+  },
+  {
+    id:      'capy-store',
+    label:   'Capy Store',
+    message: 'This building will open the capy customization screen later.',
+    // Capy Store at (6,-6), d=3.2 → south collider edge at z=-4.1.
+    zone: { x: 6.0, z: -3.1, hw: 1.9, hd: 1.0 },
+  },
+  {
+    id:      'bakery',
+    label:   'Bakery',
+    message: 'This building will open the bakery shop later.',
+    // Bakery at (0,7), d=3.6 → north collider edge at z=4.9.
+    // Zone placed just outside that edge, facing north toward plaza.
+    zone: { x: 0.0, z: 4.0, hw: 2.2, hd: 0.9 },
+  },
+];
 
+let activeTarget = null;
+let modalOpen    = false;
+
+function getActiveInteractable(cx, cz) {
+  for (const b of interactables) {
+    const z = b.zone;
+    if (Math.abs(cx - z.x) < z.hw && Math.abs(cz - z.z) < z.hd) {
+      return b;
+    }
+  }
+  return null;
+}
+
+// ─── Interaction UI ───────────────────────────────────────────────────────────
+const promptEl = document.createElement('div');
+Object.assign(promptEl.style, {
+  display:        'none',
+  position:       'fixed',
+  bottom:         '60px',
+  left:           '50%',
+  transform:      'translateX(-50%)',
+  background:     'rgba(0,0,0,0.65)',
+  color:          'white',
+  padding:        '10px 24px',
+  borderRadius:   '8px',
+  fontFamily:     'sans-serif',
+  fontSize:       '16px',
+  pointerEvents:  'none',
+  whiteSpace:     'nowrap',
+  zIndex:         '10',
+});
+document.body.appendChild(promptEl);
+
+const modalEl = document.createElement('div');
+Object.assign(modalEl.style, {
+  display:      'none',
+  position:     'fixed',
+  top:          '50%',
+  left:         '50%',
+  transform:    'translate(-50%, -50%)',
+  background:   'rgba(20,20,30,0.92)',
+  color:        'white',
+  padding:      '40px 52px',
+  borderRadius: '14px',
+  fontFamily:   'sans-serif',
+  minWidth:     '300px',
+  textAlign:    'center',
+  zIndex:       '20',
+  boxSizing:    'border-box',
+});
+document.body.appendChild(modalEl);
+
+function openModal(building) {
+  modalOpen = true;
+  promptEl.style.display = 'none';
+  modalEl.innerHTML =
+    `<h2 style="margin:0 0 14px;font-size:22px">${building.label}</h2>` +
+    `<p style="margin:0 0 24px;color:#ddd;line-height:1.6">${building.message}</p>` +
+    `<p style="font-size:13px;color:#888">Press [E] or [Esc] to close</p>`;
+  modalEl.style.display = 'block';
+}
+
+function closeModal() {
+  modalOpen = false;
+  modalEl.style.display = 'none';
+}
+
+// ─── Village helpers ──────────────────────────────────────────────────────────
 function makeBuilding(wallColor, roofColor, w, h, d, x, z) {
   const group = new THREE.Group();
 
@@ -127,7 +222,6 @@ function makeBush(x, z, r = 0.50) {
   );
   mesh.position.set(x, r, z);
   scene.add(mesh);
-  // Bushes are passable — no collider
 }
 
 function makeRock(x, z, r = 0.42) {
@@ -144,25 +238,20 @@ function makeRock(x, z, r = 0.42) {
 function makeBench(x, z, rotY = 0) {
   const mat   = new THREE.MeshLambertMaterial({ color: 0xC4A060 });
   const group = new THREE.Group();
-
-  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.45), mat);
+  const seat  = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.45), mat);
   seat.position.y = 0.5;
   group.add(seat);
-
   for (const lx of [-0.45, 0.45]) {
     const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.45), mat);
     leg.position.set(lx, 0.25, 0);
     group.add(leg);
   }
-
   group.position.set(x, 0, z);
   group.rotation.y = rotY;
   scene.add(group);
 }
 
 // ─── Village layout ───────────────────────────────────────────────────────────
-
-// Paths — cross shape, warm beige, wider
 const pathMat = new THREE.MeshLambertMaterial({ color: 0xD4B896 });
 
 const ewPath = new THREE.Mesh(new THREE.BoxGeometry(22, 0.02, 3.2), pathMat);
@@ -173,19 +262,17 @@ const nsPath = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.02, 22), pathMat);
 nsPath.position.y = 0.01;
 scene.add(nsPath);
 
-// Central plaza — slightly raised, slightly lighter
-const plazaMat = new THREE.MeshLambertMaterial({ color: 0xDDC8A8 });
-const plaza = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.025, 5.5), plazaMat);
+const plaza = new THREE.Mesh(
+  new THREE.BoxGeometry(5.5, 0.025, 5.5),
+  new THREE.MeshLambertMaterial({ color: 0xDDC8A8 })
+);
 plaza.position.y = 0.015;
 scene.add(plaza);
 
-// Buildings — scaled ~1.5x, pushed outward for open central space
-//  Boutique   — tall, pink walls + purple roof, NW
-makeBuilding(0xF0A8B8, 0x9040A0,  2.6, 4.5, 2.6,  -6.0, -6.0);
-//  Capy Store — large, warm yellow + red roof, NE
-makeBuilding(0xF0D060, 0xC05030,  3.8, 3.5, 3.2,   6.0, -6.0);
-//  Bakery     — wide, terracotta + dark red roof, S
-makeBuilding(0xD4905C, 0x883020,  4.5, 2.8, 3.6,   0.0,  7.0);
+// Buildings
+makeBuilding(0xF0A8B8, 0x9040A0,  2.6, 4.5, 2.6,  -6.0, -6.0); // Boutique
+makeBuilding(0xF0D060, 0xC05030,  3.8, 3.5, 3.2,   6.0, -6.0);  // Capy Store
+makeBuilding(0xD4905C, 0x883020,  4.5, 2.8, 3.6,   0.0,  7.0);  // Bakery
 
 // Trees
 makeTree(-3.5, -3.5);
@@ -205,19 +292,32 @@ makeRock(-4.5,  3.8, 0.42);
 makeRock( 2.0,  6.0, 0.36);
 makeRock( 7.0, -1.5, 0.38);
 
-// Bench near plaza
+// Bench
 makeBench(2.0, 1.2, -0.3);
 
-// ─── Keyboard ─────────────────────────────────────────────────────────────────
+// ─── Keyboard ────────────────────────────────────────────────────────────────
 const keys = {};
-window.addEventListener('keydown', (e) => { keys[e.code] = true; });
-window.addEventListener('keyup',   (e) => { keys[e.code] = false; });
+window.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+
+  if (e.code === 'KeyE') {
+    if (modalOpen) {
+      closeModal();
+    } else if (activeTarget) {
+      openModal(activeTarget);
+    }
+  }
+  if (e.code === 'Escape' && modalOpen) {
+    closeModal();
+  }
+});
+window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
 // ─── Movement constants ───────────────────────────────────────────────────────
 const MOVE_SPEED = 2.0;
 const BOUND = 8;
 
-// ─── Model ────────────────────────────────────────────────────────────────────
+// ─── Model ───────────────────────────────────────────────────────────────────
 let capy    = null;
 let groundY = 0;
 let mixer   = null;
@@ -259,14 +359,14 @@ loader.load(
   (err) => console.error('Failed to load model:', err)
 );
 
-// ─── Resize ───────────────────────────────────────────────────────────────────
+// ─── Resize ──────────────────────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ─── Animate ──────────────────────────────────────────────────────────────────
+// ─── Animate ─────────────────────────────────────────────────────────────────
 const moveDir = new THREE.Vector3();
 
 function animate() {
@@ -274,24 +374,37 @@ function animate() {
   const delta = clock.getDelta();
 
   if (capy) {
-    moveDir.set(0, 0, 0);
-    if (keys['KeyW'] || keys['ArrowUp'])    moveDir.z -= 1;
-    if (keys['KeyS'] || keys['ArrowDown'])  moveDir.z += 1;
-    if (keys['KeyA'] || keys['ArrowLeft'])  moveDir.x -= 1;
-    if (keys['KeyD'] || keys['ArrowRight']) moveDir.x += 1;
+    // Movement (locked while modal is open)
+    if (!modalOpen) {
+      moveDir.set(0, 0, 0);
+      if (keys['KeyW'] || keys['ArrowUp'])    moveDir.z -= 1;
+      if (keys['KeyS'] || keys['ArrowDown'])  moveDir.z += 1;
+      if (keys['KeyA'] || keys['ArrowLeft'])  moveDir.x -= 1;
+      if (keys['KeyD'] || keys['ArrowRight']) moveDir.x += 1;
 
-    if (moveDir.lengthSq() > 0) {
-      moveDir.normalize();
-      capy.rotation.y = Math.atan2(moveDir.x, moveDir.z);
+      if (moveDir.lengthSq() > 0) {
+        moveDir.normalize();
+        capy.rotation.y = Math.atan2(moveDir.x, moveDir.z);
 
-      const nx = Math.max(-BOUND, Math.min(BOUND, capy.position.x + moveDir.x * MOVE_SPEED * delta));
-      const nz = Math.max(-BOUND, Math.min(BOUND, capy.position.z + moveDir.z * MOVE_SPEED * delta));
+        const nx = Math.max(-BOUND, Math.min(BOUND, capy.position.x + moveDir.x * MOVE_SPEED * delta));
+        const nz = Math.max(-BOUND, Math.min(BOUND, capy.position.z + moveDir.z * MOVE_SPEED * delta));
 
-      // Slide along walls by checking axes independently
-      if (!collides(nx, capy.position.z)) capy.position.x = nx;
-      if (!collides(capy.position.x, nz)) capy.position.z = nz;
+        if (!collides(nx, capy.position.z)) capy.position.x = nx;
+        if (!collides(capy.position.x, nz)) capy.position.z = nz;
 
-      capy.position.y = groundY;
+        capy.position.y = groundY;
+      }
+    }
+
+    // Interaction zone check (not while modal is open)
+    if (!modalOpen) {
+      activeTarget = getActiveInteractable(capy.position.x, capy.position.z);
+      if (activeTarget) {
+        promptEl.textContent = `Press [E] to enter ${activeTarget.label}`;
+        promptEl.style.display = 'block';
+      } else {
+        promptEl.style.display = 'none';
+      }
     }
 
     // Camera follow
