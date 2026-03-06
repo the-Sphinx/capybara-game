@@ -70,6 +70,11 @@ loader.load(
       }
     });
 
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    model.position.y = size.y / 2;
+
     if (gltf.animations && gltf.animations.length > 0) {
       mixer = new THREE.AnimationMixer(model);
       const action = mixer.clipAction(gltf.animations[0]);
