@@ -274,8 +274,34 @@ plaza.position.y = 0.015;
 scene.add(plaza);
 
 makeBuilding(0xF0A8B8, 0x9040A0,  2.6, 4.5, 2.6,  -6.0, -6.0); // Boutique
-makeBuilding(0xF0D060, 0xC05030,  3.8, 3.5, 3.2,   6.0, -6.0);  // Capy Store
 makeBuilding(0xD4905C, 0x883020,  4.5, 2.8, 3.6,   0.0,  7.0);  // Bakery
+
+// Capy Store — real GLB asset (NE, replaces placeholder box)
+// Box collider kept for smooth movement
+addCollider(6.0, -6.0, 2.25, 1.9);
+const capyStoreLoader = new GLTFLoader();
+capyStoreLoader.load(
+  `${import.meta.env.BASE_URL}buildings/capy_store.glb`,
+  (gltf) => {
+    const model = gltf.scene;
+    // Sit exactly on ground using bounding box
+    const bbox = new THREE.Box3().setFromObject(model);
+    model.position.set(6.0, -bbox.min.y, -6.0);
+    // Register every submesh with occlusion system (unique material per mesh)
+    model.traverse((node) => {
+      if (node.isMesh) {
+        node.material = node.material.clone();
+        node.material.transparent = true;
+        node.castShadow = true;
+        node.receiveShadow = true;
+        occluders.push({ mesh: node, targetOpacity: 1.0 });
+      }
+    });
+    scene.add(model);
+  },
+  undefined,
+  (err) => console.error('Failed to load capy_store.glb:', err)
+);
 
 makeTree(-3.5, -3.5);
 makeTree( 3.5, -3.5);
