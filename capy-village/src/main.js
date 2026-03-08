@@ -337,12 +337,42 @@ const MOVE_SPEED = 2.0;
 const BOUND      = 8;
 
 // ─── Model ───────────────────────────────────────────────────────────────────
-let capy      = null;
-let groundY   = 0;
-let mixer     = null;
-let hatAnchor = null; // bone tracked each frame for crown positioning
-let hatMount  = null; // scene-level upright mount for the crown
+// Equipped accessories — add/remove entries here to change what capy wears.
+// scale: 1.0 means use the model at its exported size.
+const EQUIPPED_ACCESSORIES = [
+  { anchor: 'hat_anchor', path: 'crown.glb', scale: 1.0 },
+  // { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0 },
+];
+
+let capy    = null;
+let groundY = 0;
+let mixer   = null;
 const clock = new THREE.Clock();
+
+// Map from anchor name → { mount: Object3D, bone: Object3D }
+const accessoryMounts = {};
+
+function loadAccessories(capyScene) {
+  for (const acc of EQUIPPED_ACCESSORIES) {
+    const bone = capyScene.getObjectByName(acc.anchor);
+    if (!bone) { console.warn(`Anchor not found: ${acc.anchor}`); continue; }
+    const mount = new THREE.Object3D();
+    scene.add(mount);
+    accessoryMounts[acc.anchor] = { mount, bone };
+
+    const ldr = new GLTFLoader();
+    ldr.load(
+      `${import.meta.env.BASE_URL}${acc.path}`,
+      (gltf) => {
+        const mesh = gltf.scene;
+        mesh.scale.setScalar(acc.scale);
+        mount.add(mesh);
+      },
+      undefined,
+      (err) => console.error(`Failed to load ${acc.path}:`, err)
+    );
+  }
+}
 
 const furMaterial = new THREE.MeshStandardMaterial({
   color: 0xE3A68C, roughness: 0.85, metalness: 0.0,
@@ -373,30 +403,7 @@ loader.load(
       action.play();
     }
 
-    // Attach crown via scene-level upright mount that tracks hat_anchor each frame.
-    // hat_anchor has a large inherited bone rotation, so we avoid parenting the crown
-    // to it directly. Instead hatMount (identity rotation) follows hat_anchor's world
-    // position in the animate loop, keeping the crown perfectly upright.
-    hatAnchor = capy.getObjectByName('hat_anchor');
-    if (hatAnchor) {
-      hatMount = new THREE.Object3D();
-      scene.add(hatMount);
-
-      const crownLoader = new GLTFLoader();
-      crownLoader.load(
-        `${import.meta.env.BASE_URL}crown.glb`,
-        (crownGltf) => {
-          const crown = crownGltf.scene;
-          crown.position.set(0, 0, 0);
-          crown.scale.set(0.45, 0.45, 0.45);
-          hatMount.add(crown);
-        },
-        undefined,
-        (err) => console.error('Failed to load crown.glb:', err)
-      );
-    } else {
-      console.warn('hat_anchor not found in capy model');
-    }
+    loadAccessories(capy);
   },
   undefined,
   (err) => console.error('Failed to load model:', err)
@@ -411,6 +418,7 @@ window.addEventListener('resize', () => {
 
 // ─── Animate ─────────────────────────────────────────────────────────────────
 const moveDir = new THREE.Vector3();
+const _wp     = new THREE.Vector3(); // reused each frame for accessory tracking
 
 function animate() {
   requestAnimationFrame(animate);
@@ -452,13 +460,13 @@ function animate() {
 
   if (mixer) mixer.update(delta);
 
-  // Track hat_anchor world position each frame (after animation update)
-  if (hatMount && hatAnchor && capy) {
+  // Track each accessory mount to its anchor bone world position (after animation update)
+  if (capy && Object.keys(accessoryMounts).length > 0) {
     capy.updateWorldMatrix(true, true);
-    const wp = new THREE.Vector3();
-    hatAnchor.getWorldPosition(wp);
-    // Sit mount at hat_anchor world XZ, with Y 0.30 above it (places crown on skull top)
-    hatMount.position.set(wp.x, wp.y + 0.30, wp.z);
+    for (const { mount, bone } of Object.values(accessoryMounts)) {
+      bone.getWorldPosition(_wp);
+      mount.position.copy(_wp);
+    }
   }
 
   renderer.render(scene, camera);
