@@ -340,8 +340,8 @@ const BOUND      = 8;
 // Equipped accessories — add/remove entries here to change what capy wears.
 // scale: 1.0 means use the model at its exported size.
 const EQUIPPED_ACCESSORIES = [
-  { anchor: 'hat_anchor', path: 'crown.glb', scale: 1.0 },
-  // { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0 },
+  { anchor: 'hat_anchor', path: 'crown.glb', scale: 1.0, tiltX: -7 },
+  // { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
 ];
 
 let capy    = null;
@@ -366,6 +366,7 @@ function loadAccessories(capyScene) {
       (gltf) => {
         const mesh = gltf.scene;
         mesh.scale.setScalar(acc.scale);
+        if (acc.tiltX) mesh.rotation.x = THREE.MathUtils.degToRad(acc.tiltX);
         mount.add(mesh);
       },
       undefined,
@@ -460,12 +461,15 @@ function animate() {
 
   if (mixer) mixer.update(delta);
 
-  // Track each accessory mount to its anchor bone world position (after animation update)
+  // Track each accessory mount: world position from bone, yaw from capy
+  // (tiltX is applied in mesh-local space, so forwarding capy yaw keeps
+  //  the tilt pointing toward capy's back regardless of walk direction)
   if (capy && Object.keys(accessoryMounts).length > 0) {
     capy.updateWorldMatrix(true, true);
     for (const { mount, bone } of Object.values(accessoryMounts)) {
       bone.getWorldPosition(_wp);
       mount.position.copy(_wp);
+      mount.rotation.y = capy.rotation.y;
     }
   }
 
