@@ -341,19 +341,20 @@ const BOUND      = 8;
 // Accessory registry — all available accessories keyed by id.
 // ---------------------------------------------------------------------------
 const ACCESSORIES = {
-  crown:     { anchor: 'hat_anchor', path: 'crown.glb',       scale: 1.0, tiltX: -7 },
-  chefs_hat: { anchor: 'hat_anchor', path: 'chef_hat.glb',    scale: 1.0, tiltX: -7,
-               color: 0xFFFFFF, roughness: 0.7 },
-  beanie:    { anchor: 'hat_anchor', path: 'knit_beanie.glb', scale: 1.0, tiltX: -15,
-               colors: { beanie_body: 0xE63946, beanie_pompom: 0xFFFFFF },
-               doubleSided: true, polygonOffsetPart: 'beanie_body' },
+  crown:      { anchor: 'hat_anchor',  path: 'crown.glb',       scale: 1.0, tiltX: -7 },
+  chefs_hat:  { anchor: 'hat_anchor',  path: 'chef_hat.glb',    scale: 1.0, tiltX: -7,
+                color: 0xFFFFFF, roughness: 0.7 },
+  beanie:     { anchor: 'hat_anchor',  path: 'knit_beanie.glb', scale: 1.0, tiltX: -15,
+                colors: { beanie_body: 0xE63946, beanie_pompom: 0xFFFFFF },
+                doubleSided: true, polygonOffsetPart: 'beanie_body' },
+  neck_scarf: { anchor: 'neck_anchor', path: 'scarf_v2.glb',    scale: 1.0, tiltX: 0 },
   // glasses: { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
 };
 
 // What capy is currently wearing — one accessory id per anchor slot, or null to unequip.
 const EQUIPPED = {
-  hat_anchor: 'beanie',
-  // face_anchor: null,
+  hat_anchor:  'beanie',
+  neck_anchor: 'neck_scarf',
 };
 
 let capy    = null;
@@ -393,8 +394,9 @@ function applyMaterial(mesh, acc) {
       color: acc.color,
       roughness: acc.roughness ?? 0.8,
       metalness: acc.metalness ?? 0.0,
+      side: acc.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
     });
-    mesh.traverse((node) => { if (node.isMesh) node.material = mat; });
+    mesh.traverse((node) => { if (node.isMesh) { node.material = mat; } });
   }
 }
 
