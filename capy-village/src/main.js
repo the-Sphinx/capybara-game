@@ -347,14 +347,16 @@ const ACCESSORIES = {
   beanie:     { anchor: 'hat_anchor',  path: 'knit_beanie.glb', scale: 1.0, tiltX: -15,
                 colors: { beanie_body: 0xE63946, beanie_pompom: 0xFFFFFF },
                 doubleSided: true, polygonOffsetPart: 'beanie_body' },
-  neck_scarf: { anchor: 'neck_anchor', path: 'scarf_v2.glb',    scale: 1.0, tiltX: 0 },
+  scarf: { anchor: 'neck_anchor', path: 'scarf_v2.glb',    scale: 1.0, tiltX: 0,
+            offset: { x: 0, y: -0.08, z: -0.3 } },
   // glasses: { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
 };
+window.ACCESSORIES = ACCESSORIES; // dev: tweak offset in console
 
 // What capy is currently wearing — one accessory id per anchor slot, or null to unequip.
 const EQUIPPED = {
   hat_anchor:  'beanie',
-  neck_anchor: 'neck_scarf',
+  neck_anchor: 'scarf',
 };
 
 let capy    = null;
@@ -540,8 +542,16 @@ function animate() {
   //  the tilt pointing toward capy's back regardless of walk direction)
   if (capy && Object.keys(accessoryMounts).length > 0) {
     capy.updateWorldMatrix(true, true);
-    for (const { mount, bone } of Object.values(accessoryMounts)) {
+    for (const [anchorName, { mount, bone }] of Object.entries(accessoryMounts)) {
       bone.getWorldPosition(_wp);
+      const accId = EQUIPPED[anchorName];
+      const off   = accId && ACCESSORIES[accId]?.offset;
+      if (off && (off.x || off.y || off.z)) {
+        const yaw = capy.rotation.y;
+        _wp.x += off.x * Math.cos(yaw) + off.z * Math.sin(yaw);
+        _wp.y += off.y;
+        _wp.z += -off.x * Math.sin(yaw) + off.z * Math.cos(yaw);
+      }
       mount.position.copy(_wp);
       mount.rotation.y = capy.rotation.y;
     }
