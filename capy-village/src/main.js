@@ -156,6 +156,7 @@ Object.assign(modalEl.style, {
 document.body.appendChild(modalEl);
 
 function openModal(building) {
+  if (building.id === 'capy-store') { openCloset(); return; }
   modalOpen = true;
   promptEl.style.display = 'none';
   modalEl.innerHTML =
@@ -168,6 +169,141 @@ function openModal(building) {
 function closeModal() {
   modalOpen = false;
   modalEl.style.display = 'none';
+}
+
+// ─── Capy Closet UI ──────────────────────────────────────────────────────────
+const CLOSET_TABS = {
+  hats: {
+    label: 'Hats', icon: '🎩', anchor: 'hat_anchor',
+    items: [
+      { id: 'crown',     label: 'Crown',    icon: '👑' },
+      { id: 'beanie',    label: 'Beanie',   icon: '🧢' },
+      { id: 'chefs_hat', label: 'Chef Hat', icon: '🍳' },
+    ],
+  },
+  neck: {
+    label: 'Neck', icon: '🎀', anchor: 'neck_anchor',
+    items: [
+      { id: 'scarf', label: 'Scarf', icon: '🧣' },
+    ],
+  },
+};
+
+let closetOpen = false;
+let closetTab  = 'hats';
+
+const closetPanel = document.createElement('div');
+Object.assign(closetPanel.style, {
+  display: 'none', position: 'fixed', right: '24px', top: '50%',
+  transform: 'translateY(-50%)', width: '284px',
+  background: '#F5EFD8', border: '3px solid #C8B89A', borderRadius: '24px',
+  padding: '16px', fontFamily: '"Nunito", "Segoe UI", sans-serif',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.22)', zIndex: '30', userSelect: 'none',
+});
+document.body.appendChild(closetPanel);
+
+function buildClosetPanel() {
+  const tab      = CLOSET_TABS[closetTab];
+  const equipped = EQUIPPED[tab.anchor];
+
+  closetPanel.innerHTML = `
+    <!-- Header -->
+    <div style="background:linear-gradient(180deg,#A8DEFF,#7EC8F0);border-radius:16px;
+                padding:10px 14px;margin-bottom:12px;text-align:center;
+                box-shadow:0 3px 0 #5AAED0;">
+      <span style="font-size:20px;font-weight:900;color:#fff;
+                   letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,0.18);">
+        Capy Closet 🐾
+      </span>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      ${Object.entries(CLOSET_TABS).map(([key, t]) => {
+        const active = key === closetTab;
+        return `<button data-tab="${key}" style="
+          flex:1;padding:8px 6px;border:none;border-radius:14px;
+          font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;
+          background:${active ? '#FFD97D' : '#FFAB76'};
+          color:${active ? '#7A5000' : '#7A3000'};
+          box-shadow:0 3px 0 ${active ? '#C9900A' : '#C96030'};
+          transform:${active ? 'translateY(0)' : 'translateY(0)'};
+          transition:transform .1s;
+        ">${t.icon} ${t.label}</button>`;
+      }).join('')}
+    </div>
+
+    <!-- Item grid -->
+    <div style="background:#EDE5C4;border-radius:16px;padding:12px;
+                margin-bottom:12px;min-height:130px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        ${tab.items.map(item => {
+          const sel = item.id === equipped;
+          return `<div data-item="${item.id}" style="
+            background:#fff;border-radius:16px;padding:14px 8px 10px;
+            text-align:center;cursor:pointer;position:relative;
+            border:2.5px solid ${sel ? '#FFD97D' : '#E0D5C5'};
+            box-shadow:${sel ? '0 0 0 2px #FFB800' : 'none'};
+            transition:transform .1s;
+          ">
+            ${sel ? `<div style="position:absolute;top:6px;right:8px;
+              background:#4DC567;border-radius:50%;width:20px;height:20px;
+              display:flex;align-items:center;justify-content:center;
+              font-size:11px;color:#fff;font-weight:900;">✓</div>` : ''}
+            <div style="font-size:38px;line-height:1;margin-bottom:6px;">${item.icon}</div>
+            <div style="font-size:12px;font-weight:800;color:#6B5040;">${item.label}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Equip button -->
+    <button id="closet-equip-btn" style="
+      width:100%;padding:13px;border:none;border-radius:50px;
+      font-family:inherit;font-size:17px;font-weight:900;letter-spacing:2px;
+      color:#fff;cursor:pointer;
+      background:linear-gradient(180deg,#FFB347,#FF8200);
+      box-shadow:0 4px 0 #C65A00,0 6px 14px rgba(255,130,0,0.35);
+      text-shadow:0 1px 3px rgba(0,0,0,0.25);
+    ">EQUIP 🐾</button>
+
+    <p style="text-align:center;font-size:11px;color:#AFA08A;margin:8px 0 0;">
+      Press [E] or [Esc] to close
+    </p>
+  `;
+
+  // Tab clicks
+  closetPanel.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => { closetTab = btn.dataset.tab; buildClosetPanel(); });
+  });
+
+  // Item card clicks — equip immediately (live preview)
+  closetPanel.querySelectorAll('[data-item]').forEach(card => {
+    card.addEventListener('click', () => {
+      const accId  = card.dataset.item;
+      const anchor = CLOSET_TABS[closetTab].anchor;
+      equipAccessory(anchor, accId === EQUIPPED[anchor] ? null : accId);
+      buildClosetPanel();
+    });
+    card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-2px)'; });
+    card.addEventListener('mouseleave', () => { card.style.transform = 'translateY(0)'; });
+  });
+
+  document.getElementById('closet-equip-btn').addEventListener('click', closeCloset);
+}
+
+function openCloset() {
+  closetOpen = true;
+  modalOpen  = true;
+  promptEl.style.display = 'none';
+  closetPanel.style.display = 'block';
+  buildClosetPanel();
+}
+
+function closeCloset() {
+  closetOpen = false;
+  modalOpen  = false;
+  closetPanel.style.display = 'none';
 }
 
 // ─── Village helpers ──────────────────────────────────────────────────────────
@@ -325,10 +461,13 @@ const keys = {};
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
   if (e.code === 'KeyE') {
-    if (modalOpen) closeModal();
+    if (closetOpen) closeCloset();
+    else if (modalOpen) closeModal();
     else if (activeTarget) openModal(activeTarget);
   }
-  if (e.code === 'Escape' && modalOpen) closeModal();
+  if (e.code === 'Escape' && modalOpen) {
+    if (closetOpen) closeCloset(); else closeModal();
+  }
 });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
