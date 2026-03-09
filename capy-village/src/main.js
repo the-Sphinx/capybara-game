@@ -459,8 +459,9 @@ loader.load(
       if (!node.isMesh) return;
       node.castShadow = true;
       node.receiveShadow = true;
-      if (node.name.startsWith('eye_white')) node.material = eyeWhiteMaterial;
-      else if (node.name.startsWith('eye_dark')) node.material = eyeDarkMaterial;
+      const matName = node.material?.name ?? '';
+      if (matName === 'mat_eye_white' || node.name.startsWith('eye_white')) node.material = eyeWhiteMaterial;
+      else if (matName === 'mat_eye_dark' || node.name.startsWith('eye_dark')) node.material = eyeDarkMaterial;
       else node.material = furMaterial;
     });
     const box  = new THREE.Box3().setFromObject(capy);
