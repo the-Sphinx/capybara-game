@@ -337,12 +337,24 @@ const MOVE_SPEED = 2.0;
 const BOUND      = 8;
 
 // ─── Model ───────────────────────────────────────────────────────────────────
-// Equipped accessories — add/remove entries here to change what capy wears.
-// scale: 1.0 means use the model at its exported size.
-const EQUIPPED_ACCESSORIES = [
-  { anchor: 'hat_anchor', path: 'crown.glb', scale: 1.0, tiltX: -7 },
-  // { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
-];
+// ---------------------------------------------------------------------------
+// Accessory registry — all available accessories keyed by id.
+// ---------------------------------------------------------------------------
+const ACCESSORIES = {
+  crown:     { anchor: 'hat_anchor', path: 'crown.glb',       scale: 1.0, tiltX: -7 },
+  chefs_hat: { anchor: 'hat_anchor', path: 'chef_hat.glb',    scale: 1.0, tiltX: -7,
+               color: 0xFFFFFF, roughness: 0.7 },
+  beanie:    { anchor: 'hat_anchor', path: 'knit_beanie.glb', scale: 1.0, tiltX: -15,
+               colors: { beanie_body: 0xE63946, beanie_pompom: 0xFFFFFF },
+               doubleSided: true, polygonOffsetPart: 'beanie_body' },
+  // glasses: { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
+};
+
+// What capy is currently wearing — one accessory id per anchor slot, or null to unequip.
+const EQUIPPED = {
+  hat_anchor: 'beanie',
+  // face_anchor: null,
+};
 
 let capy    = null;
 let groundY = 0;
@@ -352,26 +364,78 @@ const clock = new THREE.Clock();
 // Map from anchor name → { mount: Object3D, bone: Object3D }
 const accessoryMounts = {};
 
+function applyMaterial(mesh, acc) {
+  if (acc.colors !== undefined) {
+    const mats = Object.fromEntries(
+      Object.entries(acc.colors).map(([key, col]) => {
+        const mat = new THREE.MeshStandardMaterial({
+          color: col,
+          roughness: acc.roughness ?? 0.8,
+          metalness: acc.metalness ?? 0.0,
+          side: acc.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
+        });
+        if (acc.polygonOffsetPart && key === acc.polygonOffsetPart) {
+          mat.polygonOffset = true;
+          mat.polygonOffsetFactor = -2;
+          mat.polygonOffsetUnits  = -2;
+        }
+        return [key, mat];
+      })
+    );
+    mesh.traverse((node) => {
+      if (!node.isMesh) return;
+      for (const [key, mat] of Object.entries(mats)) {
+        if (node.name.includes(key)) { node.material = mat; break; }
+      }
+    });
+  } else if (acc.color !== undefined) {
+    const mat = new THREE.MeshStandardMaterial({
+      color: acc.color,
+      roughness: acc.roughness ?? 0.8,
+      metalness: acc.metalness ?? 0.0,
+    });
+    mesh.traverse((node) => { if (node.isMesh) node.material = mat; });
+  }
+}
+
+function equipAccessory(anchorName, accId) {
+  const entry = accessoryMounts[anchorName];
+  if (!entry) { console.warn(`Anchor not ready: ${anchorName}`); return; }
+
+  // Remove current mesh from mount
+  while (entry.mount.children.length) {
+    entry.mount.remove(entry.mount.children[0]);
+  }
+
+  EQUIPPED[anchorName] = accId;
+  if (!accId) return;
+
+  const acc = ACCESSORIES[accId];
+  if (!acc) { console.warn(`Unknown accessory: ${accId}`); return; }
+
+  const ldr = new GLTFLoader();
+  ldr.load(
+    `${import.meta.env.BASE_URL}${acc.path}`,
+    (gltf) => {
+      const mesh = gltf.scene;
+      mesh.scale.setScalar(acc.scale);
+      if (acc.tiltX) mesh.rotation.x = THREE.MathUtils.degToRad(acc.tiltX);
+      applyMaterial(mesh, acc);
+      entry.mount.add(mesh);
+    },
+    undefined,
+    (err) => console.error(`Failed to load ${acc.path}:`, err)
+  );
+}
+
 function loadAccessories(capyScene) {
-  for (const acc of EQUIPPED_ACCESSORIES) {
-    const bone = capyScene.getObjectByName(acc.anchor);
-    if (!bone) { console.warn(`Anchor not found: ${acc.anchor}`); continue; }
+  for (const [anchorName, accId] of Object.entries(EQUIPPED)) {
+    const bone = capyScene.getObjectByName(anchorName);
+    if (!bone) { console.warn(`Anchor not found: ${anchorName}`); continue; }
     const mount = new THREE.Object3D();
     scene.add(mount);
-    accessoryMounts[acc.anchor] = { mount, bone };
-
-    const ldr = new GLTFLoader();
-    ldr.load(
-      `${import.meta.env.BASE_URL}${acc.path}`,
-      (gltf) => {
-        const mesh = gltf.scene;
-        mesh.scale.setScalar(acc.scale);
-        if (acc.tiltX) mesh.rotation.x = THREE.MathUtils.degToRad(acc.tiltX);
-        mount.add(mesh);
-      },
-      undefined,
-      (err) => console.error(`Failed to load ${acc.path}:`, err)
-    );
+    accessoryMounts[anchorName] = { mount, bone };
+    if (accId) equipAccessory(anchorName, accId);
   }
 }
 
