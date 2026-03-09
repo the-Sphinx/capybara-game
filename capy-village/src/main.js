@@ -442,6 +442,12 @@ function loadAccessories(capyScene) {
 const furMaterial = new THREE.MeshStandardMaterial({
   color: 0xE3A68C, roughness: 0.85, metalness: 0.0,
 });
+const eyeWhiteMaterial = new THREE.MeshStandardMaterial({
+  color: 0xF0EDE8, roughness: 0.25, metalness: 0.0,
+});
+const eyeDarkMaterial = new THREE.MeshStandardMaterial({
+  color: 0x1A1A1F, roughness: 0.05, metalness: 0.0,
+});
 
 const loader = new GLTFLoader();
 loader.load(
@@ -450,11 +456,12 @@ loader.load(
     capy = gltf.scene;
     scene.add(capy);
     capy.traverse((node) => {
-      if (node.isMesh) {
-        node.material = furMaterial;
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
+      if (!node.isMesh) return;
+      node.castShadow = true;
+      node.receiveShadow = true;
+      if (node.name.startsWith('eye_white')) node.material = eyeWhiteMaterial;
+      else if (node.name.startsWith('eye_dark')) node.material = eyeDarkMaterial;
+      else node.material = furMaterial;
     });
     const box  = new THREE.Box3().setFromObject(capy);
     const size = new THREE.Vector3();
