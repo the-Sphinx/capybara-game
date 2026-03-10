@@ -19,6 +19,7 @@ Step 01 must already be working:
 
 - scene loads
 - capy model appears
+- capy is positioned correctly on top of the ground
 - idle animation plays
 - no loading errors
 
@@ -26,7 +27,7 @@ Step 01 must already be working:
 
 ## Movement Controls
 
-Implement keyboard movement using either:
+Implement keyboard movement using:
 
 - Arrow keys
 - WASD
@@ -48,7 +49,7 @@ Preferred: support both.
 
 - The capy must remain on the ground plane.
 - No jumping or vertical movement.
-- Y position should remain fixed unless the model requires a fixed offset.
+- Y position should remain fixed after the ground offset is set.
 
 ### Movement speed
 
@@ -56,13 +57,13 @@ Use a simple constant move speed.
 
 Suggested starting value:
 
-```text
-1.5 to 2.5 units per second
-```
+`1.5 to 2.5 units per second`
 
 ### Frame-rate independence
 
-Movement must use `delta time` from the render loop.
+Movement must use delta time from the render loop.
+
+Do not use frame-based movement.
 
 ---
 
@@ -88,9 +89,9 @@ For this step, one of these is acceptable:
 Keep the idle animation always playing, even while moving.
 
 ### Acceptable Option B
-If the agent prefers, pause idle when no movement and play the same clip while moving.
+If preferred, keep the same animation active while moving and while idle.
 
-Do **not** create a walk animation yet.
+Do not create a walk animation yet.
 
 ---
 
@@ -100,7 +101,7 @@ For this step, the camera can remain fixed.
 
 However, the capy must stay visible while moving around a reasonable area of the plane.
 
-Do not implement camera follow yet unless necessary for visibility.
+Do not implement camera follow yet unless necessary to keep the capy visible.
 
 ---
 
@@ -112,6 +113,18 @@ Suggested approach:
 
 - clamp X and Z within a square area
 - example range: `-6 to 6`
+
+The exact values may be adjusted slightly if needed for visibility.
+
+---
+
+## Recommended Implementation Notes
+
+- store keyboard state using `keydown` and `keyup`
+- compute a movement direction vector each frame
+- normalize diagonal movement so diagonal speed is not faster
+- apply movement using delta time
+- update capy rotation based on movement direction
 
 ---
 
@@ -148,11 +161,11 @@ Focus only on:
 
 ## Deliverable
 
-A running local web app where the capy can be moved around the ground plane with the keyboard.
+A running local or deployed web app where the capy can be moved around the ground plane with the keyboard.
 
 After implementation, provide:
 
-- the local URL
+- the URL
 - a short summary of movement behavior
+- a screenshot or short screen recording
 - any console errors if present
-

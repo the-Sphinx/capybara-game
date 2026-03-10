@@ -1,647 +1,52 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import './style.css';
+import { gameState, ACCESSORIES, EQUIPPED, SELECTED, MOVE_SPEED, BOUND } from './state.js';
+import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable } from './world.js';
+import { loadCapy, accessoryMounts, previewAccessoryMounts, previewState } from './capy.js';
+import { promptEl, openModal, closeModal, openCloset, closeCloset } from './ui.js';
 
-// ─── Renderer ────────────────────────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.setClearColor(0xBFE3FF);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-document.body.appendChild(renderer.domElement);
+// ─── Scene setup ──────────────────────────────────────────────────────────────
+const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
+buildVillage(scene);
+loadCapy(scene);
 
-// ─── Scene ───────────────────────────────────────────────────────────────────
-const scene = new THREE.Scene();
+// Dev helpers
+window.ACCESSORIES = ACCESSORIES;
+window._openCloset = () => openCloset();
 
-// ─── Camera ──────────────────────────────────────────────────────────────────
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 2.5, 4.5);
-camera.lookAt(0, 0.5, 0);
-
-const CAM_OFFSET = new THREE.Vector3(0, 2.5, 4.5);
-const CAM_LERP   = 0.1;
-const camTarget  = new THREE.Vector3();
-
-// ─── Lights ──────────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-dirLight.position.set(5, 10, 5);
-dirLight.castShadow = true;
-dirLight.shadow.mapSize.width  = 1024;
-dirLight.shadow.mapSize.height = 1024;
-dirLight.shadow.camera.near   = 0.1;
-dirLight.shadow.camera.far    = 60;
-dirLight.shadow.camera.left   = -14;
-dirLight.shadow.camera.right  =  14;
-dirLight.shadow.camera.top    =  14;
-dirLight.shadow.camera.bottom = -14;
-scene.add(dirLight);
-
-// ─── Ground ──────────────────────────────────────────────────────────────────
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(30, 30),
-  new THREE.MeshLambertMaterial({ color: 0x88CC88 })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-// ─── Collision system ─────────────────────────────────────────────────────────
-const colliders = [];
-
-function addCollider(x, z, hw, hd) {
-  colliders.push({ x, z, hw, hd });
-}
-
-function collides(nx, nz) {
-  const r = 0.35;
-  for (const c of colliders) {
-    if (nx + r > c.x - c.hw && nx - r < c.x + c.hw &&
-        nz + r > c.z - c.hd && nz - r < c.z + c.hd) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// ─── Occlusion system ────────────────────────────────────────────────────────
-// Each entry: { mesh: THREE.Mesh, targetOpacity: number }
-// Buildings register their wall+roof meshes here with transparent materials.
-const occluders = [];
-const raycaster  = new THREE.Raycaster();
-
-function updateOcclusion() {
-  if (!capy) return;
-
-  // Aim ray at capy upper body
-  const capyEye = new THREE.Vector3(
-    capy.position.x,
-    capy.position.y + 0.5,
-    capy.position.z
-  );
-  const dir     = capyEye.clone().sub(camera.position).normalize();
-  const maxDist = camera.position.distanceTo(capyEye);
-  raycaster.set(camera.position, dir);
-
-  const meshList   = occluders.map(o => o.mesh);
-  const hits       = raycaster.intersectObjects(meshList, false);
-  const inTheWay   = new Set(
-    hits.filter(h => h.distance < maxDist).map(h => h.object)
-  );
-
-  for (const occ of occluders) {
-    occ.targetOpacity = inTheWay.has(occ.mesh) ? 0.3 : 1.0;
-    occ.mesh.material.opacity = THREE.MathUtils.lerp(
-      occ.mesh.material.opacity,
-      occ.targetOpacity,
-      0.12
-    );
-  }
-}
-
-// ─── Interaction system ───────────────────────────────────────────────────────
-const interactables = [
-  {
-    id:      'boutique',
-    label:   'Boutique',
-    message: 'This building will open the fashion boutique later.',
-    zone: { x: -6.0, z: -3.5, hw: 1.3, hd: 0.9 },
-  },
-  {
-    id:      'capy-store',
-    label:   'Capy Store',
-    message: 'This building will open the capy customization screen later.',
-    zone: { x: 6.0, z: -3.1, hw: 1.9, hd: 1.0 },
-  },
-  {
-    id:      'bakery',
-    label:   'Bakery',
-    message: 'This building will open the bakery shop later.',
-    zone: { x: 0.0, z: 4.0, hw: 2.2, hd: 0.9 },
-  },
-];
-
-let activeTarget = null;
-let modalOpen    = false;
-
-function getActiveInteractable(cx, cz) {
-  for (const b of interactables) {
-    const z = b.zone;
-    if (Math.abs(cx - z.x) < z.hw && Math.abs(cz - z.z) < z.hd) return b;
-  }
-  return null;
-}
-
-// ─── Interaction UI ───────────────────────────────────────────────────────────
-const promptEl = document.createElement('div');
-Object.assign(promptEl.style, {
-  display: 'none', position: 'fixed', bottom: '60px', left: '50%',
-  transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.65)',
-  color: 'white', padding: '10px 24px', borderRadius: '8px',
-  fontFamily: 'sans-serif', fontSize: '16px',
-  pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: '10',
-});
-document.body.appendChild(promptEl);
-
-const modalEl = document.createElement('div');
-Object.assign(modalEl.style, {
-  display: 'none', position: 'fixed', top: '50%', left: '50%',
-  transform: 'translate(-50%, -50%)', background: 'rgba(20,20,30,0.92)',
-  color: 'white', padding: '40px 52px', borderRadius: '14px',
-  fontFamily: 'sans-serif', minWidth: '300px', textAlign: 'center',
-  zIndex: '20', boxSizing: 'border-box',
-});
-document.body.appendChild(modalEl);
-
-function openModal(building) {
-  if (building.id === 'capy-store') { openCloset(); return; }
-  modalOpen = true;
-  promptEl.style.display = 'none';
-  modalEl.innerHTML =
-    `<h2 style="margin:0 0 14px;font-size:22px">${building.label}</h2>` +
-    `<p style="margin:0 0 24px;color:#ddd;line-height:1.6">${building.message}</p>` +
-    `<p style="font-size:13px;color:#888">Press [E] or [Esc] to close</p>`;
-  modalEl.style.display = 'block';
-}
-
-function closeModal() {
-  modalOpen = false;
-  modalEl.style.display = 'none';
-}
-
-// ─── Capy Closet UI ──────────────────────────────────────────────────────────
-const CLOSET_TABS = {
-  hats: {
-    label: 'Hats', icon: '🎩', anchor: 'hat_anchor',
-    items: [
-      { id: 'crown',     label: 'Crown',    icon: '👑' },
-      { id: 'beanie',    label: 'Beanie',   icon: '🧢' },
-      { id: 'chefs_hat', label: 'Chef Hat', icon: '🍳' },
-    ],
-  },
-  neck: {
-    label: 'Neck', icon: '🎀', anchor: 'neck_anchor',
-    items: [
-      { id: 'scarf', label: 'Scarf', icon: '🧣' },
-    ],
-  },
-};
-
-let closetOpen = false;
-let closetTab  = 'hats';
-
-const closetPanel = document.createElement('div');
-Object.assign(closetPanel.style, {
-  display: 'none', position: 'fixed', right: '24px', top: '50%',
-  transform: 'translateY(-50%)', width: '284px',
-  background: '#F5EFD8', border: '3px solid #C8B89A', borderRadius: '24px',
-  padding: '16px', fontFamily: '"Nunito", "Segoe UI", sans-serif',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.22)', zIndex: '30', userSelect: 'none',
-});
-document.body.appendChild(closetPanel);
-
-function buildClosetPanel() {
-  const tab      = CLOSET_TABS[closetTab];
-  const equipped = EQUIPPED[tab.anchor];
-
-  closetPanel.innerHTML = `
-    <!-- Header -->
-    <div style="background:linear-gradient(180deg,#A8DEFF,#7EC8F0);border-radius:16px;
-                padding:10px 14px;margin-bottom:12px;text-align:center;
-                box-shadow:0 3px 0 #5AAED0;">
-      <span style="font-size:20px;font-weight:900;color:#fff;
-                   letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,0.18);">
-        Capy Closet 🐾
-      </span>
-    </div>
-
-    <!-- Tabs -->
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-      ${Object.entries(CLOSET_TABS).map(([key, t]) => {
-        const active = key === closetTab;
-        return `<button data-tab="${key}" style="
-          flex:1;padding:8px 6px;border:none;border-radius:14px;
-          font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;
-          background:${active ? '#FFD97D' : '#FFAB76'};
-          color:${active ? '#7A5000' : '#7A3000'};
-          box-shadow:0 3px 0 ${active ? '#C9900A' : '#C96030'};
-          transform:${active ? 'translateY(0)' : 'translateY(0)'};
-          transition:transform .1s;
-        ">${t.icon} ${t.label}</button>`;
-      }).join('')}
-    </div>
-
-    <!-- Item grid -->
-    <div style="background:#EDE5C4;border-radius:16px;padding:12px;
-                margin-bottom:12px;min-height:130px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        ${tab.items.map(item => {
-          const sel = item.id === equipped;
-          return `<div data-item="${item.id}" style="
-            background:#fff;border-radius:16px;padding:14px 8px 10px;
-            text-align:center;cursor:pointer;position:relative;
-            border:2.5px solid ${sel ? '#FFD97D' : '#E0D5C5'};
-            box-shadow:${sel ? '0 0 0 2px #FFB800' : 'none'};
-            transition:transform .1s;
-          ">
-            ${sel ? `<div style="position:absolute;top:6px;right:8px;
-              background:#4DC567;border-radius:50%;width:20px;height:20px;
-              display:flex;align-items:center;justify-content:center;
-              font-size:11px;color:#fff;font-weight:900;">✓</div>` : ''}
-            <div style="font-size:38px;line-height:1;margin-bottom:6px;">${item.icon}</div>
-            <div style="font-size:12px;font-weight:800;color:#6B5040;">${item.label}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- Equip button -->
-    <button id="closet-equip-btn" style="
-      width:100%;padding:13px;border:none;border-radius:50px;
-      font-family:inherit;font-size:17px;font-weight:900;letter-spacing:2px;
-      color:#fff;cursor:pointer;
-      background:linear-gradient(180deg,#FFB347,#FF8200);
-      box-shadow:0 4px 0 #C65A00,0 6px 14px rgba(255,130,0,0.35);
-      text-shadow:0 1px 3px rgba(0,0,0,0.25);
-    ">EQUIP 🐾</button>
-
-    <p style="text-align:center;font-size:11px;color:#AFA08A;margin:8px 0 0;">
-      Press [E] or [Esc] to close
-    </p>
-  `;
-
-  // Tab clicks
-  closetPanel.querySelectorAll('[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => { closetTab = btn.dataset.tab; buildClosetPanel(); });
-  });
-
-  // Item card clicks — equip immediately (live preview)
-  closetPanel.querySelectorAll('[data-item]').forEach(card => {
-    card.addEventListener('click', () => {
-      const accId  = card.dataset.item;
-      const anchor = CLOSET_TABS[closetTab].anchor;
-      equipAccessory(anchor, accId === EQUIPPED[anchor] ? null : accId);
-      buildClosetPanel();
-    });
-    card.addEventListener('mouseenter', () => { card.style.transform = 'translateY(-2px)'; });
-    card.addEventListener('mouseleave', () => { card.style.transform = 'translateY(0)'; });
-  });
-
-  document.getElementById('closet-equip-btn').addEventListener('click', closeCloset);
-}
-
-function openCloset() {
-  closetOpen = true;
-  modalOpen  = true;
-  promptEl.style.display = 'none';
-  closetPanel.style.display = 'block';
-  buildClosetPanel();
-}
-
-function closeCloset() {
-  closetOpen = false;
-  modalOpen  = false;
-  closetPanel.style.display = 'none';
-}
-
-// ─── Village helpers ──────────────────────────────────────────────────────────
-
-function makeBuilding(wallColor, roofColor, w, h, d, x, z) {
-  const group = new THREE.Group();
-
-  // Each building gets its own material instances for independent opacity control
-  const wallMat = new THREE.MeshLambertMaterial({ color: wallColor, transparent: true });
-  const walls   = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
-  walls.position.y = h / 2;
-  walls.castShadow = true;
-  walls.receiveShadow = true;
-  group.add(walls);
-  occluders.push({ mesh: walls, targetOpacity: 1.0 });
-
-  const roofR   = Math.max(w, d) * 0.72;
-  const roofH   = h * 0.55;
-  const roofMat = new THREE.MeshLambertMaterial({ color: roofColor, transparent: true });
-  const roof    = new THREE.Mesh(new THREE.ConeGeometry(roofR, roofH, 4), roofMat);
-  roof.position.y = h + roofH * 0.5;
-  roof.rotation.y = Math.PI / 4;
-  roof.castShadow = true;
-  group.add(roof);
-  occluders.push({ mesh: roof, targetOpacity: 1.0 });
-
-  group.position.set(x, 0, z);
-  scene.add(group);
-  addCollider(x, z, w / 2 + 0.3, d / 2 + 0.3);
-}
-
-function makeTree(x, z) {
-  const group = new THREE.Group();
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.14, 0.18, 1.2, 8),
-    new THREE.MeshLambertMaterial({ color: 0x8B6040 })
-  );
-  trunk.position.y = 0.6;
-  trunk.castShadow = true;
-  group.add(trunk);
-  const foliage = new THREE.Mesh(
-    new THREE.ConeGeometry(0.85, 1.8, 8),
-    new THREE.MeshLambertMaterial({ color: 0x4A8C40 })
-  );
-  foliage.position.y = 2.1;
-  foliage.castShadow = true;
-  group.add(foliage);
-  group.position.set(x, 0, z);
-  scene.add(group);
-  addCollider(x, z, 0.45, 0.45);
-}
-
-function makeBush(x, z, r = 0.50) {
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(r, 8, 6),
-    new THREE.MeshLambertMaterial({ color: 0x5A9E48 })
-  );
-  mesh.position.set(x, r, z);
-  scene.add(mesh);
-}
-
-function makeRock(x, z, r = 0.42) {
-  const mesh = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(r, 0),
-    new THREE.MeshLambertMaterial({ color: 0x9A9A8A })
-  );
-  mesh.position.set(x, r * 0.6, z);
-  mesh.rotation.y = 1.3;
-  scene.add(mesh);
-  addCollider(x, z, r + 0.2, r + 0.2);
-}
-
-function makeBench(x, z, rotY = 0) {
-  const mat   = new THREE.MeshLambertMaterial({ color: 0xC4A060 });
-  const group = new THREE.Group();
-  const seat  = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.45), mat);
-  seat.position.y = 0.5;
-  group.add(seat);
-  for (const lx of [-0.45, 0.45]) {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.45), mat);
-    leg.position.set(lx, 0.25, 0);
-    group.add(leg);
-  }
-  group.position.set(x, 0, z);
-  group.rotation.y = rotY;
-  scene.add(group);
-}
-
-// ─── Village layout ───────────────────────────────────────────────────────────
-const pathMat = new THREE.MeshLambertMaterial({ color: 0xD4B896 });
-const ewPath  = new THREE.Mesh(new THREE.BoxGeometry(22, 0.02, 3.2), pathMat);
-ewPath.position.y = 0.01;
-scene.add(ewPath);
-
-const nsPath  = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.02, 22), pathMat);
-nsPath.position.y = 0.01;
-scene.add(nsPath);
-
-const plaza = new THREE.Mesh(
-  new THREE.BoxGeometry(5.5, 0.025, 5.5),
-  new THREE.MeshLambertMaterial({ color: 0xDDC8A8 })
-);
-plaza.position.y = 0.015;
-scene.add(plaza);
-
-makeBuilding(0xF0A8B8, 0x9040A0,  2.6, 4.5, 2.6,  -6.0, -6.0); // Boutique
-makeBuilding(0xD4905C, 0x883020,  4.5, 2.8, 3.6,   0.0,  7.0);  // Bakery
-
-// Capy Store — real GLB asset (NE, replaces placeholder box)
-// Box collider kept for smooth movement
-addCollider(6.0, -6.0, 2.25, 1.9);
-const capyStoreLoader = new GLTFLoader();
-capyStoreLoader.load(
-  `${import.meta.env.BASE_URL}buildings/capy_store.glb`,
-  (gltf) => {
-    const model = gltf.scene;
-    // Sit exactly on ground using bounding box
-    const bbox = new THREE.Box3().setFromObject(model);
-    model.position.set(6.0, -bbox.min.y, -6.0);
-    // Register every submesh with occlusion system (unique material per mesh)
-    model.traverse((node) => {
-      if (node.isMesh) {
-        node.material = node.material.clone();
-        node.material.transparent = true;
-        node.castShadow = true;
-        node.receiveShadow = true;
-        occluders.push({ mesh: node, targetOpacity: 1.0 });
-      }
-    });
-    scene.add(model);
-  },
-  undefined,
-  (err) => console.error('Failed to load capy_store.glb:', err)
-);
-
-makeTree(-3.5, -3.5);
-makeTree( 3.5, -3.5);
-makeTree(-4.0,  3.2);
-makeTree( 4.0,  3.8);
-makeTree(-7.0,  1.5);
-
-makeBush(-1.8, -5.0, 0.50);
-makeBush( 1.8, -5.0, 0.44);
-makeBush(-5.0,  0.8, 0.52);
-makeBush( 5.5,  0.8, 0.46);
-
-makeRock(-4.5,  3.8, 0.42);
-makeRock( 2.0,  6.0, 0.36);
-makeRock( 7.0, -1.5, 0.38);
-
-makeBench(2.0, 1.2, -0.3);
-
-// ─── Keyboard ────────────────────────────────────────────────────────────────
+// ─── Keyboard ─────────────────────────────────────────────────────────────────
 const keys = {};
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
   if (e.code === 'KeyE') {
-    if (closetOpen) closeCloset();
-    else if (modalOpen) closeModal();
-    else if (activeTarget) openModal(activeTarget);
+    if (gameState.closetOpen)        closeCloset();
+    else if (gameState.modalOpen)    closeModal();
+    else if (gameState.activeTarget) openModal(gameState.activeTarget);
   }
-  if (e.code === 'Escape' && modalOpen) {
-    if (closetOpen) closeCloset(); else closeModal();
+  if (e.code === 'Escape' && gameState.modalOpen) {
+    if (gameState.closetOpen) closeCloset(); else closeModal();
   }
 });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-// ─── Movement constants ───────────────────────────────────────────────────────
-const MOVE_SPEED = 2.0;
-const BOUND      = 8;
-
-// ─── Model ───────────────────────────────────────────────────────────────────
-// ---------------------------------------------------------------------------
-// Accessory registry — all available accessories keyed by id.
-// ---------------------------------------------------------------------------
-const ACCESSORIES = {
-  crown:      { anchor: 'hat_anchor',  path: 'crown.glb',       scale: 1.0, tiltX: -7 },
-  chefs_hat:  { anchor: 'hat_anchor',  path: 'chef_hat.glb',    scale: 1.0, tiltX: -7,
-                color: 0xFFFFFF, roughness: 0.7 },
-  beanie:     { anchor: 'hat_anchor',  path: 'knit_beanie.glb', scale: 1.0, tiltX: -15,
-                colors: { beanie_body: 0xE63946, beanie_pompom: 0xFFFFFF },
-                doubleSided: true, polygonOffsetPart: 'beanie_body' },
-  scarf: { anchor: 'neck_anchor', path: 'scarf_v2.glb',    scale: 1.0, tiltX: 0,
-            offset: { x: 0, y: -0.08, z: -0.3 } },
-  // glasses: { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
-};
-window.ACCESSORIES = ACCESSORIES; // dev: tweak offset in console
-
-// What capy is currently wearing — one accessory id per anchor slot, or null to unequip.
-const EQUIPPED = {
-  hat_anchor:  'beanie',
-  neck_anchor: 'scarf',
-};
-
-let capy    = null;
-let groundY = 0;
-let mixer   = null;
-const clock = new THREE.Clock();
-
-// Map from anchor name → { mount: Object3D, bone: Object3D }
-const accessoryMounts = {};
-
-function applyMaterial(mesh, acc) {
-  if (acc.colors !== undefined) {
-    const mats = Object.fromEntries(
-      Object.entries(acc.colors).map(([key, col]) => {
-        const mat = new THREE.MeshStandardMaterial({
-          color: col,
-          roughness: acc.roughness ?? 0.8,
-          metalness: acc.metalness ?? 0.0,
-          side: acc.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
-        });
-        if (acc.polygonOffsetPart && key === acc.polygonOffsetPart) {
-          mat.polygonOffset = true;
-          mat.polygonOffsetFactor = -2;
-          mat.polygonOffsetUnits  = -2;
-        }
-        return [key, mat];
-      })
-    );
-    mesh.traverse((node) => {
-      if (!node.isMesh) return;
-      for (const [key, mat] of Object.entries(mats)) {
-        if (node.name.includes(key)) { node.material = mat; break; }
-      }
-    });
-  } else if (acc.color !== undefined) {
-    const mat = new THREE.MeshStandardMaterial({
-      color: acc.color,
-      roughness: acc.roughness ?? 0.8,
-      metalness: acc.metalness ?? 0.0,
-      side: acc.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
-    });
-    mesh.traverse((node) => { if (node.isMesh) { node.material = mat; } });
-  }
-}
-
-function equipAccessory(anchorName, accId) {
-  const entry = accessoryMounts[anchorName];
-  if (!entry) { console.warn(`Anchor not ready: ${anchorName}`); return; }
-
-  // Remove current mesh from mount
-  while (entry.mount.children.length) {
-    entry.mount.remove(entry.mount.children[0]);
-  }
-
-  EQUIPPED[anchorName] = accId;
-  if (!accId) return;
-
-  const acc = ACCESSORIES[accId];
-  if (!acc) { console.warn(`Unknown accessory: ${accId}`); return; }
-
-  const ldr = new GLTFLoader();
-  ldr.load(
-    `${import.meta.env.BASE_URL}${acc.path}`,
-    (gltf) => {
-      const mesh = gltf.scene;
-      mesh.scale.setScalar(acc.scale);
-      if (acc.tiltX) mesh.rotation.x = THREE.MathUtils.degToRad(acc.tiltX);
-      applyMaterial(mesh, acc);
-      entry.mount.add(mesh);
-    },
-    undefined,
-    (err) => console.error(`Failed to load ${acc.path}:`, err)
-  );
-}
-
-function loadAccessories(capyScene) {
-  for (const [anchorName, accId] of Object.entries(EQUIPPED)) {
-    const bone = capyScene.getObjectByName(anchorName);
-    if (!bone) { console.warn(`Anchor not found: ${anchorName}`); continue; }
-    const mount = new THREE.Object3D();
-    scene.add(mount);
-    accessoryMounts[anchorName] = { mount, bone };
-    if (accId) equipAccessory(anchorName, accId);
-  }
-}
-
-const furMaterial = new THREE.MeshStandardMaterial({
-  color: 0xE3A68C, roughness: 0.85, metalness: 0.0,
-});
-const eyeWhiteMaterial = new THREE.MeshStandardMaterial({
-  color: 0xF0EDE8, roughness: 0.25, metalness: 0.0,
-});
-const eyeDarkMaterial = new THREE.MeshStandardMaterial({
-  color: 0x1A1A1F, roughness: 0.05, metalness: 0.0,
-});
-
-const loader = new GLTFLoader();
-loader.load(
-  `${import.meta.env.BASE_URL}capy_idle.glb`,
-  (gltf) => {
-    capy = gltf.scene;
-    scene.add(capy);
-    capy.traverse((node) => {
-      if (!node.isMesh) return;
-      node.castShadow = true;
-      node.receiveShadow = true;
-      const matName = node.material?.name ?? '';
-      if (matName === 'mat_eye_white' || node.name.startsWith('eye_white')) node.material = eyeWhiteMaterial;
-      else if (matName === 'mat_eye_dark' || node.name.startsWith('eye_dark')) node.material = eyeDarkMaterial;
-      else node.material = furMaterial;
-    });
-    const box  = new THREE.Box3().setFromObject(capy);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    groundY = size.y / 2;
-    capy.position.y = groundY;
-    if (gltf.animations?.length > 0) {
-      mixer = new THREE.AnimationMixer(capy);
-      const action = mixer.clipAction(gltf.animations[0]);
-      action.setLoop(THREE.LoopRepeat);
-      action.play();
-    }
-
-    loadAccessories(capy);
-  },
-  undefined,
-  (err) => console.error('Failed to load model:', err)
-);
-
-// ─── Resize ──────────────────────────────────────────────────────────────────
+// ─── Resize ───────────────────────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ─── Animate ─────────────────────────────────────────────────────────────────
+// ─── Animate ──────────────────────────────────────────────────────────────────
 const moveDir = new THREE.Vector3();
-const _wp     = new THREE.Vector3(); // reused each frame for accessory tracking
+const _wp     = new THREE.Vector3();
 
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+  const { capy, mixer, groundY } = gameState;
 
   if (capy) {
-    if (!modalOpen) {
+    if (!gameState.modalOpen) {
       moveDir.set(0, 0, 0);
       if (keys['KeyW'] || keys['ArrowUp'])    moveDir.z -= 1;
       if (keys['KeyS'] || keys['ArrowDown'])  moveDir.z += 1;
@@ -659,13 +64,14 @@ function animate() {
       }
     }
 
-    if (!modalOpen) {
-      activeTarget = getActiveInteractable(capy.position.x, capy.position.z);
-      promptEl.textContent = activeTarget ? `Press [E] to enter ${activeTarget.label}` : '';
-      promptEl.style.display = activeTarget ? 'block' : 'none';
+    if (!gameState.modalOpen) {
+      gameState.activeTarget = getActiveInteractable(capy.position.x, capy.position.z);
+      promptEl.textContent = gameState.activeTarget
+        ? `Press [E] to enter ${gameState.activeTarget.label}` : '';
+      promptEl.classList.toggle('ui-prompt--visible', !!gameState.activeTarget);
     }
 
-    updateOcclusion();
+    updateOcclusion(camera);
 
     const desired = capy.position.clone().add(CAM_OFFSET);
     camera.position.lerp(desired, CAM_LERP);
@@ -676,9 +82,7 @@ function animate() {
 
   if (mixer) mixer.update(delta);
 
-  // Track each accessory mount: world position from bone, yaw from capy
-  // (tiltX is applied in mesh-local space, so forwarding capy yaw keeps
-  //  the tilt pointing toward capy's back regardless of walk direction)
+  // Track main scene accessory mounts
   if (capy && Object.keys(accessoryMounts).length > 0) {
     capy.updateWorldMatrix(true, true);
     for (const [anchorName, { mount, bone }] of Object.entries(accessoryMounts)) {
@@ -696,7 +100,46 @@ function animate() {
     }
   }
 
+  // Preview scene updates
+  const pvCapy     = previewState.capy;
+  const pvMixer    = previewState.mixer;
+  const pvRenderer = previewState.renderer;
+  const pvScene    = previewState.scene;
+  const pvCamera   = previewState.camera;
+  const pvTweak    = previewState.tweak;
+  const _pwp       = previewState._pwp;
+
+  if (pvMixer) pvMixer.update(delta);
+  if (pvCapy && gameState.closetOpen) pvCapy.rotation.y += delta * 0.6;
+
+  if (pvCapy && gameState.closetOpen && Object.keys(previewAccessoryMounts).length > 0) {
+    pvCapy.updateWorldMatrix(true, true);
+    for (const [anchorName, { mount, bone }] of Object.entries(previewAccessoryMounts)) {
+      bone.getWorldPosition(_pwp);
+      const accId = SELECTED[anchorName];
+      const off   = accId && ACCESSORIES[accId]?.offset;
+      if (off && (off.x || off.y || off.z)) {
+        const yaw = pvCapy.rotation.y;
+        _pwp.x += off.x * Math.cos(yaw) + off.z * Math.sin(yaw);
+        _pwp.y += off.y;
+        _pwp.z += -off.x * Math.sin(yaw) + off.z * Math.cos(yaw);
+      }
+      mount.position.copy(_pwp);
+      mount.rotation.y = pvCapy.rotation.y;
+    }
+  }
+
   renderer.render(scene, camera);
+
+  if (gameState.closetOpen && pvRenderer && pvScene && pvCamera) {
+    if (pvCapy) {
+      pvCapy.position.z = pvTweak.capyZ;
+      pvCapy.scale.setScalar(pvTweak.capyScale);
+    }
+    pvCamera.position.set(0, pvTweak.camY, pvTweak.camZ);
+    pvCamera.lookAt(0, 0.55, 0);
+    pvRenderer.render(pvScene, pvCamera);
+  }
 }
 
 animate();
