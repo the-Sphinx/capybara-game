@@ -168,7 +168,7 @@ export function buildClosetPanel() {
             <div data-item="${item.id}" class="${cardClass}">
               <div class="closet-icon-wrap">
                 <img data-icon-target="${item.id}" src="" alt="${item.icon}" class="closet-icon-img">
-                <span data-icon-fallback="${item.id}" class="closet-icon-fallback">${item.icon}</span>
+                
               </div>
               <div class="closet-item-label">${item.label}</div>
               <div class="closet-item-status ${status.cls}">${status.text}</div>
@@ -225,11 +225,9 @@ export function buildClosetPanel() {
   tab.items.forEach(item => {
     renderAccessoryIcon(item.id, (dataURL) => {
       const img      = closetItemCol.querySelector(`[data-icon-target="${item.id}"]`);
-      const fallback = closetItemCol.querySelector(`[data-icon-fallback="${item.id}"]`);
-      if (img && fallback) {
+      if (img) {
         img.src = dataURL;
         img.style.display = 'block';
-        fallback.style.display = 'none';
       }
     });
   });
