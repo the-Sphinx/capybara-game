@@ -430,22 +430,25 @@ canvas { display: block; }
   overflow: hidden;
 }
 
-/* HUD bar — 3-piece 9-slice layout (left cap + tiling center + right cap) */
+/* HUD bar — 3-piece layout (left cap + tiling center + right cap).
+   Height uses 10.7vw so the wooden caps always occupy ~28-30% of screen width,
+   matching the original bar's 1991:213 aspect ratio. Capped at 120px for tall bars. */
 .wmc-hud {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: clamp(62px, 11vh, 104px);
+  height: clamp(64px, 10.7vw, 150px);
   z-index: 10;
   pointer-events: none;
   display: flex;
   align-items: stretch;
 }
 
-/* Left wooden panel (score slot) — fixed proportion of total width */
+/* Left wooden panel — fixed 28.7% of width (matches original bar proportion) */
 .wmc-hud-cap-left {
   flex: 0 0 28.7%;
+  position: relative;
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
@@ -457,17 +460,18 @@ canvas { display: block; }
   background-repeat: repeat-x;
 }
 
-/* Right wooden panel (clock + time slot) — fixed proportion of total width */
+/* Right wooden panel — fixed 30.5% of width (matches original bar proportion) */
 .wmc-hud-cap-right {
   flex: 0 0 30.5%;
+  position: relative;
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
 
-/* Score text — centered within left wooden panel (28.7% wide) */
+/* Score text — centered inside left cap */
 .wmc-hud-score {
   position: absolute;
-  left: 14.35%;
+  left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   font-size: clamp(17px, 2.6vw, 34px);
@@ -484,12 +488,12 @@ canvas { display: block; }
   letter-spacing: 1px;
 }
 
-/* Time text — in right wooden panel slot (right of clock widget) */
+/* Time text — inside right cap, offset right of the clock widget (~38% from left) */
 .wmc-hud-time {
   position: absolute;
-  right: 11%;
+  left: 60%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   font-size: clamp(17px, 2.6vw, 34px);
   font-weight: 900;
   color: #FFE135;

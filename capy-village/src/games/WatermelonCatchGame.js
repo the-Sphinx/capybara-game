@@ -83,11 +83,13 @@ export class WatermelonCatchGame extends BaseGame {
       <div class="wmc-root">
         <div class="wmc-play-area" id="wmc-play-area"></div>
         <div class="wmc-hud" id="wmc-hud">
-          <div class="wmc-hud-cap-left"   id="wmc-hud-left"></div>
+          <div class="wmc-hud-cap-left" id="wmc-hud-left">
+            <div class="wmc-hud-score">SCORE: <span id="wmc-score-val">0</span></div>
+          </div>
           <div class="wmc-hud-cap-center" id="wmc-hud-center"></div>
-          <div class="wmc-hud-cap-right"  id="wmc-hud-right"></div>
-          <div class="wmc-hud-score">SCORE: <span id="wmc-score-val">0</span></div>
-          <div class="wmc-hud-time">TIME: <span id="wmc-time-val">${formatTime(GAME_DURATION)}</span></div>
+          <div class="wmc-hud-cap-right" id="wmc-hud-right">
+            <div class="wmc-hud-time">TIME: <span id="wmc-time-val">${formatTime(GAME_DURATION)}</span></div>
+          </div>
         </div>
         <div class="wmc-mode-badge">${m.prompt}</div>
         <button class="wmc-exit-btn" id="wmc-finish-btn">✕</button>
