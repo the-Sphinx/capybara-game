@@ -111,7 +111,7 @@ function loadAccessories(capyScene, scene) {
 export function loadCapy(scene) {
   const loader = new GLTFLoader();
   loader.load(
-    `${import.meta.env.BASE_URL}capy_idle.glb`,
+    `${import.meta.env.BASE_URL}models/characters/capy_idle.glb`,
     (gltf) => {
       const capy = gltf.scene;
       scene.add(capy);
@@ -259,7 +259,7 @@ export function initPreviewScene(previewColEl) {
 
   const pvLoader = new GLTFLoader();
   pvLoader.load(
-    `${import.meta.env.BASE_URL}capy_idle.glb`,
+    `${import.meta.env.BASE_URL}models/characters/capy_idle.glb`,
     (gltf) => {
       const pvCapy = gltf.scene;
       pvCapy.traverse((node) => {

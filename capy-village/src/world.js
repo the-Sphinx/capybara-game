@@ -228,7 +228,7 @@ export function buildVillage(scene) {
   addCollider(6.0, -6.0, 2.25, 1.9);
   const capyStoreLoader = new GLTFLoader();
   capyStoreLoader.load(
-    `${import.meta.env.BASE_URL}buildings/capy_store.glb`,
+    `${import.meta.env.BASE_URL}models/buildings/capy_store.glb`,
     (gltf) => {
       const model = gltf.scene;
       const bbox  = new THREE.Box3().setFromObject(model);

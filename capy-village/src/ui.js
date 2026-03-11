@@ -31,6 +31,7 @@ export function closeModal() {
 // ─── Closet panel (created once, never destroyed) ─────────────────────────────
 const closetPanel = document.createElement('div');
 closetPanel.className = 'closet-panel';
+closetPanel.style.backgroundImage = `url(${import.meta.env.BASE_URL}images/ui_background.png)`;
 document.body.appendChild(closetPanel);
 
 // X close button — centered on top-right corner, half outside the panel
@@ -50,7 +51,7 @@ closetColumns.appendChild(closetPreviewCol);
 
 // Frame overlay — sits above the 3D canvas, transparent center lets capy show through
 const closetFrame = document.createElement('img');
-closetFrame.src = `${import.meta.env.BASE_URL}ui_frame.png`;
+closetFrame.src = `${import.meta.env.BASE_URL}images/ui_frame.png`;
 closetFrame.className = 'closet-preview-frame';
 closetPreviewCol.appendChild(closetFrame);
 

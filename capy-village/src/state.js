@@ -1,12 +1,12 @@
 // ─── Accessory registry ───────────────────────────────────────────────────────
 export const ACCESSORIES = {
-  crown:     { anchor: 'hat_anchor',  path: 'crown.glb',       scale: 1.0, tiltX: -7 },
-  chefs_hat: { anchor: 'hat_anchor',  path: 'chef_hat.glb',    scale: 1.0, tiltX: -7,
+  crown:     { anchor: 'hat_anchor',  path: 'models/accessories/crown.glb',       scale: 1.0, tiltX: -7 },
+  chefs_hat: { anchor: 'hat_anchor',  path: 'models/accessories/chef_hat.glb',    scale: 1.0, tiltX: -7,
                color: 0xFFFFFF, roughness: 0.7 },
-  beanie:    { anchor: 'hat_anchor',  path: 'knit_beanie.glb', scale: 1.0, tiltX: -15,
+  beanie:    { anchor: 'hat_anchor',  path: 'models/accessories/knit_beanie.glb', scale: 1.0, tiltX: -15,
                colors: { beanie_body: 0xE63946, beanie_pompom: 0xFFFFFF },
                doubleSided: true, polygonOffsetPart: 'beanie_body' },
-  scarf:     { anchor: 'neck_anchor', path: 'scarf_v2.glb',    scale: 1.0, tiltX: 0,
+  scarf:     { anchor: 'neck_anchor', path: 'models/accessories/scarf_v2.glb',    scale: 1.0, tiltX: 0,
                offset: { x: 0, y: -0.08, z: -0.3 } },
   // glasses: { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
 };

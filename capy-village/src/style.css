@@ -57,7 +57,7 @@ canvas { display: block; }
   font-family: "Nunito", "Segoe UI", sans-serif;
   z-index: 30;
   user-select: none;
-  background-image: url('/ui_background.png');
+  /* background-image set via JS using import.meta.env.BASE_URL */
   background-size: cover;
   background-position: center;
   border-radius: 32px;
