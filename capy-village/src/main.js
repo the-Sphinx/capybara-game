@@ -18,6 +18,7 @@ gameManager.register('watermelon_catch', () => new WatermelonCatchGame());
 // Dev helpers
 window.ACCESSORIES = ACCESSORIES;
 window._openCloset = () => openCloset();
+window._startGame  = (id) => gameManager.startGame(id);
 
 // ─── Keyboard ─────────────────────────────────────────────────────────────────
 const keys = {};

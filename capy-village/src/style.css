@@ -412,23 +412,32 @@ canvas { display: block; }
 
 /* ─── WatermelonCatch panel ─────────────────────────────────────────────────── */
 .wmc-panel {
-  background: linear-gradient(160deg, #1a4a1a, #2d7a2d);
-  border: 3px solid #5ecf5e;
+  background: linear-gradient(160deg, #2a6e2a, #3aaa3a);
+  border: 3px solid #6de56d;
   border-radius: 20px;
-  padding: 24px 28px 20px;
+  padding: 20px 24px 18px;
   text-align: center;
   color: #fff;
-  width: 400px;
+  width: 420px;
   box-shadow: 0 16px 56px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .wmc-title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   margin: 0;
+}
+
+/* Mode prompt */
+.wmc-prompt {
+  font-size: 15px;
+  font-weight: 600;
+  color: #d0ffd0;
+  margin: -4px 0 0;
+  letter-spacing: 0.02em;
 }
 
 /* Top bar: score + timer */
@@ -441,46 +450,119 @@ canvas { display: block; }
   padding: 0 4px;
 }
 
-/* Play area */
+/* Timer progress bar */
+.wmc-timer-bar-wrap {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.wmc-timer-bar {
+  height: 100%;
+  width: 100%;
+  background: #ffe066;
+  border-radius: 4px;
+  transition: width 0.25s linear, background 0.3s;
+}
+.wmc-timer-bar--urgent { background: #ff4d4d; }
+
+/* Play area — bright, garden-sky feel */
 .wmc-play-area {
   position: relative;
   width: 100%;
-  height: 340px;
-  background: rgba(0, 0, 0, 0.25);
+  height: 310px;
+  background: linear-gradient(180deg, #c8eeff 0%, #e8f8e0 100%);
   border-radius: 12px;
   overflow: hidden;
   cursor: crosshair;
+  border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
-/* Falling melon */
-.wmc-melon {
+/* Falling items (shared) */
+.wmc-item {
   position: absolute;
-  width: 52px;
-  height: 52px;
-  font-size: 40px;
-  line-height: 52px;
+  width: 56px;
+  height: 56px;
   text-align: center;
   cursor: pointer;
   user-select: none;
   transition: transform 0.05s;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
 }
-.wmc-melon:hover { transform: scale(1.15); }
+.wmc-item:hover { transform: scale(1.15); }
 
+/* Emoji variant */
+.wmc-item--emoji {
+  font-size: 42px;
+  line-height: 56px;
+}
+
+/* Number variant */
+.wmc-item--number {
+  background: #ffe066;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a4a1a;
+  line-height: 56px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  filter: none; /* box-shadow handles depth */
+}
+
+/* Pop animation (correct catch) */
 @keyframes wmc-pop {
   0%   { transform: scale(1);   opacity: 1; }
   60%  { transform: scale(1.6); opacity: 0.8; }
   100% { transform: scale(0);   opacity: 0; }
 }
-.wmc-melon--pop {
+.wmc-item--pop {
   animation: wmc-pop 0.2s ease-out forwards;
   pointer-events: none;
 }
 
+/* Wrong-click shake */
+@keyframes wmc-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.wmc-item--wrong {
+  animation: wmc-shake 0.35s ease-in-out;
+  outline: 3px solid #ff4d4d;
+  outline-offset: 2px;
+}
+
+/* Float feedback (+1 / Odd!) */
+@keyframes wmc-float-up {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-52px); }
+}
+.wmc-feedback {
+  position: absolute;
+  font-size: 18px;
+  font-weight: 800;
+  pointer-events: none;
+  animation: wmc-float-up 0.7s ease-out forwards;
+  white-space: nowrap;
+  z-index: 10;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.wmc-feedback--correct { color: #1a7a1a; }
+.wmc-feedback--wrong   { color: #cc0000; }
+
 /* Result screen */
+.wmc-mode-tag {
+  font-size: 13px;
+  color: #d0ffd0;
+  margin: -6px 0 0;
+  opacity: 0.8;
+}
 .wmc-results {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  padding: 20px 24px;
+  padding: 16px 20px;
   text-align: left;
 }
 .wmc-results-row {
