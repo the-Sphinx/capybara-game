@@ -1,4 +1,5 @@
 import { gameState, EQUIPPED, SELECTED, CLOSET_TABS } from './state.js';
+import { playerState } from './playerState.js';
 import { equipAccessory, equipPreviewAccessory, renderAccessoryIcon, initPreviewScene } from './capy.js';
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────
@@ -40,16 +41,11 @@ export const closetPreviewCol = document.createElement('div');
 closetPreviewCol.className = 'closet-preview-col';
 closetColumns.appendChild(closetPreviewCol);
 
-// Decorative stars (sit above canvas via z-index)
-const closetStars = document.createElement('div');
-closetStars.className = 'closet-stars';
-closetStars.innerHTML = `
-  <span style="position:absolute;top:10px;left:12px;font-size:18px;opacity:0.7;">⭐</span>
-  <span style="position:absolute;top:10px;right:12px;font-size:14px;opacity:0.6;">✨</span>
-  <span style="position:absolute;bottom:10px;left:10px;font-size:12px;opacity:0.5;">⭐</span>
-  <span style="position:absolute;bottom:8px;right:14px;font-size:16px;opacity:0.6;">✨</span>
-`;
-closetPreviewCol.appendChild(closetStars);
+// Frame overlay — sits above the 3D canvas, transparent center lets capy show through
+const closetFrame = document.createElement('img');
+closetFrame.src = `${import.meta.env.BASE_URL}ui_frame.png`;
+closetFrame.className = 'closet-preview-frame';
+closetPreviewCol.appendChild(closetFrame);
 
 const border1 = document.createElement('div');
 border1.className = 'closet-items-border-out';
@@ -67,16 +63,60 @@ border2.appendChild(closetItemCol);
 // ─── Closet tab state ─────────────────────────────────────────────────────────
 let closetTab = 'hats';
 
+// ─── Economy helpers ──────────────────────────────────────────────────────────
+
+// Get item definition from current tab
+function getTabItem(tabKey, itemId) {
+  return CLOSET_TABS[tabKey].items.find(i => i.id === itemId);
+}
+
+// Get tab key from anchor name
+function anchorToTabKey(anchor) {
+  for (const [key, tab] of Object.entries(CLOSET_TABS)) {
+    if (tab.anchor === anchor) return key;
+  }
+  return null;
+}
+
+// Determine action button state based on selected item
+function getActionState() {
+  const tab        = CLOSET_TABS[closetTab];
+  const anchor     = tab.anchor;
+  const selectedId = SELECTED[anchor];
+
+  if (!selectedId) {
+    return { text: 'EQUIP 🐾', disabled: true, mode: 'none' };
+  }
+
+  const equippedInCategory = playerState.equipped[closetTab];
+
+  if (selectedId === equippedInCategory) {
+    return { text: 'EQUIPPED ✓', disabled: true, mode: 'none' };
+  }
+
+  if (playerState.ownedItems.includes(selectedId)) {
+    return { text: 'EQUIP 🐾', disabled: false, mode: 'equip' };
+  }
+
+  // Locked — check affordability
+  const item = getTabItem(closetTab, selectedId);
+  if (playerState.coins >= item.price) {
+    return { text: 'BUY 🍉', disabled: false, mode: 'buy' };
+  }
+
+  return { text: 'Not enough 🍉', disabled: true, mode: 'none' };
+}
+
 // ─── buildClosetPanel — only rebuilds closetItemCol ───────────────────────────
 export function buildClosetPanel() {
-  const tab      = CLOSET_TABS[closetTab];
-  const anchor   = tab.anchor;
-  const equipped = EQUIPPED[anchor];
-  const selected = SELECTED[anchor];
+  const tab         = CLOSET_TABS[closetTab];
+  const anchor      = tab.anchor;
+  const actionState = getActionState();
 
   closetItemCol.innerHTML = `
     <div class="closet-title">
       <span class="closet-title__text">Capy Closet 🐾</span>
+      <span class="closet-coin-display">${playerState.coins} 🍉</span>
     </div>
 
     <div class="closet-tabs">
@@ -90,23 +130,39 @@ export function buildClosetPanel() {
     <div class="closet-items-scroll">
       <div class="closet-items-grid">
         ${tab.items.map(item => {
-          const isSel = item.id === selected;
-          const isEq  = item.id === equipped;
+          const isSel    = item.id === SELECTED[anchor];
+          const isEqWorld = item.id === playerState.equipped[closetTab];
+          const isOwned  = playerState.ownedItems.includes(item.id);
+          const isLocked = !isOwned;
+
+          let cardClass = 'closet-item-card';
+          if (isLocked)        cardClass += ' closet-item-card--locked';
+          else if (isEqWorld)  cardClass += ' closet-item-card--world-equipped';
+          else                 cardClass += ' closet-item-card--owned';
+          if (isSel)           cardClass += ' closet-item-card--selected';
+
           return `
-            <div data-item="${item.id}" class="closet-item-card ${isSel ? 'closet-item-card--selected' : ''}">
-              ${isEq ? `<div class="closet-equipped-badge">✓</div>` : ''}
+            <div data-item="${item.id}" class="${cardClass}">
+              ${isEqWorld ? `<div class="closet-equipped-badge">✓</div>` : ''}
               <div class="closet-icon-wrap">
                 <img data-icon-target="${item.id}" src="" alt="${item.icon}" class="closet-icon-img">
                 <span data-icon-fallback="${item.id}" class="closet-icon-fallback">${item.icon}</span>
               </div>
               <div class="closet-item-label">${item.label}</div>
+              ${isLocked            ? `<div class="closet-price-badge">${item.price} 🍉</div>` : ''}
+              ${isOwned && !isEqWorld ? `<div class="closet-owned-badge">Owned</div>` : ''}
             </div>
           `;
         }).join('')}
       </div>
     </div>
 
-    <button class="closet-equip-btn" id="closet-equip-btn">EQUIP 🐾</button>
+    <button class="closet-equip-btn${actionState.mode === 'buy' ? ' closet-equip-btn--buy' : ''}"
+            id="closet-action-btn"
+            ${actionState.disabled ? 'disabled' : ''}
+            data-mode="${actionState.mode}">
+      ${actionState.text}
+    </button>
   `;
 
   // Tab clicks
@@ -120,18 +176,22 @@ export function buildClosetPanel() {
       const accId = card.dataset.item;
       const anch  = CLOSET_TABS[closetTab].anchor;
       const newId = accId === SELECTED[anch] ? null : accId;
-      equipPreviewAccessory(anch, newId);
+      equipPreviewAccessory(anch, newId); // also sets SELECTED[anch]
       buildClosetPanel();
     });
   });
 
-  // EQUIP button — apply SELECTED → real capy
-  document.getElementById('closet-equip-btn').addEventListener('click', () => {
-    for (const [anch, accId] of Object.entries(SELECTED)) {
-      if (accId !== EQUIPPED[anch]) equipAccessory(anch, accId);
-    }
-    closeCloset();
-  });
+  // Action button
+  const actionBtn = document.getElementById('closet-action-btn');
+  if (actionBtn && !actionBtn.disabled) {
+    actionBtn.addEventListener('click', () => {
+      const mode       = actionBtn.dataset.mode;
+      const anch       = CLOSET_TABS[closetTab].anchor;
+      const selectedId = SELECTED[anch];
+      if (mode === 'buy')   handleBuy(closetTab, anch, selectedId);
+      if (mode === 'equip') handleEquip(anch, selectedId);
+    });
+  }
 
   // Render async icons for current tab
   tab.items.forEach(item => {
@@ -147,6 +207,31 @@ export function buildClosetPanel() {
   });
 }
 
+// ─── Buy handler ──────────────────────────────────────────────────────────────
+function handleBuy(tabKey, anchor, accId) {
+  const item = getTabItem(tabKey, accId);
+  playerState.coins -= item.price;
+  playerState.ownedItems.push(accId);
+
+  // Auto-equip after purchase
+  playerState.equipped[tabKey] = accId;
+  EQUIPPED[anchor] = accId;
+  equipAccessory(anchor, accId);
+  equipPreviewAccessory(anchor, accId); // also sets SELECTED[anchor] = accId
+
+  buildClosetPanel();
+}
+
+// ─── Equip handler ────────────────────────────────────────────────────────────
+function handleEquip(anchor, accId) {
+  const tabKey = anchorToTabKey(anchor);
+  equipAccessory(anchor, accId);
+  EQUIPPED[anchor] = accId;
+  playerState.equipped[tabKey] = accId;
+  closeCloset();
+}
+
+// ─── Open / close ─────────────────────────────────────────────────────────────
 export function openCloset() {
   gameState.closetOpen = true;
   gameState.modalOpen  = true;

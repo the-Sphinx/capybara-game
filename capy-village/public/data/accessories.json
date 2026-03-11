@@ -1,0 +1,10 @@
+{
+  "hats": [
+    { "id": "crown",     "name": "Crown",    "price": 120 },
+    { "id": "beanie",    "name": "Beanie",   "price": 40  },
+    { "id": "chefs_hat", "name": "Chef Hat", "price": 80  }
+  ],
+  "neck": [
+    { "id": "scarf", "name": "Scarf", "price": 60 }
+  ]
+}

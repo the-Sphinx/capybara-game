@@ -77,31 +77,31 @@ canvas { display: block; }
 }
 
 .closet-preview-col {
-  width: 400px;
-  height: 400px;
-  margin-left: 60px;
+  width: 450px;
+  height: 450px;
+  margin-left: 100px;
   flex-shrink: 0;
-  /* background: linear-gradient(160deg, #FFE4D6, #FECFB8); */
-  border: 3px solid #F0A88A;
-  border-radius: 24px;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
 
 .closet-preview-canvas {
   position: absolute;
   top: 0; left: 0;
-  width: 100%; 
+  width: 100%;
   height: 100%;
   z-index: 1;
+  border-radius: 20px;
 }
 
-.closet-stars {
+.closet-preview-frame {
   position: absolute;
-  inset: 0;
+  inset: -12px;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  z-index: 3;
   pointer-events: none;
-  z-index: 2;
+  object-fit: fill;
 }
 
 .closet-item-col {
@@ -133,7 +133,9 @@ canvas { display: block; }
   background: linear-gradient(180deg, #A8DEFF, #7EC8F0);
   border-radius: 20px;
   padding: 12px 20px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   box-shadow: 0 4px 0 #5AAED0;
   flex-shrink: 0;
   width: 100%;
@@ -144,6 +146,18 @@ canvas { display: block; }
   color: #fff;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.18);
+}
+.closet-coin-display {
+  font-family: 'Fredoka One', 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0,0,0,0.15);
+  border-radius: 12px;
+  padding: 4px 12px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  flex-shrink: 0;
 }
 
 .closet-tabs {
@@ -199,14 +213,60 @@ canvas { display: block; }
   text-align: center;
   cursor: pointer;
   position: relative;
-  border: 2.5px solid #E8DCC8;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border: 2.5px solid #d3c7b5;
+  box-shadow: 1px 2px 8px rgba(0,0,0,0.2);
   transition: transform 0.12s, box-shadow 0.12s;
 }
 .closet-item-card:hover { transform: translateY(-3px) scale(1.03); }
 .closet-item-card--selected {
   border: 2.5px solid #FFB800;
   box-shadow: 0 0 0 6px #f8f080, 0 4px 14px rgba(0,0,0,0.10);
+}
+
+/* Locked: dimmed, price shown */
+.closet-item-card--locked {
+  opacity: 0.72;
+  filter: grayscale(25%);
+  background: #f0ece6;
+}
+.closet-item-card--locked:hover { opacity: 0.88; filter: grayscale(10%); }
+
+/* Owned: bright, "Owned" badge */
+.closet-item-card--owned {
+  background: #e7f9f1;
+}
+
+/* World equipped: gold border */
+.closet-item-card--world-equipped {
+  background: #fffbe8;
+  border: 2.5px solid #FFD347;
+  box-shadow: 0 0 0 3px rgba(255, 211, 71, 0.35), 1px 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Price badge — shown below label on locked cards */
+.closet-price-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7A5C40;
+  background: rgba(200,180,155,0.45);
+  border-radius: 8px;
+  padding: 2px 7px;
+  margin: 1px auto 6px;
+  white-space: nowrap;
+}
+
+/* Owned badge — small green label below card label */
+.closet-owned-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #2EA84F;
+  background: rgba(255,255,255,0.75);
+  border-radius: 8px;
+  padding: 2px 7px;
+  margin: 1px auto 6px;
+  white-space: nowrap;
 }
 
 .closet-equipped-badge {
@@ -261,9 +321,28 @@ canvas { display: block; }
   text-shadow: 0 1px 4px rgba(0,0,0,0.22);
   transition: transform 0.1s, box-shadow 0.1s;
 }
-.closet-equip-btn:hover {
+.closet-equip-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 7px 0 #C05A00, 0 9px 22px rgba(255,140,0,0.45);
+}
+
+/* BUY variant — purple/violet */
+.closet-equip-btn--buy {
+  background: linear-gradient(180deg, #C67BEE, #9645CC);
+  box-shadow: 0 5px 0 #6B2E99, 0 7px 18px rgba(150,69,204,0.38);
+}
+.closet-equip-btn--buy:hover:not(:disabled) {
+  box-shadow: 0 7px 0 #6B2E99, 0 9px 22px rgba(150,69,204,0.45);
+}
+
+/* Disabled state */
+.closet-equip-btn:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.1);
+  transform: none;
+  font-size: 24px;
+  letter-spacing: 0.5px;
 }
 
 .closet-close-hint {

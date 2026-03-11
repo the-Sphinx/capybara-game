@@ -231,7 +231,7 @@ export function initPreviewScene(previewColEl) {
 
   const pvRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   pvRenderer.setPixelRatio(window.devicePixelRatio);
-  pvRenderer.setSize(400, 400);
+  pvRenderer.setSize(450, 450);
   pvRenderer.outputColorSpace = THREE.SRGBColorSpace;
   pvRenderer.domElement.className = 'closet-preview-canvas';
   previewColEl.insertBefore(pvRenderer.domElement, previewColEl.firstChild);
@@ -248,9 +248,9 @@ export function initPreviewScene(previewColEl) {
     new THREE.MeshStandardMaterial({ color: 0xC4926A, roughness: 0.8 })
   );
   disc.position.y = -0.05;
-  pvScene.add(disc);
+  // pvScene.add(disc);
 
-  const pvCamera = new THREE.PerspectiveCamera(45, 485 / 493, 0.1, 50);
+  const pvCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 50);
   pvCamera.position.set(0, 1.1, 3.4);
   pvCamera.lookAt(0, 0.55, 0);
 
