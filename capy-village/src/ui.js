@@ -78,6 +78,14 @@ function anchorToTabKey(anchor) {
   return null;
 }
 
+// Status row text + CSS class for a card (always shown)
+function getItemStatus(item, isOwned, isEqWorld) {
+  if (isEqWorld)                        return { text: '✓ Equipped', cls: 'status--equipped' };
+  if (isOwned)                          return { text: '✓ Owned',    cls: 'status--owned' };
+  if (playerState.coins >= item.price)  return { text: `${item.price} 🍉`, cls: 'status--price' };
+  return { text: '🔒 Locked', cls: 'status--locked' };
+}
+
 // Determine action button state based on selected item
 function getActionState() {
   const tab        = CLOSET_TABS[closetTab];
@@ -85,7 +93,7 @@ function getActionState() {
   const selectedId = SELECTED[anchor];
 
   if (!selectedId) {
-    return { text: 'EQUIP 🐾', disabled: true, mode: 'none' };
+    return { text: 'EQUIP', disabled: true, mode: 'none' };
   }
 
   const equippedInCategory = playerState.equipped[closetTab];
@@ -95,16 +103,16 @@ function getActionState() {
   }
 
   if (playerState.ownedItems.includes(selectedId)) {
-    return { text: 'EQUIP 🐾', disabled: false, mode: 'equip' };
+    return { text: 'EQUIP', disabled: false, mode: 'equip' };
   }
 
   // Locked — check affordability
   const item = getTabItem(closetTab, selectedId);
   if (playerState.coins >= item.price) {
-    return { text: 'BUY 🍉', disabled: false, mode: 'buy' };
+    return { text: `BUY ${item.price} 🍉`, disabled: false, mode: 'buy' };
   }
 
-  return { text: 'Not enough 🍉', disabled: true, mode: 'none' };
+  return { text: 'NOT ENOUGH 🍉', disabled: true, mode: 'none' };
 }
 
 // ─── buildClosetPanel — only rebuilds closetItemCol ───────────────────────────
@@ -130,10 +138,11 @@ export function buildClosetPanel() {
     <div class="closet-items-scroll">
       <div class="closet-items-grid">
         ${tab.items.map(item => {
-          const isSel    = item.id === SELECTED[anchor];
+          const isSel     = item.id === SELECTED[anchor];
           const isEqWorld = item.id === playerState.equipped[closetTab];
-          const isOwned  = playerState.ownedItems.includes(item.id);
-          const isLocked = !isOwned;
+          const isOwned   = playerState.ownedItems.includes(item.id);
+          const isLocked  = !isOwned;
+          const status    = getItemStatus(item, isOwned, isEqWorld);
 
           let cardClass = 'closet-item-card';
           if (isLocked)        cardClass += ' closet-item-card--locked';
@@ -143,14 +152,12 @@ export function buildClosetPanel() {
 
           return `
             <div data-item="${item.id}" class="${cardClass}">
-              ${isEqWorld ? `<div class="closet-equipped-badge">✓</div>` : ''}
               <div class="closet-icon-wrap">
                 <img data-icon-target="${item.id}" src="" alt="${item.icon}" class="closet-icon-img">
                 <span data-icon-fallback="${item.id}" class="closet-icon-fallback">${item.icon}</span>
               </div>
               <div class="closet-item-label">${item.label}</div>
-              ${isLocked            ? `<div class="closet-price-badge">${item.price} 🍉</div>` : ''}
-              ${isOwned && !isEqWorld ? `<div class="closet-owned-badge">Owned</div>` : ''}
+              <div class="closet-item-status ${status.cls}">${status.text}</div>
             </div>
           `;
         }).join('')}
@@ -207,9 +214,24 @@ export function buildClosetPanel() {
   });
 }
 
+// ─── Purchase feedback — floating "-price 🍉" near coin counter ───────────────
+function showCoinAnimation(price) {
+  const titleEl = closetItemCol.querySelector('.closet-title');
+  if (!titleEl) return;
+  const rect = titleEl.getBoundingClientRect();
+  const floater = document.createElement('div');
+  floater.className = 'coin-floater';
+  floater.textContent = `-${price} 🍉`;
+  floater.style.left = `${rect.right - 90}px`;
+  floater.style.top  = `${rect.top - 4}px`;
+  document.body.appendChild(floater);
+  floater.addEventListener('animationend', () => floater.remove());
+}
+
 // ─── Buy handler ──────────────────────────────────────────────────────────────
 function handleBuy(tabKey, anchor, accId) {
   const item = getTabItem(tabKey, accId);
+  showCoinAnimation(item.price);
   playerState.coins -= item.price;
   playerState.ownedItems.push(accId);
 

@@ -220,7 +220,8 @@ canvas { display: block; }
 .closet-item-card:hover { transform: translateY(-3px) scale(1.03); }
 .closet-item-card--selected {
   border: 2.5px solid #FFB800;
-  box-shadow: 0 0 0 6px #f8f080, 0 4px 14px rgba(0,0,0,0.10);
+  box-shadow: 0 0 0 6px #f8f080, 0 6px 18px rgba(0,0,0,0.18);
+  transform: translateY(-2px) scale(1.03);
 }
 
 /* Locked: dimmed, price shown */
@@ -236,52 +237,38 @@ canvas { display: block; }
   background: #e7f9f1;
 }
 
-/* World equipped: gold border */
+/* World equipped: gold border + soft glow */
 .closet-item-card--world-equipped {
   background: #fffbe8;
   border: 2.5px solid #FFD347;
-  box-shadow: 0 0 0 3px rgba(255, 211, 71, 0.35), 1px 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 3px rgba(255, 211, 71, 0.4), 0 0 16px rgba(255, 200, 0, 0.35), 1px 2px 8px rgba(0,0,0,0.15);
 }
 
-/* Price badge — shown below label on locked cards */
-.closet-price-badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  color: #7A5C40;
-  background: rgba(200,180,155,0.45);
-  border-radius: 8px;
-  padding: 2px 7px;
-  margin: 1px auto 6px;
-  white-space: nowrap;
-}
-
-/* Owned badge — small green label below card label */
-.closet-owned-badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  color: #2EA84F;
-  background: rgba(255,255,255,0.75);
-  border-radius: 8px;
-  padding: 2px 7px;
-  margin: 1px auto 6px;
-  white-space: nowrap;
-}
-
-.closet-equipped-badge {
-  position: absolute;
-  top: 9px; right: 10px;
-  background: #4DC567;
-  border-radius: 50%;
-  width: 24px; height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ─── Unified item status row (always shown) ─────────────────────────────── */
+.closet-item-status {
   font-size: 13px;
-  color: #fff;
-  font-weight: 900;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 3px 10px;
+  margin: 2px auto 8px;
+  display: inline-block;
+  white-space: nowrap;
+}
+.status--locked {
+  color: #999;
+  background: rgba(0,0,0,0.06);
+}
+.status--price {
+  color: #D96800;
+  background: rgba(255,140,0,0.12);
+}
+.status--owned {
+  color: #2EA84F;
+  background: rgba(46,168,79,0.12);
+}
+.status--equipped {
+  color: #B87E00;
+  background: rgba(255,200,0,0.18);
 }
 
 .closet-icon-wrap {
@@ -305,44 +292,71 @@ canvas { display: block; }
   margin-bottom: 4px;
 }
 
+/* EQUIP button — yellow/gold */
 .closet-equip-btn {
-  width: 200px;
-  padding: 8px;
+  width: 220px;
+  padding: 8px 16px;
   border: none;
   border-radius: 50px;
   flex-shrink: 0;
   font-family: 'Fredoka One', 'Nunito', sans-serif;
-  font-size: 32px;
+  font-size: 30px;
   letter-spacing: 2px;
-  color: #fff;
+  color: #7A4800;
   cursor: pointer;
-  background: linear-gradient(180deg, #FFD347, #FF8C00);
-  box-shadow: 0 5px 0 #C05A00, 0 7px 18px rgba(255,140,0,0.38);
-  text-shadow: 0 1px 4px rgba(0,0,0,0.22);
+  background: linear-gradient(180deg, #FFE566, #FFC200);
+  box-shadow: 0 5px 0 #B88A00, 0 7px 18px rgba(255,194,0,0.38);
+  text-shadow: 0 1px 2px rgba(255,255,255,0.3);
   transition: transform 0.1s, box-shadow 0.1s;
 }
 .closet-equip-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 7px 0 #C05A00, 0 9px 22px rgba(255,140,0,0.45);
+  box-shadow: 0 7px 0 #B88A00, 0 9px 22px rgba(255,194,0,0.48);
 }
 
-/* BUY variant — purple/violet */
+/* BUY variant — orange */
 .closet-equip-btn--buy {
-  background: linear-gradient(180deg, #C67BEE, #9645CC);
-  box-shadow: 0 5px 0 #6B2E99, 0 7px 18px rgba(150,69,204,0.38);
+  color: #fff;
+  background: linear-gradient(180deg, #FFA040, #FF6000);
+  box-shadow: 0 5px 0 #C03A00, 0 7px 18px rgba(255,96,0,0.40);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.22);
+  font-size: 26px;
+  letter-spacing: 1px;
 }
 .closet-equip-btn--buy:hover:not(:disabled) {
-  box-shadow: 0 7px 0 #6B2E99, 0 9px 22px rgba(150,69,204,0.45);
+  box-shadow: 0 7px 0 #C03A00, 0 9px 22px rgba(255,96,0,0.50);
 }
 
-/* Disabled state */
+/* Disabled state — gray */
 .closet-equip-btn:disabled {
-  opacity: 0.48;
+  color: #fff;
+  background: linear-gradient(180deg, #BDBDBD, #9E9E9E);
+  box-shadow: 0 3px 0 #757575;
+  opacity: 0.75;
   cursor: not-allowed;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.1);
   transform: none;
-  font-size: 24px;
+  font-size: 22px;
   letter-spacing: 0.5px;
+  text-shadow: none;
+}
+
+/* ─── Purchase feedback floater ──────────────────────────────────────────── */
+.coin-floater {
+  position: fixed;
+  font-family: 'Fredoka One', 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #D96800;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  pointer-events: none;
+  z-index: 1000;
+  animation: coin-float-up 1.1s ease-out forwards;
+}
+
+@keyframes coin-float-up {
+  0%   { opacity: 1;   transform: translateY(0)     scale(1);    }
+  20%  { opacity: 1;   transform: translateY(-8px)  scale(1.15); }
+  100% { opacity: 0;   transform: translateY(-56px) scale(0.9);  }
 }
 
 .closet-close-hint {
