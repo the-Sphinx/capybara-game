@@ -3,10 +3,10 @@
 // ownedItems: accessory ids the player has purchased (or starts with)
 // equipped:   currently equipped accessory per tab category (tab keys: hats, neck)
 export const playerState = {
-  coins: 120,
-  ownedItems: ['beanie', 'scarf'],
+  coins: 0,
+  ownedItems: [],
   equipped: {
-    hats: 'beanie',
-    neck: 'scarf',
+    hats: null,
+    neck: null,
   },
 };

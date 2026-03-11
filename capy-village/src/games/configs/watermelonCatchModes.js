@@ -18,6 +18,7 @@
  *   difficulty    — 1-5 scale, for future progression
  *   level         — intended sequence position
  *   unlockOrder   — order in which modes unlock (0 = always available)
+ *   wrongPenalty  — score deducted on wrong click (0 = no penalty; score never goes below 0)
  *   isCorrect     — fn(value) => bool — true if the clicked item scores a point
  */
 export const WATERMELON_CATCH_MODES = [
@@ -29,6 +30,7 @@ export const WATERMELON_CATCH_MODES = [
     itemType: 'emoji',
     emoji: '🍉',
     wrongFeedback: '🚫',
+    wrongPenalty: 0,
     layoutType: 'falling',
     difficulty: 1,
     level: 1,
@@ -43,6 +45,7 @@ export const WATERMELON_CATCH_MODES = [
     itemType: 'number',
     numberRange: [1, 20],
     wrongFeedback: 'Odd!',
+    wrongPenalty: 1,
     layoutType: 'falling',
     difficulty: 1,
     level: 2,

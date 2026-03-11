@@ -13,8 +13,8 @@ export const ACCESSORIES = {
 
 // Currently equipped — one accessory id per anchor slot, or null to unequip
 export const EQUIPPED = {
-  hat_anchor:  'beanie',
-  neck_anchor: 'scarf',
+  hat_anchor:  null,
+  neck_anchor: null,
 };
 
 // Currently previewed in closet (not yet on real capy). Synced from EQUIPPED on open.
@@ -41,7 +41,7 @@ export const CLOSET_TABS = {
 };
 
 export const MOVE_SPEED = 2.0;
-export const BOUND      = 8;
+export const BOUND      = 12;
 
 // Shared mutable state — all modules hold the same object reference
 export const gameState = {

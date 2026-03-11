@@ -1,6 +1,7 @@
 import { gameState, EQUIPPED, SELECTED, CLOSET_TABS } from './state.js';
 import { playerState } from './playerState.js';
 import { equipAccessory, equipPreviewAccessory, renderAccessoryIcon, initPreviewScene } from './capy.js';
+import { gameManager } from './games/GameManager.js';
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────
 export const promptEl = document.createElement('div');
@@ -14,6 +15,7 @@ document.body.appendChild(modalEl);
 
 export function openModal(building) {
   if (building.id === 'capy-store') { openCloset(); return; }
+  if (building.gameId) { gameManager.startGame(building.gameId); return; }
   gameState.modalOpen = true;
   promptEl.classList.remove('ui-prompt--visible');
   modalEl.innerHTML =

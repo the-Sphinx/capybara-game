@@ -410,187 +410,281 @@ canvas { display: block; }
   justify-content: center;
 }
 
-/* ─── WatermelonCatch panel ─────────────────────────────────────────────────── */
-.wmc-panel {
-  background: linear-gradient(160deg, #2a6e2a, #3aaa3a);
-  border: 3px solid #6de56d;
-  border-radius: 20px;
-  padding: 20px 24px 18px;
-  text-align: center;
-  color: #fff;
-  width: 420px;
-  box-shadow: 0 16px 56px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+/* ─── WatermelonCatch — full-screen redesign ────────────────────────────────── */
 
-.wmc-title {
-  font-size: 26px;
-  font-weight: 800;
-  margin: 0;
-}
-
-/* Mode prompt */
-.wmc-prompt {
-  font-size: 15px;
-  font-weight: 600;
-  color: #d0ffd0;
-  margin: -4px 0 0;
-  letter-spacing: 0.02em;
-}
-
-/* Top bar: score + timer */
-.wmc-topbar {
-  display: flex;
-  justify-content: space-between;
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffe066;
-  padding: 0 4px;
-}
-
-/* Timer progress bar */
-.wmc-timer-bar-wrap {
-  height: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+/* Root fills the entire game overlay */
+.wmc-root {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
+  font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
 }
-.wmc-timer-bar {
-  height: 100%;
-  width: 100%;
-  background: #ffe066;
-  border-radius: 4px;
-  transition: width 0.25s linear, background 0.3s;
-}
-.wmc-timer-bar--urgent { background: #ff4d4d; }
 
-/* Play area — bright, garden-sky feel */
+/* Play area: full-screen, background set via JS */
 .wmc-play-area {
-  position: relative;
-  width: 100%;
-  height: 310px;
-  background: linear-gradient(180deg, #c8eeff 0%, #e8f8e0 100%);
-  border-radius: 12px;
-  overflow: hidden;
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
   cursor: crosshair;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  overflow: hidden;
 }
 
-/* Falling items (shared) */
+/* HUD bar — 3-piece 9-slice layout (left cap + tiling center + right cap) */
+.wmc-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: clamp(62px, 11vh, 104px);
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Left wooden panel (score slot) — fixed proportion of total width */
+.wmc-hud-cap-left {
+  flex: 0 0 28.7%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Burlap center — tiles horizontally to fill remaining space */
+.wmc-hud-cap-center {
+  flex: 1 1 0;
+  background-size: auto 100%;
+  background-repeat: repeat-x;
+}
+
+/* Right wooden panel (clock + time slot) — fixed proportion of total width */
+.wmc-hud-cap-right {
+  flex: 0 0 30.5%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Score text — centered within left wooden panel (28.7% wide) */
+.wmc-hud-score {
+  position: absolute;
+  left: 14.35%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(17px, 2.6vw, 34px);
+  font-weight: 900;
+  color: #FFE135;
+  text-shadow:
+     2px  2px 0 #6B3200,
+    -2px  2px 0 #6B3200,
+     2px -2px 0 #6B3200,
+    -2px -2px 0 #6B3200,
+     3px  0   0 #6B3200,
+    -3px  0   0 #6B3200;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+/* Time text — in right wooden panel slot (right of clock widget) */
+.wmc-hud-time {
+  position: absolute;
+  right: 11%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(17px, 2.6vw, 34px);
+  font-weight: 900;
+  color: #FFE135;
+  text-shadow:
+     2px  2px 0 #6B3200,
+    -2px  2px 0 #6B3200,
+     2px -2px 0 #6B3200,
+    -2px -2px 0 #6B3200,
+     3px  0   0 #6B3200,
+    -3px  0   0 #6B3200;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+/* Exit button — top-right corner */
+.wmc-exit-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 30;
+  background: rgba(80, 35, 5, 0.80);
+  border: 2px solid rgba(255, 215, 80, 0.75);
+  color: #FFE135;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.wmc-exit-btn:hover { background: rgba(120, 55, 10, 0.95); }
+
+/* Mode badge at bottom */
+.wmc-mode-badge {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(40, 20, 5, 0.72);
+  border: 2px solid rgba(255, 215, 80, 0.6);
+  border-radius: 30px;
+  padding: 7px 22px;
+  color: #FFE135;
+  font-size: clamp(13px, 1.8vw, 20px);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 1px 1px 0 #3B1A07;
+}
+
+/* ── Falling items ──────────────────────────────────────────────────────────── */
 .wmc-item {
   position: absolute;
-  width: 56px;
-  height: 56px;
-  text-align: center;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.05s;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
+  transition: transform 0.08s;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.32));
 }
-.wmc-item:hover { transform: scale(1.15); }
-
-/* Emoji variant */
-.wmc-item--emoji {
-  font-size: 42px;
-  line-height: 56px;
-}
-
-/* Number variant */
-.wmc-item--number {
-  background: #ffe066;
-  border-radius: 50%;
-  font-size: 22px;
-  font-weight: 800;
-  color: #1a4a1a;
-  line-height: 56px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  filter: none; /* box-shadow handles depth */
-}
+.wmc-item:hover { transform: scale(1.12) !important; }
 
 /* Pop animation (correct catch) */
 @keyframes wmc-pop {
   0%   { transform: scale(1);   opacity: 1; }
-  60%  { transform: scale(1.6); opacity: 0.8; }
+  55%  { transform: scale(1.7); opacity: 0.8; }
   100% { transform: scale(0);   opacity: 0; }
 }
 .wmc-item--pop {
-  animation: wmc-pop 0.2s ease-out forwards;
+  animation: wmc-pop 0.22s ease-out forwards;
   pointer-events: none;
 }
 
-/* Wrong-click shake */
+/* Wrong-click shake + red glow */
 @keyframes wmc-shake {
   0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-6px); }
-  40%       { transform: translateX(6px); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-5px); }
+  80%       { transform: translateX(5px); }
 }
 .wmc-item--wrong {
   animation: wmc-shake 0.35s ease-in-out;
-  outline: 3px solid #ff4d4d;
-  outline-offset: 2px;
+  filter: brightness(0.65) drop-shadow(0 0 8px #ff3333) drop-shadow(0 4px 10px rgba(0,0,0,0.32));
 }
 
-/* Float feedback (+1 / Odd!) */
+/* Float feedback (+1 / Wrong!) */
 @keyframes wmc-float-up {
   0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-52px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-65px); }
 }
 .wmc-feedback {
   position: absolute;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: clamp(18px, 2.5vw, 28px);
+  font-weight: 900;
   pointer-events: none;
-  animation: wmc-float-up 0.7s ease-out forwards;
+  animation: wmc-float-up 0.8s ease-out forwards;
   white-space: nowrap;
-  z-index: 10;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  z-index: 15;
 }
-.wmc-feedback--correct { color: #1a7a1a; }
-.wmc-feedback--wrong   { color: #cc0000; }
+.wmc-feedback--correct {
+  color: #7FFF00;
+  text-shadow: 2px 2px 0 #1a5a00, -1px -1px 0 #1a5a00;
+}
+.wmc-feedback--wrong {
+  color: #FF4444;
+  text-shadow: 2px 2px 0 #5a0000, -1px -1px 0 #5a0000;
+}
 
-/* Result screen */
-.wmc-mode-tag {
-  font-size: 13px;
-  color: #d0ffd0;
-  margin: -6px 0 0;
-  opacity: 0.8;
+/* ── Result screen ──────────────────────────────────────────────────────────── */
+.wmc-result-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
 }
-.wmc-results {
-  background: rgba(0, 0, 0, 0.2);
+
+.wmc-result-screen {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.wmc-result-card {
+  background: linear-gradient(160deg, #5C2E10 0%, #8B5020 100%);
+  border: 4px solid #C8860A;
+  border-radius: 24px;
+  padding: 32px 40px;
+  text-align: center;
+  color: #FFE135;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255,255,255,0.08);
+  min-width: 300px;
+  max-width: 440px;
+  width: 90%;
+}
+
+.wmc-result-title {
+  font-size: clamp(20px, 3vw, 34px);
+  font-weight: 900;
+  margin: 0 0 20px;
+  text-shadow: 2px 2px 0 #3B1A07;
+}
+
+.wmc-result-rows {
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
   text-align: left;
 }
-.wmc-results-row {
-  font-size: 18px;
-  margin: 6px 0;
-  color: #d0ffd0;
+
+.wmc-result-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: clamp(15px, 2vw, 19px);
+  margin: 5px 0;
+  color: #FFD180;
+  font-weight: 700;
 }
-.wmc-results-row strong { color: #fff; }
-.wmc-results-coins {
-  font-size: 22px;
-  font-weight: 800;
-  color: #ffe066;
-  margin-top: 14px;
+.wmc-result-row strong { color: #fff; }
+
+.wmc-result-coins {
+  font-size: clamp(18px, 2.8vw, 26px);
+  font-weight: 900;
+  color: #FFE135;
+  text-shadow: 2px 2px 0 #3B1A07;
+  margin: 14px 0 20px;
 }
 
-/* Buttons */
-.wmc-finish-btn,
 .wmc-return-btn {
   display: block;
   width: 100%;
-  padding: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 13px;
+  border: 3px solid rgba(255, 215, 80, 0.65);
   border-radius: 50px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 16px;
+  background: rgba(255, 215, 80, 0.12);
+  color: #FFE135;
+  font-size: clamp(14px, 1.8vw, 17px);
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  letter-spacing: 1px;
+  transition: background 0.15s, transform 0.1s;
 }
-.wmc-finish-btn:hover,
-.wmc-return-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.wmc-return-btn:hover {
+  background: rgba(255, 215, 80, 0.28);
+  transform: scale(1.02);
+}

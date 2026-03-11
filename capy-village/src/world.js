@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { gameState } from './state.js';
+import { gameState, BOUND } from './state.js';
 
 // ─── Collision ────────────────────────────────────────────────────────────────
 const colliders = [];
@@ -101,16 +101,18 @@ export function initScene() {
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width  = 1024;
   dirLight.shadow.mapSize.height = 1024;
+  const shadowExtent = BOUND + 6;   // margin beyond walkable area
   dirLight.shadow.camera.near   = 0.1;
   dirLight.shadow.camera.far    = 60;
-  dirLight.shadow.camera.left   = -14;
-  dirLight.shadow.camera.right  =  14;
-  dirLight.shadow.camera.top    =  14;
-  dirLight.shadow.camera.bottom = -14;
+  dirLight.shadow.camera.left   = -shadowExtent;
+  dirLight.shadow.camera.right  =  shadowExtent;
+  dirLight.shadow.camera.top    =  shadowExtent;
+  dirLight.shadow.camera.bottom = -shadowExtent;
   scene.add(dirLight);
 
+  const groundSize = (BOUND + 6) * 2;
   const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(30, 30),
+    new THREE.PlaneGeometry(groundSize, groundSize),
     new THREE.MeshLambertMaterial({ color: 0x88CC88 })
   );
   ground.rotation.x = -Math.PI / 2;
@@ -273,15 +275,15 @@ export function buildVillage(scene) {
     new THREE.CylinderGeometry(0.08, 0.08, 1.0, 8),
     new THREE.MeshLambertMaterial({ color: 0x8B6040 })
   );
-  standPost.position.set(2.0, 0.5, -3.5);
+  standPost.position.set(1.75, 0.5, -3.5);
   standPost.castShadow = true;
   scene.add(standPost);
 
   const watermelonBall = new THREE.Mesh(
     new THREE.SphereGeometry(0.35, 12, 8),
-    new THREE.MeshLambertMaterial({ color: 0x3BA03B })
+    new THREE.MeshLambertMaterial({ color: 0xFB503B })
   );
-  watermelonBall.position.set(2.0, 1.35, -3.5);
+  watermelonBall.position.set(1.75, 1.35, -3.5);
   watermelonBall.castShadow = true;
   scene.add(watermelonBall);
 }
