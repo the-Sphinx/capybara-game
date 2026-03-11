@@ -99,7 +99,7 @@ function getActionState() {
   const equippedInCategory = playerState.equipped[closetTab];
 
   if (selectedId === equippedInCategory) {
-    return { text: 'EQUIPPED ✓', disabled: true, mode: 'none' };
+    return { text: 'UNEQUIP', disabled: false, mode: 'unequip' };
   }
 
   if (playerState.ownedItems.includes(selectedId)) {
@@ -177,13 +177,14 @@ export function buildClosetPanel() {
     btn.addEventListener('click', () => { closetTab = btn.dataset.tab; buildClosetPanel(); });
   });
 
-  // Item card clicks — update SELECTED + preview (does NOT equip real capy)
+  // Item card clicks — select item + update preview (does NOT equip real capy)
+  // Clicking an already-selected item does nothing (only the button triggers actions)
   closetItemCol.querySelectorAll('[data-item]').forEach(card => {
     card.addEventListener('click', () => {
       const accId = card.dataset.item;
       const anch  = CLOSET_TABS[closetTab].anchor;
-      const newId = accId === SELECTED[anch] ? null : accId;
-      equipPreviewAccessory(anch, newId); // also sets SELECTED[anch]
+      if (accId === SELECTED[anch]) return;
+      equipPreviewAccessory(anch, accId); // also sets SELECTED[anch]
       buildClosetPanel();
     });
   });
@@ -195,8 +196,9 @@ export function buildClosetPanel() {
       const mode       = actionBtn.dataset.mode;
       const anch       = CLOSET_TABS[closetTab].anchor;
       const selectedId = SELECTED[anch];
-      if (mode === 'buy')   handleBuy(closetTab, anch, selectedId);
-      if (mode === 'equip') handleEquip(anch, selectedId);
+      if (mode === 'buy')     handleBuy(closetTab, anch, selectedId);
+      if (mode === 'equip')   handleEquip(anch, selectedId);
+      if (mode === 'unequip') handleUnequip(anch, closetTab);
     });
   }
 
@@ -242,6 +244,14 @@ function handleBuy(tabKey, anchor, accId) {
   equipPreviewAccessory(anchor, accId); // also sets SELECTED[anchor] = accId
 
   buildClosetPanel();
+}
+
+// ─── Unequip handler ──────────────────────────────────────────────────────────
+function handleUnequip(anchor, tabKey) {
+  equipAccessory(anchor, null);
+  EQUIPPED[anchor] = null;
+  playerState.equipped[tabKey] = null;
+  buildClosetPanel(); // stay open so player sees the change
 }
 
 // ─── Equip handler ────────────────────────────────────────────────────────────
