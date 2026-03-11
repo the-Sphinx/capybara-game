@@ -61,6 +61,9 @@ const interactables = [
     zone: { x:  6.0, z: -3.1, hw: 1.9, hd: 1.0 } },
   { id: 'bakery',     label: 'Bakery',     message: 'This building will open the bakery shop later.',
     zone: { x:  0.0, z:  4.0, hw: 2.2, hd: 0.9 } },
+  { id: 'watermelon-game', label: 'Watermelon Catch', gameId: 'watermelon_catch', message: '',
+    prompt: 'Press [E] to play Watermelon Catch 🍉',
+    zone: { x:  2.0, z: -3.5, hw: 1.0, hd: 0.8 } },
 ];
 
 export function getActiveInteractable(cx, cz) {
@@ -264,4 +267,21 @@ export function buildVillage(scene) {
   makeRock(scene,  7.0, -1.5, 0.38);
 
   makeBench(scene, 2.0, 1.2, -0.3);
+
+  // Watermelon game stand — post + green ball marker at (-4.5, 5.5)
+  const standPost = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.08, 0.08, 1.0, 8),
+    new THREE.MeshLambertMaterial({ color: 0x8B6040 })
+  );
+  standPost.position.set(2.0, 0.5, -3.5);
+  standPost.castShadow = true;
+  scene.add(standPost);
+
+  const watermelonBall = new THREE.Mesh(
+    new THREE.SphereGeometry(0.35, 12, 8),
+    new THREE.MeshLambertMaterial({ color: 0x3BA03B })
+  );
+  watermelonBall.position.set(2.0, 1.35, -3.5);
+  watermelonBall.castShadow = true;
+  scene.add(watermelonBall);
 }

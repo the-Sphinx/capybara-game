@@ -4,11 +4,16 @@ import { gameState, ACCESSORIES, EQUIPPED, SELECTED, MOVE_SPEED, BOUND } from '.
 import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable } from './world.js';
 import { loadCapy, accessoryMounts, previewAccessoryMounts, previewState } from './capy.js';
 import { promptEl, openModal, closeModal, openCloset, closeCloset } from './ui.js';
+import { gameManager } from './games/GameManager.js';
+import { WatermelonCatchGame } from './games/WatermelonCatchGame.js';
 
 // ─── Scene setup ──────────────────────────────────────────────────────────────
 const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
 buildVillage(scene);
 loadCapy(scene);
+
+// ─── Register minigames ───────────────────────────────────────────────────────
+gameManager.register('watermelon_catch', () => new WatermelonCatchGame());
 
 // Dev helpers
 window.ACCESSORIES = ACCESSORIES;
@@ -19,11 +24,13 @@ const keys = {};
 window.addEventListener('keydown', (e) => {
   keys[e.code] = true;
   if (e.code === 'KeyE') {
-    if (gameState.closetOpen)        closeCloset();
-    else if (gameState.modalOpen)    closeModal();
-    else if (gameState.activeTarget) openModal(gameState.activeTarget);
+    if (gameManager.isGameRunning())     return;
+    if (gameState.closetOpen)            closeCloset();
+    else if (gameState.modalOpen)        closeModal();
+    else if (gameState.activeTarget)     openModal(gameState.activeTarget);
   }
   if (e.code === 'Escape' && gameState.modalOpen) {
+    if (gameManager.isGameRunning())     return;
     if (gameState.closetOpen) closeCloset(); else closeModal();
   }
 });
@@ -43,6 +50,9 @@ const _wp     = new THREE.Vector3();
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+
+  gameManager.update(delta);
+
   const { capy, mixer, groundY } = gameState;
 
   if (capy) {
@@ -67,7 +77,7 @@ function animate() {
     if (!gameState.modalOpen) {
       gameState.activeTarget = getActiveInteractable(capy.position.x, capy.position.z);
       promptEl.textContent = gameState.activeTarget
-        ? `Press [E] to enter ${gameState.activeTarget.label}` : '';
+        ? (gameState.activeTarget.prompt ?? `Press [E] to enter ${gameState.activeTarget.label}`) : '';
       promptEl.classList.toggle('ui-prompt--visible', !!gameState.activeTarget);
     }
 
