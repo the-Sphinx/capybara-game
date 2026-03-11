@@ -184,14 +184,13 @@ export function buildClosetPanel() {
     btn.addEventListener('click', () => { closetTab = btn.dataset.tab; buildClosetPanel(); });
   });
 
-  // Item card clicks — select item + update preview (does NOT equip real capy)
-  // Clicking an already-selected item does nothing (only the button triggers actions)
+  // Item card clicks — highlight only; preview updates only when action button is pressed
   closetItemCol.querySelectorAll('[data-item]').forEach(card => {
     card.addEventListener('click', () => {
       const accId = card.dataset.item;
       const anch  = CLOSET_TABS[closetTab].anchor;
       if (accId === SELECTED[anch]) return;
-      equipPreviewAccessory(anch, accId); // also sets SELECTED[anch]
+      SELECTED[anch] = accId;
       buildClosetPanel();
     });
   });
@@ -249,11 +248,12 @@ function handleBuy(tabKey, anchor, accId) {
 
 // ─── Unequip handler ──────────────────────────────────────────────────────────
 function handleUnequip(anchor, tabKey) {
+  const prevSelected = SELECTED[anchor];
   equipAccessory(anchor, null);
+  equipPreviewAccessory(anchor, null);   // clears preview
+  SELECTED[anchor] = prevSelected;       // restore card highlight
   EQUIPPED[anchor] = null;
   playerState.equipped[tabKey] = null;
-  // Preview keeps showing the selected item (selection unchanged)
-  equipPreviewAccessory(anchor, SELECTED[anchor]);
   buildClosetPanel();
 }
 
@@ -261,6 +261,7 @@ function handleUnequip(anchor, tabKey) {
 function handleEquip(anchor, accId) {
   const tabKey = anchorToTabKey(anchor);
   equipAccessory(anchor, accId);
+  equipPreviewAccessory(anchor, accId); // sync preview to world capy
   EQUIPPED[anchor] = accId;
   playerState.equipped[tabKey] = accId;
   buildClosetPanel(); // stay open, button flips to UNEQUIP
