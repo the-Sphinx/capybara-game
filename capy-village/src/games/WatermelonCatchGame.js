@@ -1,9 +1,10 @@
 import { BaseGame } from './BaseGame.js';
 import { WATERMELON_CATCH_MODES } from './configs/watermelonCatchModes.js';
+import { soundManager } from '../audio/SoundManager.js';
 
 const BASE_URL = import.meta.env.BASE_URL + 'games/watermelon/';
 
-const GAME_DURATION = 20;   // seconds
+const GAME_DURATION = 30;   // seconds
 const SPAWN_MIN     = 0.8;  // seconds between spawns (min)
 const SPAWN_MAX     = 1.4;  // seconds between spawns (max)
 const SPEED_MIN     = 80;   // px/s
@@ -72,6 +73,7 @@ export class WatermelonCatchGame extends BaseGame {
     this._lastTs      = null;
     this._finished    = false;
     this._handlers    = {};
+    this._lastSeconds = false;
   }
 
   start(container) {
@@ -135,6 +137,10 @@ export class WatermelonCatchGame extends BaseGame {
       const delta = Math.min((ts - this._lastTs) / 1000, 0.1);
       this._lastTs = ts;
       this._tick(delta);
+      if (this._timeLeft < 10 && !this._lastSeconds) {
+        soundManager.play('ticking_clock', { loop: true });
+        this._lastSeconds = true;
+      }
       this._raf = requestAnimationFrame(loop);
     };
     this._raf = requestAnimationFrame(loop);
@@ -178,6 +184,7 @@ export class WatermelonCatchGame extends BaseGame {
 
     let spriteSrc, value = null, isCorrect;
 
+    let sound_label = "pop";
     if (mode.itemType === 'emoji') {
       // Classic mode: random mix of cute slices (1pt) and faces (2pts)
       const useSlice = Math.random() < 0.65;
@@ -185,6 +192,7 @@ export class WatermelonCatchGame extends BaseGame {
       spriteSrc      = BASE_URL + sprite;
       value          = useSlice ? 1 : 2;
       isCorrect      = () => true;
+      sound_label    = useSlice ? "pop" : "pop2";
     } else {
       // Number mode: pick a number, pick a random visual variant
       value = Math.floor(this._randBetween(mode.numberRange[0], mode.numberRange[1] + 1));
@@ -202,7 +210,8 @@ export class WatermelonCatchGame extends BaseGame {
     el.style.top  = `-${ITEM_SIZE}px`;
     this._playArea.appendChild(el);
 
-    this._items.push({ el, x, y: -ITEM_SIZE, speed, value, isCorrect });
+    this._items.push({ el, x, y: 280-ITEM_SIZE, speed, value, isCorrect });
+    soundManager.play(sound_label);
   }
 
   _clickItem(idx, mouseEvent) {
@@ -217,6 +226,7 @@ export class WatermelonCatchGame extends BaseGame {
       this._score += pts;
       this._scoreEl.textContent = this._score;
       this._showFloatFeedback(mouseEvent, `+${pts}`, 'correct');
+      soundManager.play(this._mode.itemType === 'emoji' ? 'bite' : 'correct');
     } else {
       this._wrongClicks++;
       const penalty = this._mode.wrongPenalty || 0;
@@ -230,6 +240,7 @@ export class WatermelonCatchGame extends BaseGame {
         ? `${this._mode.wrongFeedback || 'Wrong!'} -${penalty}`
         : (this._mode.wrongFeedback || 'Wrong!');
       this._showFloatFeedback(mouseEvent, feedbackText, 'wrong');
+      soundManager.play('wrong');
     }
   }
 
@@ -249,6 +260,8 @@ export class WatermelonCatchGame extends BaseGame {
   _endGame() {
     if (this._finished) return;
     this._finished = true;
+
+    soundManager.stop('ticking_clock');
 
     if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
 
@@ -278,6 +291,12 @@ export class WatermelonCatchGame extends BaseGame {
 
     root.querySelector('.wmc-result-bg').style.backgroundImage =
       `url(${BASE_URL}background.png)`;
+
+    if (coins > 0) {
+      soundManager.play('success');
+    } else {
+      soundManager.play('failure');
+    }
 
     root.querySelector('#wmc-return-btn').addEventListener('click', () => {
       this.finish({

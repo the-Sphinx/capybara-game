@@ -6,11 +6,16 @@ import { loadCapy, accessoryMounts, previewAccessoryMounts, previewState } from 
 import { promptEl, openModal, closeModal, openCloset, closeCloset } from './ui.js';
 import { gameManager } from './games/GameManager.js';
 import { WatermelonCatchGame } from './games/WatermelonCatchGame.js';
+import { soundManager } from './audio/SoundManager.js';
+import { SOUND_CONFIG } from './config/sounds.js';
 
 // ─── Scene setup ──────────────────────────────────────────────────────────────
 const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
 buildVillage(scene);
 loadCapy(scene);
+
+// ─── Audio ────────────────────────────────────────────────────────────────────
+soundManager.load(SOUND_CONFIG);
 
 // ─── Register minigames ───────────────────────────────────────────────────────
 gameManager.register('watermelon_catch', () => new WatermelonCatchGame());
