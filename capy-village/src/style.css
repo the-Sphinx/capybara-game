@@ -112,7 +112,7 @@ canvas { display: block; }
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
-  height: 580px;
+  height: 660px;
   background: #fdf2bc;
   border: 2px solid #5595a7;
   border-radius: 40px;
@@ -207,7 +207,7 @@ canvas { display: block; }
 .closet-item-card {
   background: #e7f9f1;
   border-radius: 30px;
-  width: 140px;
+  width: 170px;
   margin: auto;
   /* padding: 10px 8px; */
   text-align: center;
