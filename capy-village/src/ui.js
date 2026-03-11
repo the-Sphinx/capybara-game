@@ -33,6 +33,13 @@ const closetPanel = document.createElement('div');
 closetPanel.className = 'closet-panel';
 document.body.appendChild(closetPanel);
 
+// X close button — centered on top-right corner, half outside the panel
+const closetXBtn = document.createElement('button');
+closetXBtn.className = 'closet-x-btn';
+closetXBtn.textContent = '✕';
+closetXBtn.addEventListener('click', closeCloset);
+closetPanel.appendChild(closetXBtn);
+
 const closetColumns = document.createElement('div');
 closetColumns.className = 'closet-columns';
 closetPanel.appendChild(closetColumns);
@@ -236,13 +243,7 @@ function handleBuy(tabKey, anchor, accId) {
   showCoinAnimation(item.price);
   playerState.coins -= item.price;
   playerState.ownedItems.push(accId);
-
-  // Auto-equip after purchase
-  playerState.equipped[tabKey] = accId;
-  EQUIPPED[anchor] = accId;
-  equipAccessory(anchor, accId);
-  equipPreviewAccessory(anchor, accId); // also sets SELECTED[anchor] = accId
-
+  // Item becomes owned only — player must press EQUIP separately
   buildClosetPanel();
 }
 
@@ -251,7 +252,9 @@ function handleUnequip(anchor, tabKey) {
   equipAccessory(anchor, null);
   EQUIPPED[anchor] = null;
   playerState.equipped[tabKey] = null;
-  buildClosetPanel(); // stay open so player sees the change
+  // Preview keeps showing the selected item (selection unchanged)
+  equipPreviewAccessory(anchor, SELECTED[anchor]);
+  buildClosetPanel();
 }
 
 // ─── Equip handler ────────────────────────────────────────────────────────────
@@ -260,7 +263,7 @@ function handleEquip(anchor, accId) {
   equipAccessory(anchor, accId);
   EQUIPPED[anchor] = accId;
   playerState.equipped[tabKey] = accId;
-  closeCloset();
+  buildClosetPanel(); // stay open, button flips to UNEQUIP
 }
 
 // ─── Open / close ─────────────────────────────────────────────────────────────

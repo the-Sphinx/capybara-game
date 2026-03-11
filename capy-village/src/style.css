@@ -294,7 +294,7 @@ canvas { display: block; }
 
 /* EQUIP button — yellow/gold */
 .closet-equip-btn {
-  width: 220px;
+  width: 260px;
   height: 58px;
   padding: 0 16px;
   border: none;
@@ -361,6 +361,34 @@ canvas { display: block; }
   0%   { opacity: 1;   transform: translateY(0)     scale(1);    }
   20%  { opacity: 1;   transform: translateY(-8px)  scale(1.15); }
   100% { opacity: 0;   transform: translateY(-56px) scale(0.9);  }
+}
+
+/* ─── X close button — centered on top-right corner ─────────────────────── */
+.closet-x-btn {
+  position: absolute;
+  top: -22px;
+  right: -22px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #FF8A65, #E64A19);
+  box-shadow: 0 4px 0 #B71C1C, 0 6px 16px rgba(230,74,25,0.45);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.closet-x-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 5px 0 #B71C1C, 0 8px 20px rgba(230,74,25,0.55);
 }
 
 .closet-close-hint {
