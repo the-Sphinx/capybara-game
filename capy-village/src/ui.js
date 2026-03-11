@@ -90,10 +90,10 @@ function anchorToTabKey(anchor) {
 
 // Status row text + CSS class for a card (always shown)
 function getItemStatus(item, isOwned, isEqWorld) {
-  if (isEqWorld)                        return { text: '✓ Equipped', cls: 'status--equipped' };
-  if (isOwned)                          return { text: '✓ Owned',    cls: 'status--owned' };
-  if (playerState.coins >= item.price)  return { text: `${item.price} 🍉`, cls: 'status--price' };
-  return { text: '🔒 Locked', cls: 'status--locked' };
+  if (isEqWorld)   return { text: '✓ Equipped',             cls: 'status--equipped' };
+  if (isOwned)     return { text: '✓ Owned',                cls: 'status--owned' };
+  if (item.locked) return { text: `🔒 ${item.price} 🍉`,   cls: 'status--locked' };
+  return { text: `${item.price} 🍉`, cls: 'status--price' };
 }
 
 // Determine action button state based on selected item
@@ -116,8 +116,13 @@ function getActionState() {
     return { text: 'EQUIP', disabled: false, mode: 'equip' };
   }
 
-  // Locked — check affordability
+  // Locked item — not purchasable
   const item = getTabItem(closetTab, selectedId);
+  if (item.locked) {
+    return { text: 'LOCKED', disabled: true, mode: 'none' };
+  }
+
+  // For-sale — check affordability
   if (playerState.coins >= item.price) {
     return { text: `BUY ${item.price} 🍉`, disabled: false, mode: 'buy' };
   }
@@ -151,13 +156,12 @@ export function buildClosetPanel() {
           const isSel     = item.id === SELECTED[anchor];
           const isEqWorld = item.id === playerState.equipped[closetTab];
           const isOwned   = playerState.ownedItems.includes(item.id);
-          const isLocked  = !isOwned;
           const status    = getItemStatus(item, isOwned, isEqWorld);
 
           let cardClass = 'closet-item-card';
-          if (isLocked)        cardClass += ' closet-item-card--locked';
+          if (item.locked)     cardClass += ' closet-item-card--locked';
           else if (isEqWorld)  cardClass += ' closet-item-card--world-equipped';
-          else                 cardClass += ' closet-item-card--owned';
+          else if (isOwned)    cardClass += ' closet-item-card--owned';
           if (isSel)           cardClass += ' closet-item-card--selected';
 
           return `
@@ -187,13 +191,19 @@ export function buildClosetPanel() {
     btn.addEventListener('click', () => { closetTab = btn.dataset.tab; buildClosetPanel(); });
   });
 
-  // Item card clicks — highlight only; preview updates only when action button is pressed
+  // Item card clicks — toggle selection; preview updates immediately
   closetItemCol.querySelectorAll('[data-item]').forEach(card => {
     card.addEventListener('click', () => {
       const accId = card.dataset.item;
       const anch  = CLOSET_TABS[closetTab].anchor;
-      if (accId === SELECTED[anch]) return;
-      SELECTED[anch] = accId;
+      if (accId === SELECTED[anch]) {
+        // Deselect — remove from preview
+        SELECTED[anch] = null;
+        equipPreviewAccessory(anch, null);
+      } else {
+        SELECTED[anch] = accId;
+        equipPreviewAccessory(anch, accId);
+      }
       buildClosetPanel();
     });
   });

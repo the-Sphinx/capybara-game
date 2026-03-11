@@ -110,6 +110,10 @@ export class WatermelonCatchGame extends BaseGame {
     this._timerEl  = container.querySelector('#wmc-time-val');
     this._playArea = container.querySelector('#wmc-play-area');
 
+    // Custom cursor — random sprite image
+    const cursorSprite = BASE_URL + "cursor.png";
+    this._playArea.style.cursor = `url('${cursorSprite}') 32 32, crosshair`;
+
     const onFinish = () => this._endGame();
     container.querySelector('#wmc-finish-btn').addEventListener('click', onFinish);
     this._handlers.onFinish = onFinish;
@@ -175,10 +179,12 @@ export class WatermelonCatchGame extends BaseGame {
     let spriteSrc, value = null, isCorrect;
 
     if (mode.itemType === 'emoji') {
-      // Classic mode: random mix of cute slices and faces (all catchable)
+      // Classic mode: random mix of cute slices (1pt) and faces (2pts)
       const useSlice = Math.random() < 0.65;
-      spriteSrc = BASE_URL + (useSlice ? randFrom(SPRITES.slices) : randFrom(SPRITES.faces));
-      isCorrect = () => true;
+      const sprite   = useSlice ? randFrom(SPRITES.slices) : randFrom(SPRITES.faces);
+      spriteSrc      = BASE_URL + sprite;
+      value          = useSlice ? 1 : 2;
+      isCorrect      = () => true;
     } else {
       // Number mode: pick a number, pick a random visual variant
       value = Math.floor(this._randBetween(mode.numberRange[0], mode.numberRange[1] + 1));
@@ -207,9 +213,10 @@ export class WatermelonCatchGame extends BaseGame {
       it.el.classList.add('wmc-item--pop');
       it.el.addEventListener('animationend', () => it.el.remove(), { once: true });
       this._items.splice(idx, 1);
-      this._score++;
+      const pts = (it.value != null && this._mode.itemType === 'emoji') ? it.value : 1;
+      this._score += pts;
       this._scoreEl.textContent = this._score;
-      this._showFloatFeedback(mouseEvent, '+1', 'correct');
+      this._showFloatFeedback(mouseEvent, `+${pts}`, 'correct');
     } else {
       this._wrongClicks++;
       const penalty = this._mode.wrongPenalty || 0;
@@ -233,7 +240,7 @@ export class WatermelonCatchGame extends BaseGame {
 
     const areaRect = this._playArea.getBoundingClientRect();
     fb.style.left  = `${mouseEvent.clientX - areaRect.left}px`;
-    fb.style.top   = `${mouseEvent.clientY - areaRect.top - 10}px`;
+    fb.style.top   = `${mouseEvent.clientY - areaRect.top - 50}px`;
 
     this._playArea.appendChild(fb);
     fb.addEventListener('animationend', () => fb.remove(), { once: true });

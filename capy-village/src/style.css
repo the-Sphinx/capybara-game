@@ -426,7 +426,6 @@ canvas { display: block; }
   inset: 0;
   background-size: cover;
   background-position: center;
-  cursor: crosshair;
   overflow: hidden;
 }
 
@@ -533,7 +532,7 @@ canvas { display: block; }
 /* Mode badge at bottom */
 .wmc-mode-badge {
   position: absolute;
-  bottom: 14px;
+  top: 47px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(40, 20, 5, 0.72);
@@ -556,7 +555,7 @@ canvas { display: block; }
   width: 120px;
   height: 120px;
   object-fit: contain;
-  cursor: pointer;
+  cursor: inherit;
   user-select: none;
   transition: transform 0.08s;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.32));

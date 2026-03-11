@@ -27,15 +27,15 @@ export const CLOSET_TABS = {
   hats: {
     label: 'Hats', icon: '🎩', anchor: 'hat_anchor',
     items: [
-      { id: 'crown',     label: 'Crown',    icon: '👑', price: 120 },
-      { id: 'beanie',    label: 'Beanie',   icon: '🧢', price: 40  },
-      { id: 'chefs_hat', label: 'Chef Hat', icon: '🍳', price: 80  },
+      { id: 'crown',     label: 'Crown',    icon: '👑', price: 120, locked: true  },
+      { id: 'beanie',    label: 'Beanie',   icon: '🧢', price: 40,   locked: false },
+      { id: 'chefs_hat', label: 'Chef Hat', icon: '🍳', price: 8,   locked: false },
     ],
   },
   neck: {
     label: 'Neck', icon: '🎀', anchor: 'neck_anchor',
     items: [
-      { id: 'scarf', label: 'Scarf', icon: '🧣', price: 60 },
+      { id: 'scarf', label: 'Scarf', icon: '🧣', price: 6, locked: false },
     ],
   },
 };
