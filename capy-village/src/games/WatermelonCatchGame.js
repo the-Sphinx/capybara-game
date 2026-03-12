@@ -18,6 +18,20 @@ const SPRITES = {
     'slice_b0.png', 'slice_b1.png', 'slice_b2.png', 'slice_b3.png', 'slice_b4.png',
   ],
   faces: ['face_a0.png', 'face_b0.png'],
+  specials: {
+    gold:      ['gold_a.png',      'gold_b.png'],
+    silver:    ['silver_a.png',    'silver_b.png'],
+    bomb:      ['bomb_a.png',      'bomb_b.png'],
+    hourglass: ['hourglass_a.png', 'hourglass_b.png'],
+    clock:     ['clock_a.png',     'clock_b.png'],
+  },
+  operators: {
+    add: ['op_add_a.png', 'op_add_b.png'],
+    sub: ['op_sub_a.png', 'op_sub_b.png'],
+    mul: ['op_mul_a.png', 'op_mul_b.png'],
+    div: ['op_div_a.png', 'op_div_b.png'],
+    eq:  ['op_eq_a.png',  'op_eq_b.png'],
+  },
   numbers: {
      0: ['num_0_a.png', 'num_0_b.png'],
      1: ['num_1_a.png', 'num_1_b.png'],
@@ -137,9 +151,18 @@ export class WatermelonCatchGame extends BaseGame {
       const delta = Math.min((ts - this._lastTs) / 1000, 0.1);
       this._lastTs = ts;
       this._tick(delta);
-      if (this._timeLeft < 10 && !this._lastSeconds) {
-        soundManager.play('ticking_clock', { loop: true });
-        this._lastSeconds = true;
+
+      if (this._timeLeft > 10) {
+        if (this._lastSeconds) {
+          soundManager.stop('ticking_clock');
+        }
+        this._lastSeconds = false;
+      }
+      else {
+        if (!this._lastSeconds) {
+          soundManager.play('ticking_clock', { loop: true });
+          this._lastSeconds = true;
+        }
       }
       this._raf = requestAnimationFrame(loop);
     };
@@ -176,30 +199,153 @@ export class WatermelonCatchGame extends BaseGame {
     }
   }
 
-  _spawnItem() {
-    const areaW = this._playArea.clientWidth;
-    const x     = this._randBetween(8, areaW - ITEM_SIZE - 8);
-    const speed = this._randBetween(SPEED_MIN, SPEED_MAX);
-    const mode  = this._mode;
 
-    let spriteSrc, value = null, isCorrect;
+  _createItem(itemType) {
+    let itemKind, spriteSrc, value, isCorrect, sound_label;
+    const roll = Math.random();
+    
+    // Hourglass: clicking adds +10s
+    if (roll < 0.05) {
+      itemKind  = 'hourglass';
+      spriteSrc = BASE_URL + randFrom(SPRITES.specials.hourglass);
+      value     = 10;
+      isCorrect = () => true;
+      sound_label = 'pop';
+      return { itemKind, spriteSrc, value, isCorrect, sound_label };
+    }
 
-    let sound_label = "pop";
-    if (mode.itemType === 'emoji') {
-      // Classic mode: random mix of cute slices (1pt) and faces (2pts)
+    // Clock watermelon: clicking adds +5s
+    if (roll < 0.15) {
+      itemKind  = 'clock';
+      spriteSrc = BASE_URL + randFrom(SPRITES.specials.clock);
+      value     = 5;
+      isCorrect = () => true;
+      sound_label = 'pop';
+      return { itemKind, spriteSrc, value, isCorrect, sound_label };
+    }
+
+    // Bomb: clicking resets score
+    if (roll < 0.35) {  
+      itemKind  = 'bomb';
+      spriteSrc = BASE_URL + randFrom(SPRITES.specials.bomb);
+      value     = -10^5;
+      isCorrect = () => false;
+      sound_label = 'pop';
+      return { itemKind, spriteSrc, value, isCorrect, sound_label };
+    }
+    
+    if (itemType === 'emoji') {
+      // Gold slice: 10 pts
+      if (roll < 0.40) {
+        itemKind  = 'gold';
+        spriteSrc = BASE_URL + randFrom(SPRITES.specials.gold);
+        value     = 10;
+        isCorrect = () => true;
+        sound_label = 'pop2';
+        return { itemKind, spriteSrc, value, isCorrect, sound_label };
+      }
+      
+      // Silver slice: 5 pts
+      if (roll < 0.45) {
+        itemKind  = 'silver';
+        spriteSrc = BASE_URL + randFrom(SPRITES.specials.silver);
+        value     = 5;
+        isCorrect = () => true;
+        sound_label = 'pop2';
+        return { itemKind, spriteSrc, value, isCorrect, sound_label };
+      }
+
+      // Regular: cute slices (1pt) and faces (2pts)
+      itemKind = 'normal';
       const useSlice = Math.random() < 0.65;
       const sprite   = useSlice ? randFrom(SPRITES.slices) : randFrom(SPRITES.faces);
       spriteSrc      = BASE_URL + sprite;
       value          = useSlice ? 1 : 2;
       isCorrect      = () => true;
       sound_label    = useSlice ? "pop" : "pop2";
-    } else {
+      return { itemKind, spriteSrc, value, isCorrect, sound_label };
+    }
+    else {
       // Number mode: pick a number, pick a random visual variant
+      itemKind = 'normal';
       value = Math.floor(this._randBetween(mode.numberRange[0], mode.numberRange[1] + 1));
       const variants = SPRITES.numbers[value];
       spriteSrc = BASE_URL + (variants ? randFrom(variants) : 'num_1_a.png');
-      const v = value;
-      isCorrect = () => mode.isCorrect(v);
+      isCorrect = () => mode.isCorrect(value);
+      sound_label = "pop";
+      return { itemKind, spriteSrc, value, isCorrect, sound_label };
+    }
+  }
+
+  _spawnItem() {
+    const areaW = this._playArea.clientWidth;
+    const x     = this._randBetween(8, areaW - ITEM_SIZE - 8);
+    const speed = this._randBetween(SPEED_MIN, SPEED_MAX);
+    const mode  = this._mode;
+    
+    let spriteSrc, value = null, isCorrect, itemKind = 'normal', sound_label = 'pop';
+    const roll = Math.random();
+
+    // Hourglass: clicking adds +10s
+    if (roll < 0.02) {
+      itemKind  = 'hourglass';
+      spriteSrc = BASE_URL + randFrom(SPRITES.specials.hourglass);
+      value     = 10;
+      isCorrect = () => true;
+    } 
+    
+    // Clock: clicking adds +5s
+    else if (roll < 0.05) {
+      itemKind  = 'clock';
+      spriteSrc = BASE_URL + randFrom(SPRITES.specials.clock);
+      value     = 5;
+      isCorrect = () => true;
+    } 
+    
+    // Bomb: clicks resets score
+    else if (roll < 0.20) {
+      itemKind  = 'bomb';
+      spriteSrc = BASE_URL + randFrom(SPRITES.specials.bomb);
+      value     = -10000;
+      isCorrect = () => false;
+    }
+
+    else if (mode.itemType === 'emoji') {
+      // Gold slice: 10 pts
+      if (roll < 0.23) {
+        itemKind  = 'gold';
+        spriteSrc = BASE_URL + randFrom(SPRITES.specials.gold);
+        value     = 10;
+        isCorrect = () => true;
+        sound_label = 'pop2';
+      } 
+      
+      // Silver slice: 5 pts
+      else if (roll < 0.28) {
+        itemKind  = 'silver';
+        spriteSrc = BASE_URL + randFrom(SPRITES.specials.silver);
+        value     = 5;
+        isCorrect = () => true;
+        sound_label = 'pop2';
+      } 
+      
+      // Regular: cute slices (1 pt) and faces (2 pts)
+      else {
+        const useSlice = Math.random() < 0.65;
+        const sprite   = useSlice ? randFrom(SPRITES.slices) : randFrom(SPRITES.faces);
+        spriteSrc      = BASE_URL + sprite;
+        value          = useSlice ? 1 : 2;
+        isCorrect      = () => true;
+        sound_label    = useSlice ? "pop" : "pop2";
+      }
+    }
+    
+    // Number mode: pick a number, pick a random visual variant
+    else {
+      value = Math.floor(this._randBetween(mode.numberRange[0], mode.numberRange[1] + 1));
+      const variants = SPRITES.numbers[value];
+      spriteSrc = BASE_URL + (variants ? randFrom(variants) : 'num_1_a.png');
+      isCorrect = () => mode.isCorrect(value);
     }
 
     const el = document.createElement('img');
@@ -210,13 +356,40 @@ export class WatermelonCatchGame extends BaseGame {
     el.style.top  = `-${ITEM_SIZE}px`;
     this._playArea.appendChild(el);
 
-    this._items.push({ el, x, y: 280-ITEM_SIZE, speed, value, isCorrect });
+    this._items.push({ el, x, y: 280-ITEM_SIZE, speed, value, isCorrect, itemKind });
     soundManager.play(sound_label);
   }
 
   _clickItem(idx, mouseEvent) {
     const it      = this._items[idx];
     const correct = it.isCorrect();
+
+    // ── Time-bonus specials ──────────────────────────────────────────────────
+    if (it.itemKind === 'hourglass' || it.itemKind === 'clock') {
+      const bonus = it.value;
+      this._timeLeft = this._timeLeft + bonus;        
+      this._timerEl.textContent = formatTime(this._timeLeft);
+      it.el.classList.add('wmc-item--pop');
+      it.el.addEventListener('animationend', () => it.el.remove(), { once: true });
+      this._items.splice(idx, 1);
+      this._showFloatFeedback(mouseEvent, `+${bonus}s ⏳`, 'correct');
+      soundManager.play('correct');
+      return;
+    }
+
+    // ── Bomb ────────────────────────────────────────────────────────────────
+    if (it.itemKind === 'bomb') {
+      this._wrongClicks++;
+      const penalty = -it.value;
+      this._score = Math.max(0, this._score - penalty);
+      this._scoreEl.textContent = this._score;
+      it.el.classList.add('wmc-item--wrong');
+      it.el.addEventListener('animationend', () => it.el.remove(), { once: true });
+      this._items.splice(idx, 1);
+      this._showFloatFeedback(mouseEvent, `💣 Boom!`, 'wrong');
+      soundManager.play('failure');
+      return;
+    }
 
     if (correct) {
       it.el.classList.add('wmc-item--pop');
