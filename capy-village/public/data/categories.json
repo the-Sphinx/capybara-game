@@ -1,0 +1,26 @@
+[
+  {
+    "id": "watermelonCatch",
+    "label": "Watermelon Catch",
+    "icon": "🍉",
+    "description": "Catch falling watermelons before they hit the ground!",
+    "gameId": "watermelon_catch",
+    "comingSoon": false
+  },
+  {
+    "id": "mathGarden",
+    "label": "Math Garden",
+    "icon": "🌱",
+    "description": "Solve falling math problems in the garden!",
+    "gameId": "math_garden",
+    "comingSoon": false
+  },
+  {
+    "id": "languageGrove",
+    "label": "Language Grove",
+    "icon": "📚",
+    "description": "Catch words and letters in the language grove!",
+    "gameId": "language_grove",
+    "comingSoon": false
+  }
+]

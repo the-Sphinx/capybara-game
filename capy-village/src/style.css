@@ -673,21 +673,609 @@ canvas { display: block; }
   margin: 14px 0 20px;
 }
 
-.wmc-return-btn {
-  display: block;
-  width: 100%;
+/* Result button row — Back + Action side by side */
+.wmc-result-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.wmc-back-btn, .wmc-action-btn {
+  flex: 1;
   padding: 13px;
-  border: 3px solid rgba(255, 215, 80, 0.65);
   border-radius: 50px;
-  background: rgba(255, 215, 80, 0.12);
-  color: #FFE135;
-  font-size: clamp(14px, 1.8vw, 17px);
+  font-size: clamp(13px, 1.6vw, 16px);
   font-weight: 700;
   cursor: pointer;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   transition: background 0.15s, transform 0.1s;
 }
-.wmc-return-btn:hover {
-  background: rgba(255, 215, 80, 0.28);
-  transform: scale(1.02);
+.wmc-back-btn {
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: #ccc;
 }
+.wmc-back-btn:hover { background: rgba(255,255,255,0.16); transform: scale(1.02); }
+
+.wmc-action-btn {
+  border: 3px solid rgba(255, 215, 80, 0.65);
+  background: rgba(255, 215, 80, 0.12);
+  color: #FFE135;
+}
+.wmc-action-btn:hover { background: rgba(255, 215, 80, 0.28); transform: scale(1.02); }
+
+/* ─── Watermelon Catch — goal row in result ─────────────────────────────────── */
+.wmc-result-goal-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: clamp(14px, 1.8vw, 18px);
+  font-weight: 700;
+  color: #FFD180;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+}
+
+/* ─── Hub Overlay ────────────────────────────────────────────────────────────── */
+#hub-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  z-index: 40;
+  align-items: center;
+  justify-content: center;
+  font-family: "Nunito", "Segoe UI", sans-serif;
+}
+
+.hub-panel {
+  background: linear-gradient(155deg, #1e2d1e 0%, #1a1a2e 100%);
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 22px;
+  padding: 40px 44px;
+  max-width: 620px;
+  width: 92vw;
+  max-height: 88vh;
+  overflow-y: auto;
+  position: relative;
+  color: white;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+}
+.hub-panel--wide { max-width: 820px; }
+
+.hub-title {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.hub-close-btn {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: white;
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.18s;
+}
+.hub-close-btn:hover { background: rgba(220,60,60,0.45); }
+
+.hub-back-btn {
+  position: absolute;
+  top: 14px; left: 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: white;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.18s;
+}
+.hub-back-btn:hover { background: rgba(255,255,255,0.18); }
+
+/* ─── Category cards ────────────────────────────────────────────────────────── */
+.hub-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hub-category-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.11);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.hub-category-card:hover:not(.hub-category-card--soon) {
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(100,210,120,0.45);
+  transform: translateX(4px);
+}
+.hub-category-card--soon { opacity: 0.48; cursor: not-allowed; }
+
+.hub-cat-icon { font-size: 38px; flex-shrink: 0; }
+.hub-cat-info { display: flex; flex-direction: column; flex: 1; }
+.hub-cat-label { font-size: 18px; font-weight: 700; }
+.hub-cat-desc  { font-size: 13px; color: #aaa; margin-top: 2px; }
+.hub-cat-arrow { font-size: 28px; color: #888; }
+
+.hub-coming-soon {
+  background: rgba(255,180,0,0.18);
+  border: 1px solid rgba(255,180,0,0.38);
+  color: #ffb400;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ─── Mode buttons ──────────────────────────────────────────────────────────── */
+.hub-modes {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.hub-mode-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.11);
+  border-radius: 16px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.18s;
+}
+.hub-mode-btn:hover {
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(100,180,255,0.45);
+  transform: translateY(-3px);
+}
+.hub-mode-icon  { font-size: 42px; }
+.hub-mode-label { font-size: 20px; font-weight: 800; }
+.hub-mode-hint  { font-size: 13px; color: #999; text-align: center; }
+
+/* ─── Level map ─────────────────────────────────────────────────────────────── */
+.hub-level-track {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px 0 18px;
+}
+
+.hub-level-node {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  border: 3px solid;
+  transition: all 0.14s;
+  user-select: none;
+}
+.hub-level-node--locked   { background: rgba(80,80,80,0.28); border-color: #555; color: #666; cursor: not-allowed; }
+.hub-level-node--unlocked { background: rgba(70,140,255,0.14); border-color: #4a90ff; color: #80c0ff; }
+.hub-level-node--unlocked:hover { background: rgba(70,140,255,0.3); transform: scale(1.12); }
+.hub-level-node--completed { background: rgba(50,190,90,0.18); border-color: #32c05a; color: #32c05a; }
+.hub-level-node--completed:hover { background: rgba(50,190,90,0.32); transform: scale(1.12); }
+.hub-level-node--selected  { outline: 3px solid #fff; outline-offset: 3px; }
+
+.hub-level-info {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.hub-lvl-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+
+.hub-lvl-details {
+  display: flex;
+  gap: 18px;
+  color: #bbb;
+  font-size: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.hub-lvl-done { color: #32c05a; font-weight: 700; }
+
+.hub-play-btn {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 12px 30px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.hub-play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(76,175,80,0.4);
+}
+
+/* ─── Arcade panel ──────────────────────────────────────────────────────────── */
+.hub-arcade-desc {
+  color: #ccc;
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+.hub-arcade-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 20px;
+}
+
+.hub-arcade-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 14px 28px;
+  min-width: 120px;
+}
+
+.hub-arcade-stat-val {
+  font-size: 36px;
+  font-weight: 900;
+  color: #80c0ff;
+  line-height: 1;
+}
+
+.hub-arcade-stat-lbl {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.hub-arcade-note {
+  color: #777;
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.hub-arcade-start {
+  display: block;
+  margin: 0 auto;
+}
+
+.hub-arcade-bests {
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+}
+.hub-arcade-bests-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.hub-arcade-best-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+  padding: 2px 0;
+}
+.hub-arcade-best-row strong {
+  color: #ffe135;
+}
+
+.hub-loading {
+  color: rgba(255,255,255,0.7);
+  font-size: 20px;
+  font-family: "Nunito", sans-serif;
+}
+.hub-error-msg {
+  color: #ff8080;
+  font-size: 16px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* ─── Math Garden Game ──────────────────────────────────────────────────────── */
+
+/* Equation banner — absolutely positioned below the wmc-hud bar */
+.mg-equation-banner {
+  position: absolute;
+  top: clamp(64px, 10.7vw, 150px);
+  left: 0; right: 0;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 900;
+  color: #ffffff;
+  background: rgba(0,0,0,0.45);
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.mg-tile {
+  position: absolute;
+  width: 72px; height: 72px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 900;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  border: 3px solid rgba(255,255,255,0.25);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.1s;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.mg-tile:hover { transform: scale(1.1); }
+
+@keyframes mg-pop {
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.4); opacity: 0.7; }
+  100% { transform: scale(0);   opacity: 0; }
+}
+.mg-tile--pop { animation: mg-pop 0.28s ease-out forwards; pointer-events: none; }
+
+@keyframes mg-shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-10px); }
+  75%       { transform: translateX(10px); }
+}
+.mg-tile--wrong { animation: mg-shake 0.32s ease-out; }
+
+/* Language Grove: wider tiles for words */
+.lg-tile {
+  width: auto;
+  min-width: 72px;
+  padding: 0 16px;
+  font-size: clamp(16px, 2.5vw, 26px);
+}
+
+/* Language Grove: stream items use pointer cursor like wmc-item */
+.lg-item { cursor: pointer; }
+
+@keyframes mg-float-up {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-60px); }
+}
+.mg-feedback {
+  position: absolute;
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 900;
+  pointer-events: none;
+  animation: mg-float-up 0.85s ease-out forwards;
+  z-index: 10;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+}
+.mg-feedback--correct { color: #7ef77e; }
+.mg-feedback--wrong   { color: #ff6b6b; }
+
+/* ─── Math Garden result screen ─────────────────────────────────────────────── */
+.mg-result-screen {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.65);
+  z-index: 20;
+}
+.mg-result-card {
+  background: linear-gradient(155deg, #1a3a1a, #0d2a1a);
+  border: 3px solid rgba(80,200,100,0.35);
+  border-radius: 22px;
+  padding: 32px 44px;
+  text-align: center;
+  color: #e0ffe0;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  max-width: 420px; width: 90%;
+}
+.mg-result-title { font-size: clamp(20px, 3vw, 30px); font-weight: 900; margin-bottom: 16px; color: #fff; }
+.mg-result-goal-row {
+  display: flex; justify-content: space-between;
+  font-size: 16px; font-weight: 700; color: #a0e8a0;
+  background: rgba(0,0,0,0.2); border-radius: 8px;
+  padding: 8px 14px; margin-bottom: 12px;
+}
+.mg-result-rows { background: rgba(0,0,0,0.25); border-radius: 12px; padding: 12px 18px; margin-bottom: 14px; text-align: left; }
+.mg-result-row  { display: flex; justify-content: space-between; font-size: clamp(14px, 1.8vw, 17px); margin: 4px 0; color: #b0e8b0; font-weight: 700; }
+.mg-result-row strong { color: #fff; }
+.mg-result-coins { font-size: clamp(16px, 2.4vw, 22px); font-weight: 900; color: #ffe135; margin: 12px 0 16px; }
+
+/* Result button row — Back + Action side by side */
+.mg-result-btns {
+  display: flex;
+  gap: 10px;
+}
+.mg-back-btn, .mg-action-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 50px;
+  font-size: clamp(13px, 1.6vw, 16px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.mg-back-btn {
+  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: #bbb;
+}
+.mg-back-btn:hover { background: rgba(255,255,255,0.14); transform: scale(1.02); }
+
+.mg-action-btn {
+  border: 2px solid rgba(100,220,120,0.5);
+  background: rgba(100,220,120,0.12);
+  color: #a0ffa0;
+}
+.mg-action-btn:hover { background: rgba(100,220,120,0.28); transform: scale(1.02); }
+
+/* ─── Math Garden result reward + wallet ────────────────────────────────────── */
+.mg-result-reward {
+  font-size: clamp(14px, 2vw, 18px);
+  font-weight: 900;
+  color: #ffe135;
+  text-align: center;
+  margin: 10px 0 4px;
+  text-shadow: 1px 1px 0 #1a3a1a;
+}
+.mg-result-wallet {
+  font-size: clamp(12px, 1.6vw, 15px);
+  font-weight: 700;
+  color: #a0c8a0;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* ─── Universal HUD center content ─────────────────────────────────────────── */
+/* Container for level name + instruction inside the burlap center panel */
+.wmc-hud-center-content {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  padding: 0 12px;
+}
+
+.wmc-hud-level-line {
+  font-size: clamp(11px, 1.6vw, 20px);
+  font-weight: 900;
+  color: #FFE135;
+  text-shadow:
+     2px  2px 0 #6B3200,
+    -2px  2px 0 #6B3200,
+     2px -2px 0 #6B3200,
+    -2px -2px 0 #6B3200;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.wmc-hud-equation {
+  font-size: clamp(13px, 2vw, 26px);
+  font-weight: 900;
+  color: #FFF8DC;
+  text-shadow: 1px 1px 0 #6B3200, -1px 1px 0 #6B3200;
+  margin-top: 1px;
+  letter-spacing: 1px;
+}
+
+.wmc-hud-instruction {
+  font-size: clamp(10px, 1.4vw, 17px);
+  font-weight: 700;
+  color: #FFF8DC;
+  text-shadow: 1px 1px 0 #6B3200;
+  margin-top: 1px;
+  text-align: center;
+}
+
+/* ─── Level start banner ────────────────────────────────────────────────────── */
+.wmc-level-banner {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  animation: wmc-banner-in 0.35s ease-out;
+}
+
+.wmc-level-banner--fade {
+  animation: wmc-banner-out 0.5s ease-in forwards;
+}
+
+.wmc-level-banner-inner {
+  text-align: center;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.wmc-level-banner-num {
+  font-size: clamp(40px, 6.5vw, 80px);
+  font-weight: 900;
+  color: #FFE135;
+  text-shadow:
+     3px  3px 0 #6B3200,
+    -3px  3px 0 #6B3200,
+     3px -3px 0 #6B3200,
+    -3px -3px 0 #6B3200;
+  margin-bottom: 14px;
+}
+
+.wmc-level-banner-goal-label {
+  font-size: clamp(16px, 2.2vw, 26px);
+  color: #aaa;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.wmc-level-banner-goal {
+  font-size: clamp(22px, 3.5vw, 44px);
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+@keyframes wmc-banner-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes wmc-banner-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ─── WMC result reward + wallet rows ──────────────────────────────────────── */
+.wmc-result-reward {
+  font-size: clamp(15px, 2.2vw, 22px);
+  font-weight: 900;
+  color: #FFE135;
+  text-shadow: 1px 1px 0 #3B1A07;
+  text-align: center;
+  margin: 12px 0 4px;
+}
+
+.wmc-result-wallet {
+  font-size: clamp(12px, 1.6vw, 16px);
+  font-weight: 700;
+  color: #FFD180;
+  text-align: center;
+  margin-bottom: 14px;
+  opacity: 0.85;
+}
+

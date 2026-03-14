@@ -1,0 +1,100 @@
+{
+  "arcadeWeights": {
+    "vowels":                2,
+    "consonants":            2,
+    "categoryCatch_animals": 3,
+    "categoryCatch_foods":   2,
+    "sentenceCompletion":    2,
+    "opposites":             2,
+    "synonyms":              2,
+    "riddle":                1
+  },
+  "modes": [
+    {
+      "id": "vowels",
+      "subType": "stream",
+      "title": "Vowel Catch",
+      "prompt": "Catch the Vowels!",
+      "modeId": "vowels",
+      "fallSpeed": 1.0,
+      "itemCount": 5,
+      "pointsPerCorrect": 5,
+      "wrongPenalty": 1
+    },
+    {
+      "id": "consonants",
+      "subType": "stream",
+      "title": "Consonant Catch",
+      "prompt": "Catch the Consonants!",
+      "modeId": "consonants",
+      "fallSpeed": 1.0,
+      "itemCount": 5,
+      "pointsPerCorrect": 5,
+      "wrongPenalty": 1
+    },
+    {
+      "id": "categoryCatch_animals",
+      "subType": "stream",
+      "title": "Animal Words",
+      "prompt": "Catch: ANIMALS",
+      "modeId": "categoryCatch",
+      "category": "animals",
+      "fallSpeed": 1.0,
+      "itemCount": 5,
+      "pointsPerCorrect": 8,
+      "wrongPenalty": 1
+    },
+    {
+      "id": "categoryCatch_foods",
+      "subType": "stream",
+      "title": "Food Words",
+      "prompt": "Catch: FOODS",
+      "modeId": "categoryCatch",
+      "category": "foods",
+      "fallSpeed": 1.0,
+      "itemCount": 5,
+      "pointsPerCorrect": 8,
+      "wrongPenalty": 1
+    },
+    {
+      "id": "sentenceCompletion",
+      "subType": "choiceRound",
+      "title": "Sentence Finish",
+      "modeId": "sentenceCompletion",
+      "fallSpeed": 1.0,
+      "answerCount": 3,
+      "pointsPerCorrect": 10,
+      "wrongPenalty": 0
+    },
+    {
+      "id": "opposites",
+      "subType": "choiceRound",
+      "title": "Opposites",
+      "modeId": "opposites",
+      "fallSpeed": 1.0,
+      "answerCount": 4,
+      "pointsPerCorrect": 10,
+      "wrongPenalty": 0
+    },
+    {
+      "id": "synonyms",
+      "subType": "choiceRound",
+      "title": "Synonyms",
+      "modeId": "synonyms",
+      "fallSpeed": 1.0,
+      "answerCount": 4,
+      "pointsPerCorrect": 10,
+      "wrongPenalty": 0
+    },
+    {
+      "id": "riddle",
+      "subType": "choiceRound",
+      "title": "Riddle Catch",
+      "modeId": "riddle",
+      "fallSpeed": 0.9,
+      "answerCount": 4,
+      "pointsPerCorrect": 15,
+      "wrongPenalty": 0
+    }
+  ]
+}

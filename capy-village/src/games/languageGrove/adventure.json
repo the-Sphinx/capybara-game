@@ -1,0 +1,116 @@
+[
+  {
+    "levelNum": 1,
+    "label": "Vowel Garden",
+    "subType": "stream",
+    "modeId": "vowels",
+    "timeLimit": 60,
+    "fallSpeed": 1.0,
+    "itemCount": 4,
+    "goal": { "type": "catchCount", "value": 3 },
+    "clearReward": 15
+  },
+  {
+    "levelNum": 2,
+    "label": "More Vowels",
+    "subType": "stream",
+    "modeId": "vowels",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": { "type": "catchCount", "value": 5 },
+    "clearReward": 20
+  },
+  {
+    "levelNum": 3,
+    "label": "Consonant Trail",
+    "subType": "stream",
+    "modeId": "consonants",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": { "type": "catchCount", "value": 5 },
+    "clearReward": 20
+  },
+  {
+    "levelNum": 4,
+    "label": "Animal Friends",
+    "subType": "stream",
+    "modeId": "categoryCatch",
+    "category": "animals",
+    "timeLimit": 60,
+    "fallSpeed": 1.0,
+    "itemCount": 4,
+    "goal": { "type": "catchCount", "value": 4 },
+    "clearReward": 25
+  },
+  {
+    "levelNum": 5,
+    "label": "Fruit Basket",
+    "subType": "stream",
+    "modeId": "categoryCatch",
+    "category": "fruits",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": { "type": "catchCount", "value": 4 },
+    "clearReward": 25
+  },
+  {
+    "levelNum": 6,
+    "label": "Finish the Sentence",
+    "subType": "choiceRound",
+    "modeId": "sentenceCompletion",
+    "timeLimit": 60,
+    "fallSpeed": 1.0,
+    "answerCount": 3,
+    "goal": { "type": "correctAnswers", "value": 3 },
+    "clearReward": 30
+  },
+  {
+    "levelNum": 7,
+    "label": "Letters in DOG",
+    "subType": "stream",
+    "modeId": "lettersInWord",
+    "targetWord": "DOG",
+    "timeLimit": 45,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": { "type": "catchCount", "value": 3 },
+    "clearReward": 30
+  },
+  {
+    "levelNum": 8,
+    "label": "Opposites!",
+    "subType": "choiceRound",
+    "modeId": "opposites",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "answerCount": 4,
+    "goal": { "type": "correctAnswers", "value": 4 },
+    "clearReward": 35
+  },
+  {
+    "levelNum": 9,
+    "label": "Flying Things",
+    "subType": "stream",
+    "modeId": "categoryCatch",
+    "category": "flyingThings",
+    "timeLimit": 50,
+    "fallSpeed": 1.2,
+    "itemCount": 5,
+    "goal": { "type": "catchCount", "value": 5 },
+    "clearReward": 40
+  },
+  {
+    "levelNum": 10,
+    "label": "Word Wizard",
+    "subType": "choiceRound",
+    "modeId": "synonyms",
+    "timeLimit": 50,
+    "fallSpeed": 1.2,
+    "answerCount": 4,
+    "goal": { "type": "correctAnswers", "value": 5 },
+    "clearReward": 50
+  }
+]
