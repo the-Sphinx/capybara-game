@@ -1,0 +1,110 @@
+[
+  {
+    "levelNum": 1,
+    "label": "Sprout",
+    "subType": "answer",
+    "modeId": "answer_add",
+    "timeLimit": 60,
+    "operation": "addition",
+    "numberRange": [1, 5],
+    "answerCount": 2,
+    "goal": { "type": "correctAnswers", "value": 3 },
+    "clearReward": 15
+  },
+  {
+    "levelNum": 2,
+    "label": "Seedling",
+    "subType": "answer",
+    "modeId": "answer_add",
+    "timeLimit": 60,
+    "operation": "addition",
+    "numberRange": [1, 10],
+    "answerCount": 3,
+    "goal": { "type": "correctAnswers", "value": 5 },
+    "clearReward": 20
+  },
+  {
+    "levelNum": 3,
+    "label": "Even Harvest",
+    "subType": "collection",
+    "modeId": "collect_even",
+    "timeLimit": 55,
+    "numberRange": [1, 15],
+    "goal": { "type": "catchCount", "value": 8 },
+    "clearReward": 25
+  },
+  {
+    "levelNum": 4,
+    "label": "Odd Garden",
+    "subType": "collection",
+    "modeId": "collect_odd",
+    "timeLimit": 55,
+    "numberRange": [1, 15],
+    "goal": { "type": "catchCount", "value": 8 },
+    "clearReward": 25
+  },
+  {
+    "levelNum": 5,
+    "label": "Flowering",
+    "subType": "answer",
+    "modeId": "answer_mixed",
+    "timeLimit": 50,
+    "operation": "mixed",
+    "numberRange": [1, 10],
+    "answerCount": 3,
+    "goal": { "type": "correctAnswers", "value": 7 },
+    "clearReward": 30
+  },
+  {
+    "levelNum": 6,
+    "label": "Triple Vines",
+    "subType": "collection",
+    "modeId": "collect_mult3",
+    "timeLimit": 50,
+    "numberRange": [1, 20],
+    "goal": { "type": "catchCount", "value": 6 },
+    "clearReward": 30
+  },
+  {
+    "levelNum": 7,
+    "label": "High Five",
+    "subType": "collection",
+    "modeId": "collect_mult5",
+    "timeLimit": 45,
+    "numberRange": [1, 20],
+    "goal": { "type": "catchCount", "value": 5 },
+    "clearReward": 35
+  },
+  {
+    "levelNum": 8,
+    "label": "Garden",
+    "subType": "answer",
+    "modeId": "answer_mixed",
+    "timeLimit": 45,
+    "operation": "mixed",
+    "numberRange": [5, 20],
+    "answerCount": 4,
+    "goal": { "type": "correctAnswers", "value": 10 },
+    "clearReward": 45
+  },
+  {
+    "levelNum": 9,
+    "label": "Orchard",
+    "subType": "collection",
+    "modeId": "collect_odd",
+    "timeLimit": 40,
+    "numberRange": [1, 25],
+    "goal": { "type": "catchCount", "value": 10 },
+    "clearReward": 50
+  },
+  {
+    "levelNum": 10,
+    "label": "Grand Garden",
+    "subType": "collection",
+    "modeId": "collect_mult3",
+    "timeLimit": 40,
+    "numberRange": [1, 30],
+    "goal": { "type": "catchCount", "value": 8 },
+    "clearReward": 60
+  }
+]

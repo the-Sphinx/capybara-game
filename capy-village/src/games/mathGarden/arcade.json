@@ -1,0 +1,80 @@
+{
+  "arcadeWeights": {
+    "answer_add":    1,
+    "answer_mixed":  1,
+    "collect_even":  2,
+    "collect_odd":   2,
+    "collect_mult3": 3,
+    "collect_mult5": 2
+  },
+  "modes": [
+    {
+      "id": "answer_add",
+      "subType": "answer",
+      "title": "Addition Garden",
+      "prompt": "Tap the correct answer!",
+      "operation": "addition",
+      "numberRange": [1, 10],
+      "answerCount": 3,
+      "pointsPerCorrect": 10,
+      "wrongFeedback": "Wrong!",
+      "wrongPenalty": 0
+    },
+    {
+      "id": "answer_mixed",
+      "subType": "answer",
+      "title": "Mixed Math",
+      "prompt": "Tap the correct answer!",
+      "operation": "mixed",
+      "numberRange": [1, 15],
+      "answerCount": 3,
+      "pointsPerCorrect": 10,
+      "wrongFeedback": "Wrong!",
+      "wrongPenalty": 0
+    },
+    {
+      "id": "collect_even",
+      "subType": "collection",
+      "title": "Collect Even Numbers",
+      "prompt": "Catch even numbers!",
+      "numberRange": [1, 20],
+      "isCorrect": { "type": "mod_equals", "mod": 2, "result": 0 },
+      "pointsPerCorrect": 2,
+      "wrongFeedback": "Odd!",
+      "wrongPenalty": 1
+    },
+    {
+      "id": "collect_odd",
+      "subType": "collection",
+      "title": "Collect Odd Numbers",
+      "prompt": "Catch odd numbers!",
+      "numberRange": [1, 20],
+      "isCorrect": { "type": "mod_equals", "mod": 2, "result": 1 },
+      "wrongFeedback": "Even!",
+      "wrongPenalty": 1,
+      "pointsPerCorrect": 2
+    },
+    {
+      "id": "collect_mult3",
+      "subType": "collection",
+      "title": "Collect Multiples of 3",
+      "prompt": "Catch multiples of 3!",
+      "numberRange": [1, 20],
+      "isCorrect": { "type": "mod_equals", "mod": 3, "result": 0 },
+      "wrongFeedback": "Not ×3!",
+      "wrongPenalty": 1,
+      "pointsPerCorrect": 5
+    },
+    {
+      "id": "collect_mult5",
+      "subType": "collection",
+      "title": "Collect Multiples of 5",
+      "prompt": "Catch multiples of 5!",
+      "numberRange": [1, 20],
+      "isCorrect": { "type": "mod_equals", "mod": 5, "result": 0 },
+      "wrongFeedback": "Not ×5!",
+      "wrongPenalty": 1,
+      "pointsPerCorrect": 5
+    }
+  ]
+}

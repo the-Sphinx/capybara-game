@@ -3,6 +3,7 @@ import { playerState } from './playerState.js';
 import { equipAccessory, equipPreviewAccessory, renderAccessoryIcon, initPreviewScene } from './capy.js';
 import { gameManager } from './games/GameManager.js';
 import { saveManager } from './SaveManager.js';
+import { openHub } from './ui/HubModal.js';
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────
 export const promptEl = document.createElement('div');
@@ -16,6 +17,7 @@ document.body.appendChild(modalEl);
 
 export function openModal(building) {
   if (building.id === 'capy-store') { openCloset(); return; }
+  if (building.id === 'minigame_hub') { openHub(); return; }
   if (building.gameId) { gameManager.startGame(building.gameId); return; }
   gameState.modalOpen = true;
   promptEl.classList.remove('ui-prompt--visible');

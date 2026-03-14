@@ -61,8 +61,8 @@ const interactables = [
     zone: { x:  6.0, z: -3.1, hw: 1.9, hd: 1.0 } },
   { id: 'bakery',     label: 'Bakery',     message: 'This building will open the bakery shop later.',
     zone: { x:  0.0, z:  4.0, hw: 2.2, hd: 0.9 } },
-  { id: 'watermelon-game', label: 'Watermelon Catch', gameId: 'watermelon_catch', message: '',
-    prompt: 'Press [E] to play Watermelon Catch 🍉',
+  { id: 'minigame_hub', label: 'Minigame Hub', message: '',
+    prompt: 'Press [E] to open Minigame Hub 🎮',
     zone: { x:  2.0, z: -3.5, hw: 1.0, hd: 0.8 } },
 ];
 

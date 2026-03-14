@@ -1,10 +1,12 @@
-import { gameState }    from '../state.js';
+import { gameState }   from '../state.js';
 import { saveManager } from '../SaveManager.js';
 
 class GameManager {
   constructor() {
-    this._registry   = new Map();
-    this._activeGame = null;
+    this._registry      = new Map();
+    this._levels        = new Map();
+    this._arcadeConfigs = new Map();
+    this._activeGame    = null;
 
     this._overlay = document.createElement('div');
     this._overlay.id = 'game-overlay';
@@ -16,7 +18,23 @@ class GameManager {
     this._registry.set(gameId, factory);
   }
 
-  startGame(gameId) {
+  registerLevels(gameId, levels) {
+    this._levels.set(gameId, levels);
+  }
+
+  registerArcadeConfig(gameId, config) {
+    this._arcadeConfigs.set(gameId, config);
+  }
+
+  getLevels(gameId) {
+    return this._levels.get(gameId) ?? [];
+  }
+
+  getArcadeConfig(gameId) {
+    return this._arcadeConfigs.get(gameId) ?? null;
+  }
+
+  startGame(gameId, levelConfig = null) {
     const factory = this._registry.get(gameId);
     if (!factory) {
       console.warn(`GameManager: no game registered for "${gameId}"`);
@@ -26,7 +44,7 @@ class GameManager {
 
     gameState.modalOpen = true;
 
-    const game = factory();
+    const game = factory(levelConfig);
     game._onFinish = (result) => this.endGame(result);
     this._activeGame = game;
 
@@ -46,9 +64,6 @@ class GameManager {
       if (typeof result.coinsEarned === 'number' && result.coinsEarned > 0) {
         saveManager.addCoins(result.coinsEarned);
         console.log(`[GameManager] +${result.coinsEarned} coins → total ${saveManager.getData().coins}`);
-      }
-      if (result.gameId === 'watermelon_catch' && result.stats?.mode != null) {
-        saveManager.recordScore('watermelonCatch', result.stats.mode, result.score ?? 0);
       }
     }
 

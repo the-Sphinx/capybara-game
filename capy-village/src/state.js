@@ -67,5 +67,6 @@ export const gameState = {
   groundY:      0,
   modalOpen:    false,
   closetOpen:   false,
+  hubOpen:      false,
   activeTarget: null,
 };

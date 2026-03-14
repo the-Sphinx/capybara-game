@@ -1,0 +1,102 @@
+[
+  {
+    "levelNum": 1,
+    "label": "Warm-Up",
+    "timeLimit": 45,
+    "fallSpeedMult": 0.8,
+    "spawnRateMult": 0.8,
+    "specialItems": { "hourglass": false, "clock": false, "bomb": false, "gold": false, "silver": false },
+    "goal": { "type": "score", "value": 10 },
+    "clearReward": 15
+  },
+  {
+    "levelNum": 2,
+    "label": "Getting Going",
+    "timeLimit": 40,
+    "fallSpeedMult": 0.9,
+    "spawnRateMult": 0.9,
+    "specialItems": { "hourglass": true, "clock": false, "bomb": false, "gold": false, "silver": false },
+    "goal": { "type": "score", "value": 20 },
+    "clearReward": 20
+  },
+  {
+    "levelNum": 3,
+    "label": "Catcher's Debut",
+    "timeLimit": 35,
+    "fallSpeedMult": 1.0,
+    "spawnRateMult": 1.0,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": false, "gold": false, "silver": false },
+    "goal": { "type": "catchCount", "value": 15 },
+    "clearReward": 25
+  },
+  {
+    "levelNum": 4,
+    "label": "Combo Starter",
+    "timeLimit": 35,
+    "fallSpeedMult": 1.0,
+    "spawnRateMult": 1.0,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": false, "silver": false },
+    "goal": { "type": "combo", "value": 3 },
+    "clearReward": 30
+  },
+  {
+    "levelNum": 5,
+    "label": "Golden Rush",
+    "timeLimit": 35,
+    "fallSpeedMult": 1.1,
+    "spawnRateMult": 1.1,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true },
+    "goal": { "type": "score", "value": 50 },
+    "clearReward": 40
+  },
+  {
+    "levelNum": 6,
+    "label": "Speed Picker",
+    "timeLimit": 30,
+    "fallSpeedMult": 1.2,
+    "spawnRateMult": 1.2,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true },
+    "goal": { "type": "catchCount", "value": 25 },
+    "clearReward": 45
+  },
+  {
+    "levelNum": 7,
+    "label": "Combo King",
+    "timeLimit": 30,
+    "fallSpeedMult": 1.2,
+    "spawnRateMult": 1.2,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true },
+    "goal": { "type": "combo", "value": 5 },
+    "clearReward": 55
+  },
+  {
+    "levelNum": 8,
+    "label": "High Scorer",
+    "timeLimit": 30,
+    "fallSpeedMult": 1.4,
+    "spawnRateMult": 1.3,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true },
+    "goal": { "type": "score", "value": 80 },
+    "clearReward": 60
+  },
+  {
+    "levelNum": 9,
+    "label": "Marathon",
+    "timeLimit": 30,
+    "fallSpeedMult": 1.4,
+    "spawnRateMult": 1.4,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true },
+    "goal": { "type": "catchCount", "value": 40 },
+    "clearReward": 70
+  },
+  {
+    "levelNum": 10,
+    "label": "Grand Master",
+    "timeLimit": 30,
+    "fallSpeedMult": 1.6,
+    "spawnRateMult": 1.5,
+    "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true },
+    "goal": { "type": "combo", "value": 8 },
+    "clearReward": 100
+  }
+]

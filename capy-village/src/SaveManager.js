@@ -2,15 +2,17 @@ import { playerState } from './playerState.js';
 import { EQUIPPED, CLOSET_TABS } from './state.js';
 
 const STORAGE_KEY = 'capy_save';
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 3;
 
 const DEFAULT_SAVE = {
-  version: 1,
+  version: 3,
   coins: 30,
   ownedItems: [],
   equipped: { hats: null, neck: null },
   progress: {
-    watermelonCatch: { unlockedModes: ['classic'], bestScores: {} }
+    watermelonCatch: { completedLevels: [], unlockedLevels: [1], arcadeBestScores: {} },
+    mathGarden:      { completedLevels: [], unlockedLevels: [1], arcadeBestScores: {} },
+    languageGrove:   { completedLevels: [], unlockedLevels: [1], arcadeBestScores: {} },
   },
   settings: { soundOn: true, musicOn: true },
 };
@@ -22,7 +24,7 @@ class SaveManager {
     let save = null;
     try { save = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (_) {}
     if (!save || typeof save !== 'object') save = structuredClone(DEFAULT_SAVE);
-    if (save.version < CURRENT_VERSION) { this._migrate(save); }
+    if (!save.version || save.version < CURRENT_VERSION) { this._migrate(save); }
     this._data = save;
     // Hydrate in-memory state
     playerState.coins      = this._data.coins;
@@ -75,19 +77,65 @@ class SaveManager {
     this.save();
   }
 
-  // gameId = save key ('watermelonCatch'), modeId = mode string, score = number
-  recordScore(gameId, modeId, score) {
-    const prog = this._data.progress[gameId];
+  // ── Level progress ───────────────────────────────────────────────────────────
+
+  isLevelUnlocked(categoryId, levelNum) {
+    const prog = this._data.progress[categoryId];
+    return prog ? prog.unlockedLevels.includes(levelNum) : false;
+  }
+
+  isLevelCompleted(categoryId, levelNum) {
+    const prog = this._data.progress[categoryId];
+    return prog ? prog.completedLevels.includes(levelNum) : false;
+  }
+
+  completeLevel(categoryId, levelNum) {
+    const prog = this._data.progress[categoryId];
     if (!prog) return;
-    const prev = prog.bestScores[modeId] ?? 0;
-    if (score > prev) {
-      prog.bestScores[modeId] = score;
+    if (!prog.completedLevels.includes(levelNum)) {
+      prog.completedLevels.push(levelNum);
+    }
+    // Unlock next level
+    const next = levelNum + 1;
+    if (!prog.unlockedLevels.includes(next)) {
+      prog.unlockedLevels.push(next);
+    }
+    this.save();
+  }
+
+  // ── Arcade best scores ───────────────────────────────────────────────────────
+
+  recordArcadeScore(categoryId, modeId, score) {
+    const prog = this._data.progress[categoryId];
+    if (!prog) return;
+    if (!prog.arcadeBestScores) prog.arcadeBestScores = {};
+    if ((prog.arcadeBestScores[modeId] ?? -Infinity) < score) {
+      prog.arcadeBestScores[modeId] = score;
       this.save();
     }
   }
 
+  getArcadeBestScores(categoryId) {
+    return { ...(this._data.progress[categoryId]?.arcadeBestScores ?? {}) };
+  }
+
   _migrate(save) {
-    // Future version migrations go here
+    // v1 → v2: replace unlockedModes/bestScores with completedLevels/unlockedLevels
+    if (!save.version || save.version < 2) {
+      save.progress = {
+        watermelonCatch: { completedLevels: [], unlockedLevels: [1], arcadeBestScores: {} },
+        mathGarden:      { completedLevels: [], unlockedLevels: [1], arcadeBestScores: {} },
+        languageGrove:   { completedLevels: [], unlockedLevels: [1], arcadeBestScores: {} },
+      };
+    }
+    // v2 → v3: add arcadeBestScores to each category progress
+    if (save.version < 3) {
+      for (const key of Object.keys(save.progress ?? {})) {
+        if (!save.progress[key].arcadeBestScores) {
+          save.progress[key].arcadeBestScores = {};
+        }
+      }
+    }
     save.version = CURRENT_VERSION;
   }
 }

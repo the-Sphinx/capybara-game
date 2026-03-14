@@ -1,0 +1,22 @@
+{
+  "modes": [
+    {
+      "id": "classic",
+      "title": "Watermelon Catch 🍉",
+      "prompt": "Catch the watermelons!",
+      "wrongFeedback": "🚫",
+      "wrongPenalty": 0,
+      "itemValues": {
+        "slice": 1,
+        "face": 2,
+        "gold": 10,
+        "silver": 5
+      },
+      "timeBonuses": {
+        "hourglass": 10,
+        "clock": 5
+      },
+      "bombPenalty": 10000
+    }
+  ]
+}
