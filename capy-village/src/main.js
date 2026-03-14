@@ -18,6 +18,7 @@ import lgArcade from './games/languageGrove/arcade.json';
 import { soundManager } from './audio/SoundManager.js';
 import { SOUND_CONFIG } from './config/sounds.js';
 import { saveManager } from './SaveManager.js';
+import { updateNPCs } from './npc.js';
 
 // ─── Scene setup ──────────────────────────────────────────────────────────────
 const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
@@ -83,6 +84,7 @@ function animate() {
   const delta = clock.getDelta();
 
   gameManager.update(delta);
+  updateNPCs(delta);
 
   const { capy, mixer, groundY } = gameState;
 
@@ -117,7 +119,7 @@ function animate() {
     const desired = capy.position.clone().add(CAM_OFFSET);
     camera.position.lerp(desired, CAM_LERP);
     camTarget.copy(capy.position);
-    camTarget.y += 0.5;
+    camTarget.y += 1.0;
     camera.lookAt(camTarget);
   }
 

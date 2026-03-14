@@ -128,7 +128,7 @@ export function loadCapy(scene) {
       const size = new THREE.Vector3();
       box.getSize(size);
       gameState.groundY = size.y / 2;
-      capy.position.y   = gameState.groundY;
+      capy.position.set(0, gameState.groundY, 4.5);  // start south of central hub
 
       if (gltf.animations?.length > 0) {
         const mixer = new THREE.AnimationMixer(capy);
