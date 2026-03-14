@@ -78,30 +78,30 @@ export function initScene() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  // ACESFilmic tone mapping gives the warm cinematic punch seen in the reference
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
-  renderer.setClearColor(0xFFD880);  // warm amber sky
+  // Reinhard keeps things bright and saturated — matches the warm toy-diorama reference
+  renderer.toneMapping = THREE.ReinhardToneMapping;
+  renderer.toneMappingExposure = 1.5;
+  renderer.setClearColor(0xFFD880);  // warm golden-amber sky matching reference
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  // Narrower FOV + more pull-back = telephoto compression, shows full village diorama
-  const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 200);
-  camera.position.set(0, 14, 14);
+  // FOV 55, camera pulled back — full village visible, matches reference wide diorama view
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.set(0, 13, 13);
   camera.lookAt(0, 0, 0);
 
-  // atan(14/14) = 45° downward — proper isometric diorama angle
-  const CAM_OFFSET = new THREE.Vector3(0, 14, 14);
-  const CAM_LERP   = 0.05;
+  // 45° elevation, distance ~18.4 — camera looks past player into the village ahead
+  const CAM_OFFSET = new THREE.Vector3(0, 13, 13);
+  const CAM_LERP   = 0.08;
   const camTarget  = new THREE.Vector3();
 
-  // Bright warm hemisphere: vibrant sky fill + ground bounce
-  scene.add(new THREE.HemisphereLight(0xFFE070, 0xD4A840, 1.2));
+  // Dominant warm golden fill — matches the glowing bright reference lighting
+  scene.add(new THREE.HemisphereLight(0xFFE8A0, 0xD4D860, 2.4));
 
-  // Main warm sun — bright and saturated, top-left for clear shadows
-  const dirLight = new THREE.DirectionalLight(0xFFF0A0, 1.8);
-  dirLight.position.set(-10, 18, 8);
+  // Subtle directional just for gentle shadow direction — NOT the primary light
+  const dirLight = new THREE.DirectionalLight(0xFFFAE0, 0.6);
+  dirLight.position.set(10, 20, 10);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width  = 2048;
   dirLight.shadow.mapSize.height = 2048;
@@ -112,15 +112,16 @@ export function initScene() {
   dirLight.shadow.camera.right  =  shadowExtent;
   dirLight.shadow.camera.top    =  shadowExtent;
   dirLight.shadow.camera.bottom = -shadowExtent;
+  dirLight.shadow.intensity = 0.20;  // very faint shadows — reference has almost none
   scene.add(dirLight);
 
-  // Soft fill from opposite side to prevent harsh shadows
-  const fillLight = new THREE.DirectionalLight(0xFFD8A0, 0.6);
-  fillLight.position.set(8, 6, -6);
+  // Warm fill from front to eliminate any residual dark faces
+  const fillLight = new THREE.DirectionalLight(0xFFEDD0, 0.5);
+  fillLight.position.set(-6, 8, -6);
   scene.add(fillLight);
 
-  // Warm fog matches sky color
-  scene.fog = new THREE.FogExp2(0xFFD880, 0.012);
+  // Warm golden fog matches sky — very subtle so far edges fade softly
+  scene.fog = new THREE.FogExp2(0xFFD880, 0.006);
 
   const groundSize = (BOUND + 8) * 2;
   const ground = new THREE.Mesh(

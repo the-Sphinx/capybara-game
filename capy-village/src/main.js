@@ -119,7 +119,8 @@ function animate() {
     const desired = capy.position.clone().add(CAM_OFFSET);
     camera.position.lerp(desired, CAM_LERP);
     camTarget.copy(capy.position);
-    camTarget.y += 1.0;
+    camTarget.y += 1.5;
+    camTarget.z -= 3.0;  // look past player into the village — player sits lower in frame
     camera.lookAt(camTarget);
   }
 
