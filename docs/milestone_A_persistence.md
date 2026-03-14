@@ -13,6 +13,8 @@ writing of persistent data.
 
 ## Data To Persist
 
+Sample data to be saved
+
 ``` json
 {
   "version": 1,

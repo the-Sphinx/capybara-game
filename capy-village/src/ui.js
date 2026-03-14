@@ -2,6 +2,7 @@ import { gameState, EQUIPPED, SELECTED, CLOSET_TABS } from './state.js';
 import { playerState } from './playerState.js';
 import { equipAccessory, equipPreviewAccessory, renderAccessoryIcon, initPreviewScene } from './capy.js';
 import { gameManager } from './games/GameManager.js';
+import { saveManager } from './SaveManager.js';
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────
 export const promptEl = document.createElement('div');
@@ -251,8 +252,8 @@ function showCoinAnimation(price) {
 function handleBuy(tabKey, anchor, accId) {
   const item = getTabItem(tabKey, accId);
   showCoinAnimation(item.price);
-  playerState.coins -= item.price;
-  playerState.ownedItems.push(accId);
+  saveManager.spendCoins(item.price);
+  saveManager.unlockItem(accId);
   // Item becomes owned only — player must press EQUIP separately
   buildClosetPanel();
 }
@@ -263,8 +264,7 @@ function handleUnequip(anchor, tabKey) {
   equipAccessory(anchor, null);
   equipPreviewAccessory(anchor, null);   // clears preview
   SELECTED[anchor] = prevSelected;       // restore card highlight
-  EQUIPPED[anchor] = null;
-  playerState.equipped[tabKey] = null;
+  saveManager.unequipItem(tabKey);
   buildClosetPanel();
 }
 
@@ -273,8 +273,7 @@ function handleEquip(anchor, accId) {
   const tabKey = anchorToTabKey(anchor);
   equipAccessory(anchor, accId);
   equipPreviewAccessory(anchor, accId); // sync preview to world capy
-  EQUIPPED[anchor] = accId;
-  playerState.equipped[tabKey] = accId;
+  saveManager.equipItem(tabKey, accId);
   buildClosetPanel(); // stay open, button flips to UNEQUIP
 }
 

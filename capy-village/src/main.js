@@ -8,10 +8,12 @@ import { gameManager } from './games/GameManager.js';
 import { WatermelonCatchGame } from './games/WatermelonCatchGame.js';
 import { soundManager } from './audio/SoundManager.js';
 import { SOUND_CONFIG } from './config/sounds.js';
+import { saveManager } from './SaveManager.js';
 
 // ─── Scene setup ──────────────────────────────────────────────────────────────
 const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
 buildVillage(scene);
+saveManager.load();   // must run before loadCapy reads EQUIPPED
 loadCapy(scene);
 
 // ─── Audio ────────────────────────────────────────────────────────────────────
@@ -21,9 +23,10 @@ soundManager.load(SOUND_CONFIG);
 gameManager.register('watermelon_catch', () => new WatermelonCatchGame());
 
 // Dev helpers
-window.ACCESSORIES = ACCESSORIES;
-window._openCloset = () => openCloset();
-window._startGame  = (id) => gameManager.startGame(id);
+window.ACCESSORIES   = ACCESSORIES;
+window._openCloset   = () => openCloset();
+window._startGame    = (id) => gameManager.startGame(id);
+window._saveManager  = saveManager;
 
 // ─── Keyboard ─────────────────────────────────────────────────────────────────
 const keys = {};

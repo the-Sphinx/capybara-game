@@ -1,5 +1,5 @@
-import { gameState }   from '../state.js';
-import { playerState } from '../playerState.js';
+import { gameState }    from '../state.js';
+import { saveManager } from '../SaveManager.js';
 
 class GameManager {
   constructor() {
@@ -44,8 +44,11 @@ class GameManager {
     if (result) {
       console.log('[GameManager] result:', result);
       if (typeof result.coinsEarned === 'number' && result.coinsEarned > 0) {
-        playerState.coins += result.coinsEarned;
-        console.log(`[GameManager] +${result.coinsEarned} coins → total ${playerState.coins}`);
+        saveManager.addCoins(result.coinsEarned);
+        console.log(`[GameManager] +${result.coinsEarned} coins → total ${saveManager.getData().coins}`);
+      }
+      if (result.gameId === 'watermelon_catch' && result.stats?.mode != null) {
+        saveManager.recordScore('watermelonCatch', result.stats.mode, result.score ?? 0);
       }
     }
 
