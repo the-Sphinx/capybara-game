@@ -116,12 +116,7 @@ function animate() {
 
     updateOcclusion(camera);
 
-    const desired = capy.position.clone().add(CAM_OFFSET);
-    camera.position.lerp(desired, CAM_LERP);
-    camTarget.copy(capy.position);
-    camTarget.y += 1.5;
-    camTarget.z -= 3.0;  // look past player into the village — player sits lower in frame
-    camera.lookAt(camTarget);
+    camera.lookAt(0, 1.2, 0);  // fixed look at plaza center
   }
 
   if (mixer) mixer.update(delta);

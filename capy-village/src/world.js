@@ -86,14 +86,14 @@ export function initScene() {
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  // FOV 55, camera pulled back — full village visible, matches reference wide diorama view
-  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-  camera.position.set(0, 13, 13);
-  camera.lookAt(0, 0, 0);
+  // FOV 36, fixed diorama camera — pitch ~35.9° matches toy village reference
+  const camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.set(0, 7, 8);
+  camera.lookAt(0, 1.2, 0);
 
-  // 45° elevation, distance ~18.4 — camera looks past player into the village ahead
-  const CAM_OFFSET = new THREE.Vector3(0, 13, 13);
-  const CAM_LERP   = 0.08;
+  // Kept for reference — CAM_LERP=0 means camera never moves from initScene position
+  const CAM_OFFSET = new THREE.Vector3(0, 7, 8);
+  const CAM_LERP   = 0;
   const camTarget  = new THREE.Vector3();
 
   // Dominant warm golden fill — matches the glowing bright reference lighting
@@ -123,7 +123,7 @@ export function initScene() {
   // Warm golden fog matches sky — very subtle so far edges fade softly
   scene.fog = new THREE.FogExp2(0xFFD880, 0.006);
 
-  const groundSize = (BOUND + 8) * 2;
+  const groundSize = 30;
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(groundSize, groundSize),
     new THREE.MeshStandardMaterial({ color: 0x6DC85A, roughness: 0.95, metalness: 0.0 })
