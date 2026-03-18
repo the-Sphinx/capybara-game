@@ -1,0 +1,8 @@
+{
+  "name": "capybara-game-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "normalize-assets": "node --experimental-strip-types ./tools/normalize_assets.ts"
+  }
+}
