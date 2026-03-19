@@ -2,6 +2,26 @@
 
 ## 2026-03-20
 
+### Toy Ground And Warm Lighting
+- Implemented `docs/tasks/capy_ground_lighting_task.md`.
+- Replaced the old flat green plane with a layered circular toy-base ground.
+- Added a darker lower ring, lighter inset top surface, and a raised central plaza disk to give the ground more miniature-base character.
+- Added simple procedural variation patches so the main ground no longer reads as a single flat color.
+- Updated the scene light rig to a warmer directional sun, warmer hemisphere fill, and soft ambient support.
+- Enabled physically correct lights and increased ACES exposure slightly for a softer, warmer presentation.
+- Kept authored asset materials unchanged as required.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Verified `npm run publish-assets` succeeds before runtime inspection.
+- Browser-verified the updated scene in a headed automation session and captured a screenshot.
+- Confirmed visually that the flat plane is gone, the center plaza reads separately, and shadows are warmer and softer.
+
+### Known Risks
+- `vite dev` still hit an existing published-layout fallback warning during the live check, so the screenshot used the prototype village rather than the fully authored published village.
+- The new central plaza is origin-based for now rather than layout-driven.
+- Ground variation is intentionally simple and may want one more tuning pass once camera composition is finalized.
+
 ### Blender Normalization Pipeline
 - Implemented `docs/tasks/capy_blender_normalization_pipeline.md`.
 - Replaced the old Node-based asset normalization backend with a Blender CLI pipeline.

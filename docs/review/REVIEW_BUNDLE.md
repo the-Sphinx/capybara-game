@@ -1,87 +1,89 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Blender-based normalization pipeline
+- Task name: Toy ground and warm lighting pass
 - Date: 2026-03-20
-- Time: 00:34 +03
+- Time: 00:49 +03
 - Branch: scene-restructure
-- Commit hash: 9eaef44
+- Commit hash: 982d5a5
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Replace the texture-stripping Node GLB normalization path with a Blender-backed pipeline that preserves authored embedded materials/textures while still producing unit-height, centered, ground-aligned GLBs for runtime use.
+Replace the prototype flat ground and cooler placeholder lighting with a warmer toy-base presentation that improves softness, depth, and overall miniature-village feel without modifying any asset materials.
 
 ## 3. What Changed
-- Replaced the old Node import-transform-export normalization flow with a Blender CLI wrapper in `tools/normalize_assets.ts`.
-- Added a headless Blender normalization script that imports GLBs, applies rotation/scale, centers X/Y, grounds to Z=0, and scales to target height `1.0` without modifying material graphs.
-- Added GLB inspection/reporting during normalization so each asset logs input/output texture counts, image counts, file size, and an explicit `OK` vs `ERROR - TEXTURES LOST` status.
-- Regenerated the normalized building assets with embedded textures preserved and copied those textured GLBs into `assets/game_ready/models/buildings`.
-- Removed the runtime material-flattening fallback path so published authored GLB materials now render as exported instead of being converted to clay-like placeholders.
+- Replaced the old flat green plane in `world.js` with a layered circular toy-base ground built from stacked cylinders.
+- Added a darker lower ring and inset top platform to create a soft toy-base edge silhouette.
+- Added subtle ground variation using several softly tinted circular patches instead of a single uniform surface.
+- Added a raised central plaza disk with a beige top and darker base ring so the village center reads more intentionally.
+- Updated scene lighting to use physically correct lights, a warm directional sun, warmer hemisphere bounce, and a soft ambient fill.
+- Increased tone-mapping exposure slightly and shifted the background toward a softer sky tone.
+- Kept all asset materials untouched; only scene-level ground/light presentation changed.
 
 ## 4. Files Changed
-- scripts/blender_normalize_glb.py
-- tools/normalize_assets.ts
-- capy-village/src/runtimeLayout.js
-- assets/game_ready/models/buildings/hut_1.glb
-- assets/game_ready/models/buildings/mushroom_house.glb
-- assets/game_ready/models/buildings/book_statue.glb
+- capy-village/src/world.js
 
 ## 5. Architecture Impact
-This changes the asset pipeline and runtime material handling. The normalization backend now depends on Blender for publish-ready building assets, and the runtime no longer rewrites imported authored materials after load. Layout schema, player logic, editor save/load format, and publish manifest structure remain unchanged.
+This affects only runtime scene presentation. It changes the global renderer/light setup and the procedural ground meshes created at scene initialization. It does not alter layout JSON, runtime asset loading, materials authored in GLBs, editor behavior, or player/gameplay data structures.
 
 ## 6. Key Implementation Notes
-The core fix was moving normalization out of the Node GLTFLoader/GLTFExporter path, which was dropping embedded textures from authored GLBs. The new Blender script preserves import/export material data while still applying the geometric normalization steps the editor/runtime expect. `tools/normalize_assets.ts` now inspects GLB JSON chunks directly before and after Blender runs, and fails the asset if output texture/image counts drop.
+The new `createToyGround()` helper builds the ground from simple `MeshStandardMaterial` primitives rather than textures or shader tricks, which keeps the change lightweight and easy to iterate on. The layered cylinders create a more toy-like base profile, while the inset meadow and small circular patches break the previous flat monotone look.
 
-On the runtime side, the earlier emergency fallback that converted imported materials to generic `MeshStandardMaterial` clay colors was removed. Runtime sanitation now limits itself to geometry safety checks, optional normal recomputation, and cloned material preservation so authored textures survive all the way into the live scene.
+The light rig now follows the task spec more closely: warm sun (`0xfff2cc`, `1.2`), warm hemisphere fill (`0xfff5d6` / `0x9dbf87`, `0.6`), and a soft ambient top-up (`0.2`). Renderer settings now enable physically correct lights and slightly brighter ACES exposure (`1.1`) so the scene reads warmer without washing out authored GLB colors.
 
 ## 7. Risks / Known Issues
-- The normalized textured GLBs are now much larger than the stripped versions because embedded textures are intentionally preserved.
-- Blender export logs a repeated warning about multiple shader image nodes per texture sampler; exports still succeed and textures remain present, but that warning should be monitored if more complex assets are added later.
-- The task intentionally does not optimize or compress textures yet, so runtime/download size is higher until a later optimization pass.
-- A temporary local file remains under `tmp/hut_1_blender_normalized.glb`; it is not part of the commit and can be removed later.
+- The visual verification in `vite dev` hit an existing published-layout fallback warning, so the screenshot review used the fallback village rather than the fully authored published layout.
+- The new plaza is centered at the world origin; if future authored layouts move the main centerpiece far away from the origin, that plaza placement may need to become layout-driven.
+- Ground variation is intentionally simple and procedural for now; it improves flatness but is not final environment art.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: preserved, because authored GLB content is now kept intact instead of being stripped during normalization
+- source grounding: preserved, because no authored asset materials or geometry were changed
 - hybrid retrieval: not affected
-- verification layer: improved via normalization-time texture/image preservation checks and explicit per-asset reporting
+- verification layer: not materially changed
 - generic schema: not affected
-- inspectability: improved significantly because authored stylized materials now survive through normalization, game-ready curation, publish, and runtime rendering
+- inspectability: improved, because the world now reads more clearly with a distinct base, softer shadows, and warmer depth cues
 
 ## 9. Testing Performed
-- Ran `npm run normalize-assets` successfully.
-- Verified normalization logs reported `status: OK` for `hut_1`, `mushroom_house`, and `book_statue`.
-- Verified normalized, game-ready, and published `hut_1.glb` all contain `textures: 3` and `images: 3`.
-- Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Previously browser-verified the published runtime village now shows authored colors/materials instead of black/clay fallback rendering.
+- Ran `npm run publish-assets` successfully before the live visual check.
+- Launched the game in a headed automation browser and captured a screenshot of the updated scene.
+- Verified visually that:
+- the flat plane is gone
+- the base now has layered edge definition
+- the center plaza reads as a separate warm platform
+- shadows are softer and visible
+- scene lighting feels warmer overall
 
 ## 10. Example Output / Logs
 ```text
-[Normalize] hut_1.glb
-input textures: 3
-output textures: 3
-input images: 3
-output images: 3
-input size: 29.9 MB
-output size: 29.9 MB
-status: OK
+Renderer:
+- physicallyCorrectLights: true
+- outputColorSpace: THREE.SRGBColorSpace
+- toneMapping: THREE.ACESFilmicToneMapping
+- toneMappingExposure: 1.1
 ```
 
 ```text
-{"input": ".../assets/pipeline/models/raw/hut_1.glb", "output": ".../assets/pipeline/models/normalized/hut_1.glb", "scale_factor": 1.107337852039074, "height": 0.9999999859719537, "min_z": -5.678919842466712e-05, "max_z": 0.999943196773529}
+Lighting:
+- directional: #fff2cc @ 1.2
+- hemisphere sky: #fff5d6
+- hemisphere ground: #9dbf87
+- hemisphere intensity: 0.6
+- ambient: #ffffff @ 0.2
 ```
 
 ```text
-assets/pipeline/models/normalized/hut_1.glb { textures: 3, images: 3, size: 31395392 }
-assets/game_ready/models/buildings/hut_1.glb { textures: 3, images: 3, size: 31395392 }
-capy-village/public/assets/models/buildings/hut_1.glb { textures: 3, images: 3, size: 31395392 }
+Visual verification:
+- Screenshot captured at .playwright-cli/page-2026-03-19T21-47-33-788Z.png
+- Ground shows darker outer base ring, lighter main top, and raised center disk
+- Warm sunlight and soft shadows visible in scene
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the Blender normalization script should eventually emit a tighter grounding tolerance so `min_z` lands exactly on zero rather than very close to zero.
-- Inspect whether runtime should keep any optional material diagnostics once the authored asset set stabilizes.
-- Review the larger textured GLB sizes and suggest a later optimization strategy that does not compromise authored look.
+- Review whether the plaza diameter and placement should remain fixed at the origin or become data-driven from the authored layout.
+- Inspect whether the ground patches need slightly more tonal contrast now that textured authored buildings are back in the scene.
+- Review the remaining dev-only layout fallback warning separately so live dev visual checks reflect the published authored village consistently.
 
 ## 12. Suggested Next Step
-Add a texture-safe optimization pass for published assets, such as optional compression or publish-time variants, while keeping the Blender normalization path as the authoritative geometry/material preservation step.
+Tune camera composition and framing against the new toy-base scene so the player and main village cluster read as a stronger hero composition from the default gameplay view.
