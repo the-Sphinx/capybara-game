@@ -4,9 +4,11 @@ export class LayoutEditorUI {
     this.onAction = onAction;
     this.onFieldChange = onFieldChange;
     this.elements = {};
+    this.host = null;
   }
 
   mount(host) {
+    this.host = host;
     host.innerHTML = `
       <div class="layout-editor">
         <header class="layout-editor__topbar">
@@ -24,9 +26,7 @@ export class LayoutEditorUI {
             <button type="button" data-action="new-layout">New Layout</button>
             <button type="button" data-action="load-layout">Load Layout</button>
             <button type="button" data-action="save-layout">Save Layout</button>
-            <button type="button" data-action="duplicate-selected">Duplicate Selected</button>
-            <button type="button" data-action="delete-selected">Delete Selected</button>
-            <button type="button" data-action="toggle-snap" data-state="off">Snap: Off</button>
+            <button type="button" data-action="toggle-snap" data-state="on">Snap: On</button>
             <button type="button" data-action="toggle-grid" data-state="on">Grid: On</button>
             <button type="button" data-action="reset-view">Reset View</button>
           </div>
@@ -52,20 +52,19 @@ export class LayoutEditorUI {
               <span data-role="selected-label">No selection</span>
             </div>
             <div class="layout-editor__property-grid">
-              ${this.renderReadonlyField('Object ID', 'object-id')}
-              ${this.renderReadonlyField('Asset ID', 'asset-id')}
+              ${this.renderReadonlyField('Asset Name', 'asset-name')}
               ${this.renderTripletInputs('Position', 'position')}
               ${this.renderTripletInputs('Rotation', 'rotation')}
-              ${this.renderTripletInputs('Scale', 'scale')}
+              ${this.renderScalarInput('Scale', 'scale')}
             </div>
             <div class="layout-editor__property-actions">
+              <button type="button" data-action="duplicate-selected">Duplicate Selected</button>
+              <button type="button" data-action="delete-selected">Delete Selected</button>
               <button type="button" data-action="reset-rotation">Reset Rotation</button>
               <button type="button" data-action="reset-scale">Reset Scale</button>
               <button type="button" data-action="move-to-ground">Move To Ground</button>
             </div>
             <div class="layout-editor__help">
-              <p>Click an asset to spawn it.</p>
-              <p>Click an object to select it.</p>
               <p>Drag on the ground plane to move.</p>
             </div>
           </aside>
@@ -78,8 +77,7 @@ export class LayoutEditorUI {
     this.elements.status = host.querySelector('[data-role="status"]');
     this.elements.selectedLabel = host.querySelector('[data-role="selected-label"]');
     this.elements.layoutName = host.querySelector('[data-role="layout-name"]');
-    this.elements.objectId = host.querySelector('[data-role="object-id"]');
-    this.elements.assetId = host.querySelector('[data-role="asset-id"]');
+    this.elements.assetName = host.querySelector('[data-role="asset-name"]');
 
     this.bindActions(host);
     this.bindInputs(host);
@@ -99,12 +97,27 @@ export class LayoutEditorUI {
       <fieldset class="layout-editor__triplet" data-role="${group}">
         <legend>${label}</legend>
         ${['x', 'y', 'z'].map((axis) => `
-          <label>
-            <span>${axis.toUpperCase()}</span>
-            <input type="number" step="0.1" data-group="${group}" data-axis="${axis}" />
+          <label class="layout-editor__triplet-field">
+            <span class="layout-editor__axis-label">${axis.toUpperCase()}</span>
+            <input
+              type="number"
+              step="0.1"
+              aria-label="${label} ${axis.toUpperCase()}"
+              data-group="${group}"
+              data-axis="${axis}"
+            />
           </label>
         `).join('')}
       </fieldset>
+    `;
+  }
+
+  renderScalarInput(label, group) {
+    return `
+      <label class="layout-editor__field">
+        <span>${label}</span>
+        <input type="number" step="0.1" min="0.1" data-group="${group}" data-axis="uniform" />
+      </label>
     `;
   }
 
@@ -155,20 +168,23 @@ export class LayoutEditorUI {
   updateSelection(details) {
     const hasSelection = !!details;
     this.elements.selectedLabel.textContent = hasSelection ? details.id : 'No selection';
-    this.elements.objectId.value = hasSelection ? details.id : '';
-    this.elements.assetId.value = hasSelection ? details.assetId : '';
+    this.elements.assetName.value = hasSelection ? details.assetName : '';
 
-    for (const group of ['position', 'rotation', 'scale']) {
+    for (const group of ['position', 'rotation']) {
       for (const axis of ['x', 'y', 'z']) {
-        const input = document.querySelector(`input[data-group="${group}"][data-axis="${axis}"]`);
+        const input = this.host.querySelector(`input[data-group="${group}"][data-axis="${axis}"]`);
         input.disabled = !hasSelection;
         input.value = hasSelection ? details[group][axis] : '';
       }
     }
+
+    const scaleInput = this.host.querySelector('input[data-group="scale"][data-axis="uniform"]');
+    scaleInput.disabled = !hasSelection;
+    scaleInput.value = hasSelection ? details.scale.uniform : '';
   }
 
   setToggleState(action, enabled) {
-    const button = document.querySelector(`[data-action="${action}"]`);
+    const button = this.host.querySelector(`[data-action="${action}"]`);
     if (!button) {
       return;
     }

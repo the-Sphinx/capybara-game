@@ -56,16 +56,17 @@ input {
 
 .layout-editor__topbar {
   display: grid;
-  grid-template-columns: auto auto 1fr;
-  gap: 18px;
-  padding: 18px 22px;
+  grid-template-columns: minmax(240px, 1.15fr) minmax(220px, 260px) minmax(0, 1.7fr);
+  gap: 16px;
+  padding: 16px 20px;
   align-items: start;
 }
 
 .layout-editor__title-group h1 {
   margin: 0;
   font-family: 'Fredoka', sans-serif;
-  font-size: 28px;
+  font-size: clamp(24px, 2vw, 28px);
+  line-height: 1.05;
 }
 
 .layout-editor__title-group p {
@@ -75,8 +76,10 @@ input {
 
 .layout-editor__layout-meta label {
   display: grid;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   font-weight: 800;
 }
 
@@ -85,28 +88,41 @@ input {
 .layout-editor__triplet input {
   border: 1px solid rgba(37, 86, 92, 0.22);
   border-radius: 14px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   background: rgba(255, 255, 255, 0.85);
+  min-width: 0;
+  width: 100%;
 }
 
 .layout-editor__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 8px;
   justify-content: flex-end;
+  align-items: center;
+  overflow-x: auto;
+  padding-bottom: 10px;
 }
 
 .layout-editor__actions button,
 .layout-editor__property-actions button,
 .layout-editor__asset-card {
   border: 0;
-  border-radius: 16px;
-  padding: 11px 15px;
+  border-radius: 14px;
+  padding: 8px 12px;
   background: linear-gradient(180deg, #ffe9c3 0%, #ffd39d 100%);
   color: #6b3f1d;
   cursor: pointer;
   font-weight: 800;
+  font-size: 14px;
+  line-height: 1.15;
   box-shadow: 0 4px 0 rgba(178, 119, 41, 0.3);
+}
+
+.layout-editor__actions button {
+  min-height: 42px;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .layout-editor__actions button[data-state="on"] {
@@ -116,7 +132,7 @@ input {
 
 .layout-editor__body {
   display: grid;
-  grid-template-columns: 280px 1fr 320px;
+  grid-template-columns: 280px minmax(0, 1fr) 376px;
   gap: 16px;
   min-height: 0;
 }
@@ -126,6 +142,7 @@ input {
   flex-direction: column;
   min-height: 0;
   padding: 18px;
+  overflow: hidden;
 }
 
 .layout-editor__panel-header {
@@ -160,6 +177,7 @@ input {
   gap: 6px;
   width: 100%;
   text-align: left;
+  padding: 16px 18px;
 }
 
 .layout-editor__asset-id {
@@ -209,6 +227,7 @@ input {
 .layout-editor__property-grid {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .layout-editor__field,
@@ -218,6 +237,7 @@ input {
   margin: 0;
   padding: 0;
   border: 0;
+  min-width: 0;
 }
 
 .layout-editor__field span,
@@ -231,26 +251,50 @@ input {
 
 .layout-editor__triplet {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 10px;
+  row-gap: 6px;
 }
 
 .layout-editor__triplet legend {
   grid-column: 1 / -1;
 }
 
-.layout-editor__triplet label {
+.layout-editor__triplet-field {
   display: grid;
-  gap: 6px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0px;
+  min-width: 0;
 }
 
-.layout-editor__triplet label span {
+.layout-editor__axis-label {
   font-size: 12px;
+  font-weight: 800;
+  color: rgba(35, 66, 69, 0.72);
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.layout-editor__triplet input {
+  font-size: 16px;
+  padding: 11px 12px;
+}
+
+.layout-editor__field input[readonly] {
+  font-size: 15px;
 }
 
 .layout-editor__property-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.layout-editor__property-actions button:last-child {
+  grid-column: 1 / -1;
 }
 
 .layout-editor__help {
@@ -275,7 +319,7 @@ input {
 
 @media (max-width: 1180px) {
   .layout-editor__body {
-    grid-template-columns: 240px 1fr 280px;
+    grid-template-columns: 240px minmax(0, 1fr) 320px;
   }
 
   .layout-editor__topbar {
@@ -283,7 +327,7 @@ input {
   }
 
   .layout-editor__actions {
-    justify-content: flex-start;
+    justify-content: start;
   }
 }
 

@@ -43,6 +43,12 @@ function vectorToForm(object3D) {
   };
 }
 
+function uniformScaleToForm(object3D) {
+  return {
+    uniform: object3D.x.toFixed(2),
+  };
+}
+
 export class LayoutEditor {
   constructor(host) {
     this.host = host;
@@ -51,7 +57,7 @@ export class LayoutEditor {
     this.assetCache = new Map();
     this.layoutObjects = new Map();
     this.loader = new GLTFLoader();
-    this.snapState = { enabled: false, step: 0.5, keepOnGround: true };
+    this.snapState = { enabled: true, step: 0.5, keepOnGround: true };
     this.gridVisible = true;
     this.nextObjectIndex = 1;
     this.layoutName = initialLayout.layoutName || 'village_hub_v1';
@@ -137,8 +143,10 @@ export class LayoutEditor {
     this.ground = ground;
     this.scene.add(ground);
 
-    this.gridHelper = new THREE.GridHelper(60, 60, 0x5a8f69, 0x89b992);
+    this.gridHelper = new THREE.GridHelper(60, 120, 0x426241, 0x7fa070);
     this.gridHelper.position.y = 0.01;
+    this.gridHelper.material.transparent = true;
+    this.gridHelper.material.opacity = 0.84;
     this.scene.add(this.gridHelper);
 
     this.sceneObjectsGroup = new THREE.Group();
@@ -287,7 +295,7 @@ export class LayoutEditor {
     }
 
     if (field === 'scale') {
-      selected.scale[value.axis] = value.value;
+      selected.scale.setScalar(value.value);
     }
 
     this.onObjectTransformed(selected);
@@ -384,14 +392,14 @@ export class LayoutEditor {
 
     this.ui.updateSelection({
       id: root.userData.editorObjectId,
-      assetId: root.userData.assetId,
+      assetName: root.userData.assetId,
       position: vectorToForm(root.position),
       rotation: {
         x: toDegrees(root.rotation.x).toFixed(2),
         y: toDegrees(root.rotation.y).toFixed(2),
         z: toDegrees(root.rotation.z).toFixed(2),
       },
-      scale: vectorToForm(root.scale),
+      scale: uniformScaleToForm(root.scale),
     });
   }
 
