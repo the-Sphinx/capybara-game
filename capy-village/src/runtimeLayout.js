@@ -7,24 +7,183 @@ const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
   position: [0, 0, 2],
   rotation: [0, 180, 0],
 });
+const FALLBACK_COLOR = 0xB89A74;
 
 function withBaseUrl(assetPath) {
   const normalized = assetPath.startsWith('/') ? assetPath.slice(1) : assetPath;
   return `${import.meta.env.BASE_URL}${normalized}`;
 }
 
-function clonePublishedScene(scene) {
+function getMaterialArray(material) {
+  if (!material) {
+    return [];
+  }
+  return Array.isArray(material) ? material : [material];
+}
+
+function hasVertexColors(geometry) {
+  return !!geometry?.attributes?.color;
+}
+
+function ensureGeometryNormals(geometry) {
+  const position = geometry?.attributes?.position;
+  const normals = geometry?.attributes?.normal;
+  const hasValidNormals = !!position && !!normals && normals.count === position.count;
+
+  if (!position) {
+    return 'missing-position';
+  }
+
+  if (!hasValidNormals) {
+    geometry.computeVertexNormals();
+    return 'recomputed';
+  }
+
+  return 'present';
+}
+
+function ensureGeometryBoundingBox(geometry) {
+  if (!geometry.boundingBox) {
+    geometry.computeBoundingBox();
+  }
+
+  if (!geometry.boundingBox) {
+    return false;
+  }
+
+  return Number.isFinite(geometry.boundingBox.min.x)
+    && Number.isFinite(geometry.boundingBox.min.y)
+    && Number.isFinite(geometry.boundingBox.min.z)
+    && Number.isFinite(geometry.boundingBox.max.x)
+    && Number.isFinite(geometry.boundingBox.max.y)
+    && Number.isFinite(geometry.boundingBox.max.z);
+}
+
+function createFallbackMaterial({ useVertexColors, side = THREE.FrontSide } = {}) {
+  return new THREE.MeshStandardMaterial({
+    color: FALLBACK_COLOR,
+    roughness: 0.92,
+    metalness: 0.0,
+    vertexColors: useVertexColors,
+    side,
+  });
+}
+
+function isReadableMaterial(material, useVertexColors) {
+  if (!material?.isMaterial) {
+    return false;
+  }
+
+  if (useVertexColors) {
+    return true;
+  }
+
+  if (material.map || material.emissiveMap) {
+    return true;
+  }
+
+  if (!material.color) {
+    return false;
+  }
+
+  return material.color.getHex() !== 0x000000;
+}
+
+function sanitizeMaterial(material, geometry) {
+  const useVertexColors = hasVertexColors(geometry);
+  const sourceMaterial = material?.isMaterial ? material.clone() : null;
+
+  if (!sourceMaterial) {
+    return { material: createFallbackMaterial({ useVertexColors }), fallbackApplied: true };
+  }
+
+  if (!isReadableMaterial(sourceMaterial, useVertexColors)) {
+    return {
+      material: createFallbackMaterial({ useVertexColors, side: sourceMaterial.side ?? THREE.FrontSide }),
+      fallbackApplied: true,
+    };
+  }
+
+  const hasLoadedMap = !!sourceMaterial.map?.image;
+  const sourceColorHex = sourceMaterial.color?.getHex?.() ?? null;
+  const shouldUseWarmFallback = !useVertexColors && !hasLoadedMap
+    && (sourceColorHex === 0xffffff || sourceColorHex === 0x000000);
+
+  if (shouldUseWarmFallback) {
+    return {
+      material: createFallbackMaterial({ useVertexColors, side: sourceMaterial.side ?? THREE.FrontSide }),
+      fallbackApplied: true,
+    };
+  }
+
+  const readableMaterial = new THREE.MeshStandardMaterial({
+    color: sourceMaterial.color?.clone() ?? new THREE.Color(FALLBACK_COLOR),
+    map: hasLoadedMap ? sourceMaterial.map : null,
+    emissive: sourceMaterial.emissive?.clone?.() ?? new THREE.Color(0x000000),
+    emissiveMap: sourceMaterial.emissiveMap?.image ? sourceMaterial.emissiveMap : null,
+    roughness: THREE.MathUtils.clamp(sourceMaterial.roughness ?? 0.88, 0.35, 1.0),
+    metalness: THREE.MathUtils.clamp(sourceMaterial.metalness ?? 0.0, 0.0, 0.18),
+    transparent: sourceMaterial.transparent ?? false,
+    opacity: sourceMaterial.opacity ?? 1,
+    alphaTest: sourceMaterial.alphaTest ?? 0,
+    vertexColors: useVertexColors,
+    side: sourceMaterial.side ?? THREE.FrontSide,
+  });
+  readableMaterial.needsUpdate = true;
+
+  return { material: readableMaterial, fallbackApplied: false };
+}
+
+function sanitizeMeshForRuntime(assetId, mesh, { emitLog = true } = {}) {
+  const normalsState = ensureGeometryNormals(mesh.geometry);
+  const bboxValid = ensureGeometryBoundingBox(mesh.geometry);
+  const useVertexColors = hasVertexColors(mesh.geometry);
+
+  const originalMaterials = getMaterialArray(mesh.material);
+  const hadMaterial = originalMaterials.length > 0;
+  let fallbackApplied = false;
+
+  if (Array.isArray(mesh.material)) {
+    mesh.material = mesh.material.map((material) => {
+      const sanitized = sanitizeMaterial(material, mesh.geometry);
+      fallbackApplied ||= sanitized.fallbackApplied;
+      return sanitized.material;
+    });
+  } else {
+    const sanitized = sanitizeMaterial(mesh.material, mesh.geometry);
+    fallbackApplied = sanitized.fallbackApplied;
+    mesh.material = sanitized.material;
+  }
+
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+
+  const firstMaterial = getMaterialArray(mesh.material)[0] ?? null;
+  const colorHex = firstMaterial?.color ? `#${firstMaterial.color.getHexString()}` : 'n/a';
+
+  if (emitLog) {
+    console.info(
+      `[Runtime Asset] ${assetId}\n`
+        + `mesh: ${mesh.name || '(unnamed)'}\n`
+        + `material: ${firstMaterial?.type ?? 'missing'}\n`
+        + `materialColor: ${colorHex}\n`
+        + `vertexColors: ${useVertexColors}\n`
+        + `normals: ${normalsState}\n`
+        + `bboxValid: ${bboxValid}\n`
+        + `materialMissing: ${!hadMaterial}\n`
+        + `fallbackApplied: ${fallbackApplied}`,
+    );
+  }
+}
+
+function clonePublishedScene(scene, assetId) {
   const clone = scene.clone(true);
   clone.traverse((node) => {
     if (!node.isMesh) {
       return;
     }
 
-    node.castShadow = true;
-    node.receiveShadow = true;
-    node.material = Array.isArray(node.material)
-      ? node.material.map((material) => material.clone())
-      : node.material.clone();
+    sanitizeMeshForRuntime(assetId, node, { emitLog: false });
   });
   return clone;
 }
@@ -82,10 +241,15 @@ export async function loadPublishedVillage(scene) {
 
       if (!templateCache.has(object.assetId)) {
         const gltf = await loader.loadAsync(withBaseUrl(assetPath));
+        gltf.scene.traverse((node) => {
+          if (node.isMesh) {
+            sanitizeMeshForRuntime(object.assetId, node);
+          }
+        });
         templateCache.set(object.assetId, gltf.scene);
       }
 
-      const instance = clonePublishedScene(templateCache.get(object.assetId));
+      const instance = clonePublishedScene(templateCache.get(object.assetId), object.assetId);
       applyObjectTransform(instance, object);
       villageGroup.add(instance);
       const collider = getColliderForObject(instance);

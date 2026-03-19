@@ -91,11 +91,14 @@ export function initScene() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setClearColor(0xBFE3FF);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.setClearColor(0xD6E8FF);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
+  scene.background = new THREE.Color(0xD6E8FF);
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(0, 2.5, 4.5);
   camera.lookAt(0, 0.5, 0);
@@ -104,13 +107,14 @@ export function initScene() {
   const CAM_LERP   = 0.1;
   const camTarget  = new THREE.Vector3();
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const hemiLight = new THREE.HemisphereLight(0xCDE1FF, 0xEBE1CD, 0.48);
+  scene.add(hemiLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-  dirLight.position.set(5, 10, 5);
+  const dirLight = new THREE.DirectionalLight(0xFFF4E0, 1.0);
+  dirLight.position.set(7, 9, 4);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width  = 1024;
-  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.mapSize.width  = 2048;
+  dirLight.shadow.mapSize.height = 2048;
   const shadowExtent = BOUND + 6;   // margin beyond walkable area
   dirLight.shadow.camera.near   = 0.1;
   dirLight.shadow.camera.far    = 60;
@@ -123,7 +127,7 @@ export function initScene() {
   const groundSize = (BOUND + 6) * 2;
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(groundSize, groundSize),
-    new THREE.MeshLambertMaterial({ color: 0x88CC88 })
+    new THREE.MeshStandardMaterial({ color: 0x9FC987, roughness: 0.98, metalness: 0.0 })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
