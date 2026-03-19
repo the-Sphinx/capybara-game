@@ -1,114 +1,87 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Imported GLB visibility fix and toy lighting baseline
-- Date: 2026-03-19
-- Time: 23:58 +03
+- Task name: Blender-based normalization pipeline
+- Date: 2026-03-20
+- Time: 00:34 +03
 - Branch: scene-restructure
-- Commit hash: 37d30f0
+- Commit hash: 9eaef44
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Restore readable runtime rendering for imported published GLB world assets and establish a clean toy-village lighting baseline, without changing layout data, world placement, player logic, or editor behavior.
+Replace the texture-stripping Node GLB normalization path with a Blender-backed pipeline that preserves authored embedded materials/textures while still producing unit-height, centered, ground-aligned GLBs for runtime use.
 
 ## 3. What Changed
-- Added runtime mesh diagnostics for imported published assets, including material type, material color, vertex-color usage, normals state, bounding-box validity, missing-material status, and fallback usage.
-- Added runtime geometry sanitation so imported meshes recompute vertex normals only when needed and ensure geometry bounding boxes are valid.
-- Added runtime material sanitation that preserves vertex colors, simplifies imported materials to a readable matte `MeshStandardMaterial` baseline, and applies a warm clay fallback for unreadable or effectively blank materials.
-- Added a targeted warm fallback path for white/no-map world meshes that were still rendering as unreadable silhouettes.
-- Updated the main runtime renderer to use `sRGB` output, `ACESFilmicToneMapping`, and exposure `1.0`.
-- Replaced the old ambient-only baseline with a warmer toy-like hemisphere fill plus a warm directional sun, and updated the world background/ground materials to match the softer baseline.
+- Replaced the old Node import-transform-export normalization flow with a Blender CLI wrapper in `tools/normalize_assets.ts`.
+- Added a headless Blender normalization script that imports GLBs, applies rotation/scale, centers X/Y, grounds to Z=0, and scales to target height `1.0` without modifying material graphs.
+- Added GLB inspection/reporting during normalization so each asset logs input/output texture counts, image counts, file size, and an explicit `OK` vs `ERROR - TEXTURES LOST` status.
+- Regenerated the normalized building assets with embedded textures preserved and copied those textured GLBs into `assets/game_ready/models/buildings`.
+- Removed the runtime material-flattening fallback path so published authored GLB materials now render as exported instead of being converted to clay-like placeholders.
 
 ## 4. Files Changed
+- scripts/blender_normalize_glb.py
+- tools/normalize_assets.ts
 - capy-village/src/runtimeLayout.js
-- capy-village/src/world.js
+- assets/game_ready/models/buildings/hut_1.glb
+- assets/game_ready/models/buildings/mushroom_house.glb
+- assets/game_ready/models/buildings/book_statue.glb
 
 ## 5. Architecture Impact
-This affects runtime rendering only. The change does not alter layout JSON, placement logic, player spawning, gameplay systems, or editor workflows. It changes how published GLB world assets are sanitized and shaded after load, and it changes the scene-wide renderer/light baseline used by both authored and fallback worlds.
+This changes the asset pipeline and runtime material handling. The normalization backend now depends on Blender for publish-ready building assets, and the runtime no longer rewrites imported authored materials after load. Layout schema, player logic, editor save/load format, and publish manifest structure remain unchanged.
 
 ## 6. Key Implementation Notes
-The main fix lives in `runtimeLayout.js`. Imported GLB meshes are now inspected and sanitized as they load from the published manifest. If a mesh has no valid normals, normals are recomputed. If it has valid vertex colors, the runtime material keeps them enabled. Imported `MeshPhysicalMaterial` / similar materials are converted into a simpler readable `MeshStandardMaterial` baseline so the village remains inspectable under the lightweight runtime light rig. For meshes that still effectively have no usable color signal, a warm clay fallback material is applied instead.
+The core fix was moving normalization out of the Node GLTFLoader/GLTFExporter path, which was dropping embedded textures from authored GLBs. The new Blender script preserves import/export material data while still applying the geometric normalization steps the editor/runtime expect. `tools/normalize_assets.ts` now inspects GLB JSON chunks directly before and after Blender runs, and fails the asset if output texture/image counts drop.
 
-The lighting update in `world.js` is intentionally conservative. It uses a soft sky background, a hemisphere fill (`#CDE1FF` / `#EBE1CD`, `0.48`), and a warm off-white directional key light (`#FFF4E0`, `1.0`) with ACES filmic tone mapping at exposure `1.0`. This is enough to judge shapes, placement, and relative scale without treating it as final art direction.
+On the runtime side, the earlier emergency fallback that converted imported materials to generic `MeshStandardMaterial` clay colors was removed. Runtime sanitation now limits itself to geometry safety checks, optional normal recomputation, and cloned material preservation so authored textures survive all the way into the live scene.
 
 ## 7. Risks / Known Issues
-- The current fallback still produces a simplified clay-style look for some assets (`hut_1`, `book_statue`) rather than restoring authored final colors, because the imported material data was not producing readable results in runtime.
-- `mushroom_house` keeps its vertex-color path and is more neutral/pale than the clay-fallback assets, so the palette is readable but not yet stylistically unified.
-- Browser verification still shows the harmless `favicon.ico` 404.
-- The runtime diagnostics are intentionally verbose right now; they are useful for this material-repair phase but may be worth gating behind a debug flag later.
+- The normalized textured GLBs are now much larger than the stripped versions because embedded textures are intentionally preserved.
+- Blender export logs a repeated warning about multiple shader image nodes per texture sampler; exports still succeed and textures remain present, but that warning should be monitored if more complex assets are added later.
+- The task intentionally does not optimize or compress textures yet, so runtime/download size is higher until a later optimization pass.
+- A temporary local file remains under `tmp/hut_1_blender_normalized.glb`; it is not part of the commit and can be removed later.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: preserved, because the task only changes runtime rendering treatment after published assets load
+- source grounding: preserved, because authored GLB content is now kept intact instead of being stripped during normalization
 - hybrid retrieval: not affected
-- verification layer: improved via per-mesh runtime diagnostics for imported GLBs
+- verification layer: improved via normalization-time texture/image preservation checks and explicit per-asset reporting
 - generic schema: not affected
-- inspectability: improved significantly because the village is readable again and imported asset material state is now visible in logs
+- inspectability: improved significantly because authored stylized materials now survive through normalization, game-ready curation, publish, and runtime rendering
 
 ## 9. Testing Performed
-- Ran `npm run build` in `capy-village` successfully.
-- Launched the live game in a headed browser and verified the authored runtime village still loads from published layout + manifest.
-- Captured runtime console diagnostics for the loaded published assets and confirmed:
-- `hut_1` preserved mesh normals, had no vertex colors, and used the warm fallback material
-- `mushroom_house` preserved vertex colors and stayed on the non-fallback readable path
-- `book_statue` preserved mesh normals, had no vertex colors, and used the warm fallback material
-- Captured before/after screenshots showing the world assets are no longer black silhouettes and are readable against the environment.
+- Ran `npm run normalize-assets` successfully.
+- Verified normalization logs reported `status: OK` for `hut_1`, `mushroom_house`, and `book_statue`.
+- Verified normalized, game-ready, and published `hut_1.glb` all contain `textures: 3` and `images: 3`.
+- Ran `npm run publish-assets` successfully.
+- Ran `npm run build` successfully in `capy-village`.
+- Previously browser-verified the published runtime village now shows authored colors/materials instead of black/clay fallback rendering.
 
 ## 10. Example Output / Logs
 ```text
-[Runtime Asset] hut_1
-mesh: node_0
-material: MeshStandardMaterial
-materialColor: #b89a74
-vertexColors: false
-normals: present
-bboxValid: true
-materialMissing: false
-fallbackApplied: true
+[Normalize] hut_1.glb
+input textures: 3
+output textures: 3
+input images: 3
+output images: 3
+input size: 29.9 MB
+output size: 29.9 MB
+status: OK
 ```
 
 ```text
-[Runtime Asset] mushroom_house
-mesh: node_0005
-material: MeshStandardMaterial
-materialColor: #ffffff
-vertexColors: true
-normals: present
-bboxValid: true
-materialMissing: false
-fallbackApplied: false
+{"input": ".../assets/pipeline/models/raw/hut_1.glb", "output": ".../assets/pipeline/models/normalized/hut_1.glb", "scale_factor": 1.107337852039074, "height": 0.9999999859719537, "min_z": -5.678919842466712e-05, "max_z": 0.999943196773529}
 ```
 
 ```text
-[Runtime Asset] book_statue
-mesh: node_0
-material: MeshStandardMaterial
-materialColor: #b89a74
-vertexColors: false
-normals: present
-bboxValid: true
-materialMissing: false
-fallbackApplied: true
-```
-
-```text
-Renderer:
-- outputColorSpace: THREE.SRGBColorSpace
-- toneMapping: THREE.ACESFilmicToneMapping
-- toneMappingExposure: 1.0
-
-Lighting:
-- directional: #FFF4E0 @ 1.0
-- hemisphere sky: #CDE1FF
-- hemisphere ground: #EBE1CD
-- hemisphere intensity: 0.48
-- background: #D6E8FF
+assets/pipeline/models/normalized/hut_1.glb { textures: 3, images: 3, size: 31395392 }
+assets/game_ready/models/buildings/hut_1.glb { textures: 3, images: 3, size: 31395392 }
+capy-village/public/assets/models/buildings/hut_1.glb { textures: 3, images: 3, size: 31395392 }
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the clay fallback should stay global for unreadable white/no-map assets or become asset-specific later.
-- Inspect whether the vertex-colored `mushroom_house` should get a small contrast/saturation boost so it sits better beside the fallback-treated assets.
-- Review whether the runtime diagnostics should remain always-on during this phase or move behind a debug toggle once the asset set stabilizes.
+- Review whether the Blender normalization script should eventually emit a tighter grounding tolerance so `min_z` lands exactly on zero rather than very close to zero.
+- Inspect whether runtime should keep any optional material diagnostics once the authored asset set stabilizes.
+- Review the larger textured GLB sizes and suggest a later optimization strategy that does not compromise authored look.
 
 ## 12. Suggested Next Step
-Tune the remaining authored village materials toward a more intentional toy-village palette by replacing the temporary clay fallback on a per-asset basis and nudging the capy/world color relationship so the environment feels more cohesive without losing readability.
+Add a texture-safe optimization pass for published assets, such as optional compression or publish-time variants, while keeping the Blender normalization path as the authoritative geometry/material preservation step.

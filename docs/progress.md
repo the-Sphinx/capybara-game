@@ -1,5 +1,31 @@
 # Progress
 
+## 2026-03-20
+
+### Blender Normalization Pipeline
+- Implemented `docs/tasks/capy_blender_normalization_pipeline.md`.
+- Replaced the old Node-based asset normalization backend with a Blender CLI pipeline.
+- Added `scripts/blender_normalize_glb.py` to import GLBs, apply rotation/scale, ground-align, center, and normalize to unit height without rewriting materials.
+- Updated `tools/normalize_assets.ts` to call Blender headlessly for each registry asset.
+- Added normalization-time GLB inspection so texture count, image count, file size, and preservation status are printed for every asset.
+- Regenerated the normalized building assets with embedded textures preserved.
+- Copied the textured normalized building GLBs into `assets/game_ready/models/buildings`.
+- Kept published runtime assets aligned by re-running the publish step after regeneration.
+- Removed the runtime material-flattening fallback so authored GLB materials now render as exported.
+
+### Self-Check
+- Verified `npm run normalize-assets` succeeds.
+- Verified normalization reported `status: OK` for `hut_1`, `mushroom_house`, and `book_statue`.
+- Verified normalized, game-ready, and published `hut_1.glb` each contain `textures: 3` and `images: 3`.
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Previously browser-verified the published runtime village now shows authored colors and shading instead of stripped fallback materials.
+
+### Known Risks
+- Textured normalized GLBs are much larger than the stripped versions because embedded textures are intentionally preserved.
+- Blender emits a repeated shader-image export warning, but the outputs still retain textures and render correctly.
+- Texture optimization/compression is intentionally deferred to a later task.
+
 ## 2026-03-19
 
 ### GLB Visibility And Lighting
