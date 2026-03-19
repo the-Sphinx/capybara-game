@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "normalize-assets": "node --experimental-strip-types ./tools/normalize_assets.ts",
+    "normalize-capy-assets": "zsh ./scripts/normalize_capy_assets.sh",
+    "verify-capy-assets": "node --experimental-strip-types ./tools/verify_capy_assets.ts",
     "publish-assets": "node --experimental-strip-types ./tools/publish_assets.ts"
   }
 }

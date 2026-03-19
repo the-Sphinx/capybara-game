@@ -125,9 +125,7 @@ export function loadCapy(scene) {
         else node.material = furMaterial;
       });
       const box  = new THREE.Box3().setFromObject(capy);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      gameState.groundY = size.y / 2;
+      gameState.groundY = -box.min.y;
       capy.position.y   = gameState.groundY;
 
       if (gltf.animations?.length > 0) {
