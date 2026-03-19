@@ -3,5 +3,14 @@ dist/
 *.blend1
 .DS_Store
 .claude/settings.local.json
-assets/
 .playwright-cli/
+assets/**/*.glb
+assets/**/*.fbx
+assets/**/*.wav
+assets/**/*.mp3
+assets/**/*.ogg
+assets/**/*.png
+assets/**/*.jpg
+!assets/**/
+!assets/**/*.json
+!assets/**/*.md

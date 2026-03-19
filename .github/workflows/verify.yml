@@ -33,6 +33,7 @@ jobs:
 
       - name: Build
         run: |
+          npm run publish-assets
           cd capy-village
           npm ci
           npm run build

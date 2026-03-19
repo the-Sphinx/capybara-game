@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "normalize-assets": "node --experimental-strip-types ./tools/normalize_assets.ts"
+    "normalize-assets": "node --experimental-strip-types ./tools/normalize_assets.ts",
+    "publish-assets": "node --experimental-strip-types ./tools/publish_assets.ts"
   }
 }
