@@ -86,6 +86,7 @@ async function runBlenderNormalize(asset: AssetEntry): Promise<string> {
   const { stdout, stderr } = await execFileAsync(
     blenderBinary,
     [
+      '--factory-startup',
       '--background',
       '--python',
       blenderScriptPath,
