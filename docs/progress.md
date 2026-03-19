@@ -1,5 +1,27 @@
 # Progress
 
+## 2026-03-19
+
+### Completed
+- Implemented the Phase 1 layout editor from `docs/tasks/capy_layout_editor_phase1_spec.md`.
+- Added a dedicated editor entry page at `capy-village/editor.html`.
+- Added the editor UI, asset palette, selection/highlight flow, transform editing, duplication, deletion, save, and load plumbing.
+- Added `config/layout_schemas/village_layout.schema.json` and an initial `layouts/village_hub_v1.json`.
+- Configured Vite to build both the gameplay app and the editor app.
+- Browser-verified the core manual composition flow with Playwright.
+
+### Self-Check
+- Asset palette reads from the existing registry and spawns normalized asset instances.
+- New objects are selected immediately and expose editable position, rotation, and scale fields.
+- Duplicate and delete are wired to per-instance object ids.
+- Save produces readable layout JSON with Euler rotations in degrees.
+- Build emits `dist/editor.html` alongside the main game entry.
+
+### Known Risks
+- Load-via-file is implemented but was not exercised end-to-end in browser automation during this task.
+- The editor currently downloads layout JSON rather than writing directly into `layouts/`.
+- Dev console still shows a harmless `favicon.ico` 404 and a Three.js duplicate-instance warning.
+
 ## 2026-03-18
 
 ### Completed

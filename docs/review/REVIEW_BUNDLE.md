@@ -1,81 +1,109 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Implement asset normalization pipeline and adopt task/review workflow
-- Date: 2026-03-18
+- Task name: Implement layout editor phase 1
+- Date: 2026-03-19
 - Time: Europe/Istanbul
 - Branch: scene-restructure
-- Commit hash: 738985a
+- Commit hash: 67e0cbb
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Implement the asset normalization pipeline from the task document so raw GLBs are exported as ground-aligned, bottom-centered, unit-height normalized assets, and align the repo workflow around `docs/tasks`, review bundles, and progress tracking.
+Implement the first usable Capy Village layout editor so normalized assets can be placed, selected, transformed, duplicated, deleted, saved to JSON, and reloaded without hand-editing scene code.
 
 ## 3. What Changed
-- Added a root npm entrypoint for the normalization pipeline.
-- Added an asset registry for the current raw building assets.
-- Implemented `tools/normalize_assets.ts` to load GLBs, compute bounds, ground-align, center pivot, scale to height `1`, bake transforms, and export normalized GLBs.
-- Updated the asset normalization task doc under `docs/tasks/` to reflect the unit-height convention.
-- Added `assets/` to `.gitignore` so raw and generated asset files stay out of git.
-- Added the review bundle spec file used for the new workflow.
+- Added a dedicated `editor.html` Vite entry for the layout editor.
+- Built a separate editor UI with top actions, asset palette, viewport, status bar, and selected-object properties panel.
+- Implemented editor scene setup with its own camera, orbit controls, ground plane, and grid helper.
+- Added registry-backed asset loading for normalized GLBs and instance spawning with unique object ids.
+- Added single-selection highlighting, ground-plane dragging, numeric transform editing, duplication, deletion, snap toggle, and grid toggle.
+- Added layout serialization/parsing, validation helpers, a JSON schema, and an initial `village_hub_v1.json` layout file.
+- Configured Vite to build both the gameplay app and the editor page.
 
 ## 4. Files Changed
 - .gitignore
-- package.json
-- config/asset_registry.json
-- tools/normalize_assets.ts
-- docs/tasks/capy_asset_normalization_pipeline.md
-- docs/review_bundle_creation.md
+- capy-village/vite.config.js
+- capy-village/editor.html
+- capy-village/src/editor-main.js
+- capy-village/src/editor/AssetPalette.js
+- capy-village/src/editor/LayoutEditor.js
+- capy-village/src/editor/LayoutEditorUI.js
+- capy-village/src/editor/LayoutSerializer.js
+- capy-village/src/editor/SelectionController.js
+- capy-village/src/editor/TransformController.js
+- capy-village/src/editor/assetRegistry.js
+- capy-village/src/editor/editor.css
+- config/layout_schemas/village_layout.schema.json
+- layouts/village_hub_v1.json
 
 ## 5. Architecture Impact
-This change adds a small asset-prep toolchain outside the game runtime. It does not change the current data model, retrieval pipeline, verifier, evaluation flow, or game UI directly. It introduces a registry-driven preprocessing step that future layout data can depend on for canonical asset dimensions and pivots.
+This adds a new editor-facing app surface alongside the gameplay entry point. It introduces a layout authoring workflow built on top of the asset normalization pipeline and establishes a schema-backed JSON layout format that future world-loading code can consume.
 
 ## 6. Key Implementation Notes
-The pipeline uses Three.js `GLTFLoader` and `GLTFExporter` from the existing `capy-village` dependency tree, avoiding a separate install step. Assets are normalized by height only, with width and depth scaling proportionally. The exported asset convention is now: bottom center pivot, base on `Y = 0`, and baked geometry with effective transform reset.
+The editor is intentionally isolated from the gameplay camera and world code. Normalized assets are resolved from the root asset registry and bundled into the editor build. The current interaction model favors reliability over advanced gizmos: orbit camera plus direct ground-plane dragging, with numeric transform editing in the side panel for precise control.
 
 ## 7. Risks / Known Issues
-- Three.js logs texture-loading warnings in plain Node while parsing these GLBs, so geometry normalization is verified but texture fidelity should be reviewed before relying on this for final art assets.
-- The registry currently contains only the three raw assets present during implementation.
-- The repo has unrelated user-side doc moves and deletions under `docs/`; those were intentionally left out of the implementation commit.
+- Browser verification covered spawn, selection, numeric editing, duplication, and save; loading from a user-picked JSON file is implemented but was not exercised end-to-end in Playwright this round.
+- A harmless `favicon.ico` 404 appears in browser console on the editor page.
+- Three.js logs a warning about multiple instances being imported in dev mode; the editor still loads and behaves correctly, but that is worth revisiting if it starts causing addon issues.
+- The editor currently downloads layout JSON to the browser rather than writing directly back into the repo.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: not applicable to this task
 - hybrid retrieval: not affected
 - verification layer: not affected
-- generic schema: not affected
-- inspectability: preserved via registry-driven inputs and CLI validation output
+- generic schema: improved via the new village layout schema
+- inspectability: preserved via explicit JSON serialization, readable transform fields, and registry-driven assets
 
 ## 9. Testing Performed
-- Ran `npm run normalize-assets` successfully from the repo root.
-- Ran `npm run normalize-assets hut_1` successfully for single-asset mode.
-- Verified exported bounds for all normalized assets: height approximately `1`, `minY = 0`, horizontal center at origin.
+- Ran `npm run build` in `capy-village` successfully after adding the editor entry point.
+- Verified the production build emits both `dist/index.html` and `dist/editor.html`.
+- Launched the editor in a real browser with Playwright against the local Vite server.
+- In-browser flow verified:
+  - spawn `hut_1`
+  - automatic selection and property panel population
+  - numeric rotation edit
+  - numeric scale edit
+  - duplicate selected object
+  - save layout and inspect downloaded JSON output
 
 ## 10. Example Output / Logs
 ```text
-Asset: hut_1
-
-Original Height: 0.903
-Target Height: 1
-Scale Applied: 1.107
-
-Pivot Adjusted: YES
-Ground Adjusted: YES
-
-Exported To:
-assets/normalized_assets/hut_1.glb
+dist/index.html
+dist/editor.html
+dist/assets/editor-D58TBJRi.js
+dist/assets/hut_1-Cw3vMzkg.glb
+dist/assets/book_statue-D0qXl9AV.glb
+dist/assets/mushroom_house-DgfpGVTv.glb
 ```
 
-```text
-assets/normalized_assets/hut_1.glb height=1.000000 minY=0.000000 centerX=0.000000 centerZ=0.000000
-assets/normalized_assets/mushroom_house.glb height=1.000000 minY=0.000000 centerX=0.000000 centerZ=0.000000
-assets/normalized_assets/book_statue.glb height=0.999999 minY=0.000000 centerX=0.000000 centerZ=0.000000
+```json
+{
+  "layoutName": "village_hub_v1",
+  "objects": [
+    {
+      "id": "obj_001",
+      "assetId": "hut_1",
+      "position": [-1, 0, 0],
+      "rotation": [0, 30, 0],
+      "scale": [2.5, 1, 1]
+    },
+    {
+      "id": "obj_002",
+      "assetId": "hut_1",
+      "position": [-0.25, 0, 0.75],
+      "rotation": [0, 30, 0],
+      "scale": [2.5, 1, 1]
+    }
+  ]
+}
 ```
 
 ## 11. Recommended Reviewer Focus
-- Confirm the unit-height normalization convention is the right long-term contract for layout data.
-- Review whether the Node-based Three.js pipeline is acceptable despite current texture warnings.
-- Check whether the registry format should later include canonical metadata like intended world height or category-specific placement hints.
+- Review whether bundling normalized GLBs from the root `assets/normalized_assets/` directory is the right long-term path for editor/runtime parity.
+- Check the transform-editing UX, especially whether phase 1 should keep non-uniform scale fully open or add a uniform-scale toggle soon.
+- Review the new layout JSON contract for any fields that should be reserved now for future world-loading or occupancy phases.
 
 ## 12. Suggested Next Step
-Implement the first layout JSON format and loader that assigns final in-world size to these unit-normalized assets.
+Use the new editor to author the first meaningful village hub layout JSON, then teach the runtime world builder to load that layout instead of relying on hardcoded placeholder placement.
