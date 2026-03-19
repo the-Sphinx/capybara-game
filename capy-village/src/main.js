@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import './style.css';
 import { gameState, ACCESSORIES, EQUIPPED, SELECTED, MOVE_SPEED, BOUND } from './state.js';
-import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable } from './world.js';
+import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable, setInteractablesEnabled } from './world.js';
 import { loadCapy, accessoryMounts, previewAccessoryMounts, previewState } from './capy.js';
 import { promptEl, openModal, closeModal, openCloset, closeCloset } from './ui.js';
 import { closeHub } from './ui/HubModal.js';
@@ -9,6 +9,7 @@ import { gameManager } from './games/GameManager.js';
 import { WatermelonCatchGame } from './games/watermelonCatch/WatermelonCatchGame.js';
 import { MathGardenGame } from './games/mathGarden/MathGardenGame.js';
 import { LanguageGroveGame } from './games/languageGrove/LanguageGroveGame.js';
+import { loadPublishedVillage } from './runtimeLayout.js';
 import wmcAdventure from './games/watermelonCatch/adventure.json';
 import wmcArcade from './games/watermelonCatch/arcade.json';
 import mgAdventure from './games/mathGarden/adventure.json';
@@ -19,66 +20,73 @@ import { soundManager } from './audio/SoundManager.js';
 import { SOUND_CONFIG } from './config/sounds.js';
 import { saveManager } from './SaveManager.js';
 
-// ─── Scene setup ──────────────────────────────────────────────────────────────
-const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
-buildVillage(scene);
-saveManager.load();   // must run before loadCapy reads EQUIPPED
-loadCapy(scene);
-
-// ─── Audio ────────────────────────────────────────────────────────────────────
-soundManager.load(SOUND_CONFIG);
-
-// ─── Register minigames ───────────────────────────────────────────────────────
-gameManager.register('watermelon_catch', (cfg) => new WatermelonCatchGame(cfg));
-gameManager.registerLevels('watermelon_catch', wmcAdventure);
-gameManager.registerArcadeConfig('watermelon_catch', wmcArcade);
-
-gameManager.register('math_garden', (cfg) => new MathGardenGame(cfg));
-gameManager.registerLevels('math_garden', mgAdventure);
-gameManager.registerArcadeConfig('math_garden', mgArcade);
-
-gameManager.register('language_grove', (cfg) => new LanguageGroveGame(cfg));
-gameManager.registerLevels('language_grove', lgAdventure);
-gameManager.registerArcadeConfig('language_grove', lgArcade);
-
-// Dev helpers
-window.ACCESSORIES   = ACCESSORIES;
-window._openCloset   = () => openCloset();
-window._startGame    = (id) => gameManager.startGame(id);
-window._saveManager  = saveManager;
-
-// ─── Keyboard ─────────────────────────────────────────────────────────────────
-const keys = {};
-window.addEventListener('keydown', (e) => {
-  keys[e.code] = true;
-  if (e.code === 'KeyE') {
-    if (gameManager.isGameRunning())     return;
-    if (gameState.closetOpen)            closeCloset();
-    else if (gameState.hubOpen)          closeHub();
-    else if (gameState.modalOpen)        closeModal();
-    else if (gameState.activeTarget)     openModal(gameState.activeTarget);
+async function bootstrap() {
+  // ─── Scene setup ────────────────────────────────────────────────────────────
+  const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
+  const runtimeLayout = await loadPublishedVillage(scene);
+  if (!runtimeLayout.success) {
+    setInteractablesEnabled(true);
+    buildVillage(scene);
+  } else {
+    setInteractablesEnabled(false);
   }
-  if (e.code === 'Escape' && gameState.modalOpen) {
-    if (gameManager.isGameRunning())     return;
-    if (gameState.closetOpen)            closeCloset();
-    else if (gameState.hubOpen)          closeHub();
-    else                                 closeModal();
-  }
-});
-window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+  saveManager.load(); // must run before loadCapy reads EQUIPPED
+  loadCapy(scene, runtimeLayout.player);
 
-// ─── Resize ───────────────────────────────────────────────────────────────────
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  // ─── Audio ──────────────────────────────────────────────────────────────────
+  soundManager.load(SOUND_CONFIG);
 
-// ─── Animate ──────────────────────────────────────────────────────────────────
-const moveDir = new THREE.Vector3();
-const _wp     = new THREE.Vector3();
+  // ─── Register minigames ─────────────────────────────────────────────────────
+  gameManager.register('watermelon_catch', (cfg) => new WatermelonCatchGame(cfg));
+  gameManager.registerLevels('watermelon_catch', wmcAdventure);
+  gameManager.registerArcadeConfig('watermelon_catch', wmcArcade);
 
-function animate() {
+  gameManager.register('math_garden', (cfg) => new MathGardenGame(cfg));
+  gameManager.registerLevels('math_garden', mgAdventure);
+  gameManager.registerArcadeConfig('math_garden', mgArcade);
+
+  gameManager.register('language_grove', (cfg) => new LanguageGroveGame(cfg));
+  gameManager.registerLevels('language_grove', lgAdventure);
+  gameManager.registerArcadeConfig('language_grove', lgArcade);
+
+  // Dev helpers
+  window.ACCESSORIES = ACCESSORIES;
+  window._openCloset = () => openCloset();
+  window._startGame = (id) => gameManager.startGame(id);
+  window._saveManager = saveManager;
+
+  // ─── Keyboard ───────────────────────────────────────────────────────────────
+  const keys = {};
+  window.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+    if (e.code === 'KeyE') {
+      if (gameManager.isGameRunning()) return;
+      if (gameState.closetOpen) closeCloset();
+      else if (gameState.hubOpen) closeHub();
+      else if (gameState.modalOpen) closeModal();
+      else if (gameState.activeTarget) openModal(gameState.activeTarget);
+    }
+    if (e.code === 'Escape' && gameState.modalOpen) {
+      if (gameManager.isGameRunning()) return;
+      if (gameState.closetOpen) closeCloset();
+      else if (gameState.hubOpen) closeHub();
+      else closeModal();
+    }
+  });
+  window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+  // ─── Resize ─────────────────────────────────────────────────────────────────
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // ─── Animate ────────────────────────────────────────────────────────────────
+  const moveDir = new THREE.Vector3();
+  const _wp = new THREE.Vector3();
+
+  function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
 
@@ -181,6 +189,9 @@ function animate() {
     pvCamera.lookAt(0, 0.55, 0);
     pvRenderer.render(pvScene, pvCamera);
   }
+  }
+
+  animate();
 }
 
-animate();
+void bootstrap();

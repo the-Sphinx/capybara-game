@@ -8,11 +8,11 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const assetsToMeasure = [
-  { id: 'capy_idle', path: path.resolve(repoRoot, 'capy-village/public/models/characters/capy_idle.glb') },
-  { id: 'crown', path: path.resolve(repoRoot, 'capy-village/public/models/accessories/crown.glb') },
-  { id: 'chef_hat', path: path.resolve(repoRoot, 'capy-village/public/models/accessories/chef_hat.glb') },
-  { id: 'knit_beanie', path: path.resolve(repoRoot, 'capy-village/public/models/accessories/knit_beanie.glb') },
-  { id: 'scarf_v2', path: path.resolve(repoRoot, 'capy-village/public/models/accessories/scarf_v2.glb') },
+  { id: 'capy_idle', path: path.resolve(repoRoot, 'assets/game_ready/models/characters/capy_idle.glb') },
+  { id: 'crown', path: path.resolve(repoRoot, 'assets/game_ready/models/accessories/crown.glb') },
+  { id: 'chef_hat', path: path.resolve(repoRoot, 'assets/game_ready/models/accessories/chef_hat.glb') },
+  { id: 'knit_beanie', path: path.resolve(repoRoot, 'assets/game_ready/models/accessories/knit_beanie.glb') },
+  { id: 'scarf_v2', path: path.resolve(repoRoot, 'assets/game_ready/models/accessories/scarf_v2.glb') },
 ];
 
 async function main(): Promise<void> {

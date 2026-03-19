@@ -5,7 +5,10 @@ dist/
 .DS_Store
 .claude/settings.local.json
 .playwright-cli/
+capy-village/public/assets/
+capy-village/public/layouts/
 
 # Ignore all of assets/ except game_ready/
 assets/*
 !assets/game_ready/
+!assets/game_ready/**

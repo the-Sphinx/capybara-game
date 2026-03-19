@@ -284,6 +284,10 @@ input {
   font-size: 15px;
 }
 
+.layout-editor__scale-wrap[hidden] {
+  display: none;
+}
+
 .layout-editor__property-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

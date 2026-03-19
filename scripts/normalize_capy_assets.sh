@@ -8,7 +8,7 @@ SCALE_FACTOR="$(
   cd "$ROOT_DIR" &&
     node --input-type=module - <<'JS'
 import { loadGlb, computeBounds } from './tools/lib/gltf_node.ts';
-const { scene } = await loadGlb('./capy-village/public/models/characters/capy_idle.glb');
+const { scene } = await loadGlb('./assets/game_ready/models/characters/capy_idle.glb');
 const bounds = computeBounds(scene);
 if (!bounds || bounds.height <= 0) {
   throw new Error('Could not compute current capy bounds.');

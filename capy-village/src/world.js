@@ -66,7 +66,17 @@ const interactables = [
     zone: { x:  2.0, z: -3.5, hw: 1.0, hd: 0.8 } },
 ];
 
+let interactablesEnabled = true;
+
+export function setInteractablesEnabled(enabled) {
+  interactablesEnabled = enabled;
+}
+
 export function getActiveInteractable(cx, cz) {
+  if (!interactablesEnabled) {
+    return null;
+  }
+
   for (const b of interactables) {
     const z = b.zone;
     if (Math.abs(cx - z.x) < z.hw && Math.abs(cz - z.z) < z.hd) return b;
@@ -233,7 +243,7 @@ export function buildVillage(scene) {
   addCollider(6.0, -6.0, 2.25, 1.9);
   const capyStoreLoader = new GLTFLoader();
   capyStoreLoader.load(
-    `${import.meta.env.BASE_URL}models/buildings/capy_store.glb`,
+    `${import.meta.env.BASE_URL}assets/models/buildings/capy_store.glb`,
     (gltf) => {
       const model = gltf.scene;
       const bbox  = new THREE.Box3().setFromObject(model);

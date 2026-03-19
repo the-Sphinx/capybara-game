@@ -52,10 +52,13 @@ export class LayoutEditorUI {
               <span data-role="selected-label">No selection</span>
             </div>
             <div class="layout-editor__property-grid">
+              ${this.renderReadonlyField('Type', 'selected-type')}
               ${this.renderReadonlyField('Asset Name', 'asset-name')}
               ${this.renderTripletInputs('Position', 'position')}
               ${this.renderTripletInputs('Rotation', 'rotation')}
-              ${this.renderScalarInput('Scale', 'scale')}
+              <div class="layout-editor__scale-wrap" data-role="scale-wrap">
+                ${this.renderScalarInput('Scale', 'scale')}
+              </div>
             </div>
             <div class="layout-editor__property-actions">
               <button type="button" data-action="duplicate-selected">Duplicate Selected</button>
@@ -77,7 +80,9 @@ export class LayoutEditorUI {
     this.elements.status = host.querySelector('[data-role="status"]');
     this.elements.selectedLabel = host.querySelector('[data-role="selected-label"]');
     this.elements.layoutName = host.querySelector('[data-role="layout-name"]');
+    this.elements.selectedType = host.querySelector('[data-role="selected-type"]');
     this.elements.assetName = host.querySelector('[data-role="asset-name"]');
+    this.elements.scaleWrap = host.querySelector('[data-role="scale-wrap"]');
 
     this.bindActions(host);
     this.bindInputs(host);
@@ -168,6 +173,7 @@ export class LayoutEditorUI {
   updateSelection(details) {
     const hasSelection = !!details;
     this.elements.selectedLabel.textContent = hasSelection ? details.id : 'No selection';
+    this.elements.selectedType.value = hasSelection ? details.typeLabel : '';
     this.elements.assetName.value = hasSelection ? details.assetName : '';
 
     for (const group of ['position', 'rotation']) {
@@ -179,8 +185,13 @@ export class LayoutEditorUI {
     }
 
     const scaleInput = this.host.querySelector('input[data-group="scale"][data-axis="uniform"]');
-    scaleInput.disabled = !hasSelection;
+    this.elements.scaleWrap.hidden = hasSelection ? !details.showScale : false;
+    scaleInput.disabled = !(hasSelection && details.scaleEditable);
     scaleInput.value = hasSelection ? details.scale.uniform : '';
+
+    this.setActionEnabled('duplicate-selected', hasSelection && details.canDuplicate);
+    this.setActionEnabled('delete-selected', hasSelection && details.canDelete);
+    this.setActionEnabled('reset-scale', hasSelection && details.scaleEditable);
   }
 
   setToggleState(action, enabled) {
@@ -198,5 +209,14 @@ export class LayoutEditorUI {
     }
 
     button.dataset.state = enabled ? 'on' : 'off';
+  }
+
+  setActionEnabled(action, enabled) {
+    const button = this.host.querySelector(`[data-action="${action}"]`);
+    if (!button) {
+      return;
+    }
+
+    button.disabled = !enabled;
   }
 }

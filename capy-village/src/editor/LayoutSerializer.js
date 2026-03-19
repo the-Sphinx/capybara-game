@@ -12,17 +12,30 @@ function normalizeTransformArray(values) {
   return values.map((value) => roundNumber(value));
 }
 
+export const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
+  position: [0, 0, 2],
+  rotation: [0, 180, 0],
+});
+
 export class LayoutSerializer {
   static createEmptyLayout(layoutName = 'village_hub_v1') {
     return {
       layoutName,
+      player: {
+        position: [...DEFAULT_PLAYER_TRANSFORM.position],
+        rotation: [...DEFAULT_PLAYER_TRANSFORM.rotation],
+      },
       objects: [],
     };
   }
 
-  static serialize(layoutName, objects) {
+  static serialize(layoutName, player, objects) {
     return {
       layoutName,
+      player: {
+        position: normalizeTransformArray(player.position),
+        rotation: normalizeTransformArray(player.rotation),
+      },
       objects: objects.map((object) => ({
         id: object.id,
         assetId: object.assetId,
@@ -40,6 +53,18 @@ export class LayoutSerializer {
 
     if (typeof layout.layoutName !== 'string' || layout.layoutName.trim() === '') {
       return { valid: false, error: 'Layout JSON is missing a valid "layoutName".' };
+    }
+
+    if (!layout.player || typeof layout.player !== 'object') {
+      return { valid: false, error: 'Layout JSON is missing a valid "player" block.' };
+    }
+
+    if (!isVectorTriplet(layout.player.position)) {
+      return { valid: false, error: 'Layout JSON player has an invalid "position".' };
+    }
+
+    if (!isVectorTriplet(layout.player.rotation)) {
+      return { valid: false, error: 'Layout JSON player has an invalid "rotation".' };
     }
 
     if (!Array.isArray(layout.objects)) {

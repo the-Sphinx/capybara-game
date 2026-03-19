@@ -1,5 +1,17 @@
 {
   "layoutName": "village_hub_v1",
+  "player": {
+    "position": [
+      0,
+      0,
+      2
+    ],
+    "rotation": [
+      0,
+      180,
+      0
+    ]
+  },
   "objects": [
     {
       "id": "obj_001",

@@ -10,6 +10,11 @@ const assetsSourceDir = path.resolve(repoRoot, 'assets/game_ready');
 const layoutsSourceDir = path.resolve(repoRoot, 'layouts');
 const assetsTargetDir = path.resolve(repoRoot, 'capy-village/public/assets');
 const layoutsTargetDir = path.resolve(repoRoot, 'capy-village/public/layouts');
+const legacyPublicDirs = [
+  path.resolve(repoRoot, 'capy-village/public/models'),
+  path.resolve(repoRoot, 'capy-village/public/audio'),
+  path.resolve(repoRoot, 'capy-village/public/images'),
+];
 
 type Manifest = Record<string, string>;
 
@@ -73,6 +78,10 @@ async function writeManifest(manifest: Manifest): Promise<void> {
   await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 }
 
+async function removeLegacyPublicDirs(): Promise<void> {
+  await Promise.all(legacyPublicDirs.map((dirPath) => fs.rm(dirPath, { recursive: true, force: true })));
+}
+
 async function publish(): Promise<void> {
   await ensureDirExists(assetsSourceDir, 'Assets source folder');
   await ensureDirExists(layoutsSourceDir, 'Layouts source folder');
@@ -96,6 +105,7 @@ async function publish(): Promise<void> {
     log(`Copied: ${path.basename(sourceFile)}`);
   });
 
+  await removeLegacyPublicDirs();
   log('Done.');
 }
 

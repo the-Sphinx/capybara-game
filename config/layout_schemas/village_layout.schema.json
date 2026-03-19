@@ -2,11 +2,24 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Village Layout",
   "type": "object",
-  "required": ["layoutName", "objects"],
+  "required": ["layoutName", "player", "objects"],
   "properties": {
     "layoutName": {
       "type": "string",
       "minLength": 1
+    },
+    "player": {
+      "type": "object",
+      "required": ["position", "rotation"],
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "rotation": {
+          "$ref": "#/$defs/vector3"
+        }
+      },
+      "additionalProperties": false
     },
     "objects": {
       "type": "array",

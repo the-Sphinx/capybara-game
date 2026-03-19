@@ -29,6 +29,7 @@ export const previewState = {
 window._previewTweak = previewState.tweak;
 
 const _iconCache = {};
+const CAPY_MODEL_PATH = `${import.meta.env.BASE_URL}assets/models/characters/capy_idle.glb`;
 
 // ─── Material helper ──────────────────────────────────────────────────────────
 function applyMaterial(mesh, acc) {
@@ -108,10 +109,10 @@ function loadAccessories(capyScene, scene) {
 }
 
 // ─── Main capy loader ─────────────────────────────────────────────────────────
-export function loadCapy(scene) {
+export function loadCapy(scene, spawnTransform = null) {
   const loader = new GLTFLoader();
   loader.load(
-    `${import.meta.env.BASE_URL}models/characters/capy_idle.glb`,
+    CAPY_MODEL_PATH,
     (gltf) => {
       const capy = gltf.scene;
       scene.add(capy);
@@ -126,7 +127,18 @@ export function loadCapy(scene) {
       });
       const box  = new THREE.Box3().setFromObject(capy);
       gameState.groundY = -box.min.y;
-      capy.position.y   = gameState.groundY;
+      capy.position.set(
+        spawnTransform?.position?.[0] ?? 0,
+        gameState.groundY + (spawnTransform?.position?.[1] ?? 0),
+        spawnTransform?.position?.[2] ?? 0,
+      );
+      if (spawnTransform?.rotation) {
+        capy.rotation.set(
+          THREE.MathUtils.degToRad(spawnTransform.rotation[0] ?? 0),
+          THREE.MathUtils.degToRad(spawnTransform.rotation[1] ?? 0),
+          THREE.MathUtils.degToRad(spawnTransform.rotation[2] ?? 0),
+        );
+      }
 
       if (gltf.animations?.length > 0) {
         const mixer = new THREE.AnimationMixer(capy);
@@ -257,7 +269,7 @@ export function initPreviewScene(previewColEl) {
 
   const pvLoader = new GLTFLoader();
   pvLoader.load(
-    `${import.meta.env.BASE_URL}models/characters/capy_idle.glb`,
+    CAPY_MODEL_PATH,
     (gltf) => {
       const pvCapy = gltf.scene;
       pvCapy.traverse((node) => {

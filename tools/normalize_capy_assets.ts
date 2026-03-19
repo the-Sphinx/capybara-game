@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
-const characterPublicGlb = path.resolve(repoRoot, 'capy-village/public/models/characters/capy_idle.glb');
+const characterGameReadyGlb = path.resolve(repoRoot, 'assets/game_ready/models/characters/capy_idle.glb');
 const characterSourceWithEyesGlb = path.resolve(repoRoot, 'assets/source/models/characters/capy_idle_with_eyes.glb');
 const characterSourceRuntimeGlb = path.resolve(repoRoot, 'assets/source/models/characters/capy_idle.glb');
 
@@ -15,27 +15,27 @@ const accessoryJobs = [
   {
     id: 'crown',
     source: path.resolve(repoRoot, 'assets/source/models/accessories/crown.glb'),
-    runtime: path.resolve(repoRoot, 'capy-village/public/models/accessories/crown.glb'),
+    runtime: path.resolve(repoRoot, 'assets/game_ready/models/accessories/crown.glb'),
   },
   {
     id: 'chef_hat',
     source: path.resolve(repoRoot, 'assets/source/models/accessories/chef_hat.glb'),
-    runtime: path.resolve(repoRoot, 'capy-village/public/models/accessories/chef_hat.glb'),
+    runtime: path.resolve(repoRoot, 'assets/game_ready/models/accessories/chef_hat.glb'),
   },
   {
     id: 'knit_beanie',
     source: path.resolve(repoRoot, 'assets/source/models/accessories/knit_beanie.glb'),
-    runtime: path.resolve(repoRoot, 'capy-village/public/models/accessories/knit_beanie.glb'),
+    runtime: path.resolve(repoRoot, 'assets/game_ready/models/accessories/knit_beanie.glb'),
   },
   {
     id: 'scarf_v2',
     source: path.resolve(repoRoot, 'assets/source/models/accessories/scarf_v2.glb'),
-    runtime: path.resolve(repoRoot, 'capy-village/public/models/accessories/scarf_v2.glb'),
+    runtime: path.resolve(repoRoot, 'assets/game_ready/models/accessories/scarf_v2.glb'),
   },
 ];
 
 async function normalizeCharacterGlb(scaleFactor: number): Promise<void> {
-  const { scene, animations } = await loadGlb(characterPublicGlb);
+  const { scene, animations } = await loadGlb(characterGameReadyGlb);
   const before = computeBounds(scene);
   if (!before || before.height <= 0) {
     throw new Error('Could not compute character bounds from runtime GLB.');
@@ -56,7 +56,7 @@ async function normalizeCharacterGlb(scaleFactor: number): Promise<void> {
 
   await exportGlb(scene, characterSourceWithEyesGlb, animations);
   await exportGlb(scene, characterSourceRuntimeGlb, animations);
-  await exportGlb(scene, characterPublicGlb, animations);
+  await exportGlb(scene, characterGameReadyGlb, animations);
 
   console.log(`[Capy] GLB height ${formatNumber(before.height)} -> ${formatNumber(after.height)} (scale ${formatNumber(scaleFactor)})`);
   console.log(`[Capy] GLB ground alignment minY=${formatNumber(after.minY)} maxY=${formatNumber(after.maxY)}`);
@@ -82,7 +82,7 @@ async function normalizeAccessoryGlb(accessoryId: string, runtimePath: string, s
 }
 
 async function main(): Promise<void> {
-  const { scene } = await loadGlb(characterPublicGlb);
+  const { scene } = await loadGlb(characterGameReadyGlb);
   const currentBounds = computeBounds(scene);
   if (!currentBounds || currentBounds.height <= 0) {
     throw new Error('Could not compute current capy bounds from runtime GLB.');

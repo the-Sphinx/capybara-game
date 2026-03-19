@@ -3,15 +3,17 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import initialLayout from '../../../layouts/village_hub_v1.json';
+import playerPreviewUrl from '../../../assets/game_ready/models/characters/capy_idle.glb?url';
 import { AssetPalette } from './AssetPalette.js';
 import { getAssetRegistry } from './assetRegistry.js';
 import { LayoutEditorUI } from './LayoutEditorUI.js';
-import { LayoutSerializer } from './LayoutSerializer.js';
+import { DEFAULT_PLAYER_TRANSFORM, LayoutSerializer } from './LayoutSerializer.js';
 import { SelectionController } from './SelectionController.js';
 import { TransformController } from './TransformController.js';
 
 const DEFAULT_CAMERA_POSITION = new THREE.Vector3(10, 8, 10);
 const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0.75, 0);
+const PLAYER_PREVIEW_ID = 'player_preview';
 
 function cloneAssetScene(scene) {
   const clone = scene.clone(true);
@@ -49,6 +51,13 @@ function uniformScaleToForm(object3D) {
   };
 }
 
+function clonePlayerTransform(player) {
+  return {
+    position: [...player.position],
+    rotation: [...player.rotation],
+  };
+}
+
 export class LayoutEditor {
   constructor(host) {
     this.host = host;
@@ -61,6 +70,8 @@ export class LayoutEditor {
     this.gridVisible = true;
     this.nextObjectIndex = 1;
     this.layoutName = initialLayout.layoutName || 'village_hub_v1';
+    this.playerPreviewCache = null;
+    this.playerPreview = null;
   }
 
   async init() {
@@ -188,6 +199,14 @@ export class LayoutEditor {
     this.renderer.setSize(viewport.clientWidth, viewport.clientHeight);
   };
 
+  getSelectableRoots() {
+    const roots = [...this.layoutObjects.values()].map((entry) => entry.root);
+    if (this.playerPreview?.root) {
+      roots.push(this.playerPreview.root);
+    }
+    return roots;
+  }
+
   handleViewportPointerDown = (event) => {
     if (event.button !== 0 || this.transformController.dragging) {
       return;
@@ -201,8 +220,8 @@ export class LayoutEditor {
     this.raycaster.setFromCamera(pointer, this.camera);
 
     const meshes = [];
-    for (const entry of this.layoutObjects.values()) {
-      entry.root.traverse((node) => {
+    for (const root of this.getSelectableRoots()) {
+      root.traverse((node) => {
         if (node.isMesh) {
           meshes.push(node);
         }
@@ -263,7 +282,7 @@ export class LayoutEditor {
         this.applySelectionMutation((root) => root.rotation.set(0, 0, 0), 'Rotation reset.');
         break;
       case 'reset-scale':
-        this.applySelectionMutation((root) => root.scale.set(1, 1, 1), 'Scale reset to 1.');
+        this.applySelectionMutation((root) => root.scale.set(1, 1, 1), 'Scale reset to 1.', { requireScaleEditable: true });
         break;
       case 'move-to-ground':
         this.applySelectionMutation((root) => {
@@ -294,7 +313,7 @@ export class LayoutEditor {
       selected.rotation[value.axis] = toRadians(value.value);
     }
 
-    if (field === 'scale') {
+    if (field === 'scale' && !this.isPlayerRoot(selected)) {
       selected.scale.setScalar(value.value);
     }
 
@@ -319,6 +338,39 @@ export class LayoutEditor {
     return cloneAssetScene(this.assetCache.get(assetId));
   }
 
+  async loadPlayerPreviewTemplate() {
+    if (!this.playerPreviewCache) {
+      const gltf = await this.loader.loadAsync(playerPreviewUrl);
+      this.playerPreviewCache = gltf.scene;
+    }
+
+    return cloneAssetScene(this.playerPreviewCache);
+  }
+
+  async ensurePlayerPreview(playerTransform = DEFAULT_PLAYER_TRANSFORM) {
+    if (!this.playerPreview?.root) {
+      const previewAsset = await this.loadPlayerPreviewTemplate();
+      const root = new THREE.Group();
+      root.name = PLAYER_PREVIEW_ID;
+      root.userData.editorObjectId = PLAYER_PREVIEW_ID;
+      root.userData.editorKind = 'player';
+      root.userData.assetId = 'capy_idle';
+      root.add(previewAsset);
+      root.scale.set(1, 1, 1);
+      this.sceneObjectsGroup.add(root);
+      this.playerPreview = { root };
+    }
+
+    this.playerPreview.root.position.set(...playerTransform.position);
+    this.playerPreview.root.rotation.set(
+      toRadians(playerTransform.rotation[0]),
+      toRadians(playerTransform.rotation[1]),
+      toRadians(playerTransform.rotation[2]),
+    );
+    this.playerPreview.root.scale.set(1, 1, 1);
+    return this.playerPreview.root;
+  }
+
   async spawnAssetById(assetId, transform = null) {
     try {
       const assetRoot = await this.loadAssetTemplate(assetId);
@@ -326,6 +378,7 @@ export class LayoutEditor {
       const instanceRoot = new THREE.Group();
       instanceRoot.name = objectId;
       instanceRoot.userData.editorObjectId = objectId;
+      instanceRoot.userData.editorKind = 'object';
       instanceRoot.userData.assetId = assetId;
       instanceRoot.add(assetRoot);
 
@@ -379,6 +432,30 @@ export class LayoutEditor {
     return candidate;
   }
 
+  isPlayerRoot(root) {
+    return root?.userData.editorKind === 'player';
+  }
+
+  getSelectionDetails(root) {
+    const isPlayer = this.isPlayerRoot(root);
+    return {
+      id: root.userData.editorObjectId,
+      typeLabel: isPlayer ? 'player' : 'world-object',
+      assetName: isPlayer ? 'capy_idle' : root.userData.assetId,
+      position: vectorToForm(root.position),
+      rotation: {
+        x: toDegrees(root.rotation.x).toFixed(2),
+        y: toDegrees(root.rotation.y).toFixed(2),
+        z: toDegrees(root.rotation.z).toFixed(2),
+      },
+      scale: uniformScaleToForm(root.scale),
+      showScale: !isPlayer,
+      scaleEditable: !isPlayer,
+      canDuplicate: !isPlayer,
+      canDelete: !isPlayer,
+    };
+  }
+
   selectObject(root) {
     this.selectionController.setSelection(root);
     this.updateSelectionPanel(root);
@@ -390,28 +467,27 @@ export class LayoutEditor {
       return;
     }
 
-    this.ui.updateSelection({
-      id: root.userData.editorObjectId,
-      assetName: root.userData.assetId,
-      position: vectorToForm(root.position),
-      rotation: {
-        x: toDegrees(root.rotation.x).toFixed(2),
-        y: toDegrees(root.rotation.y).toFixed(2),
-        z: toDegrees(root.rotation.z).toFixed(2),
-      },
-      scale: uniformScaleToForm(root.scale),
-    });
+    this.ui.updateSelection(this.getSelectionDetails(root));
   }
 
   onObjectTransformed(root) {
+    if (this.isPlayerRoot(root)) {
+      root.scale.set(1, 1, 1);
+    }
+
     this.selectionController.update();
     this.updateSelectionPanel(root);
   }
 
-  applySelectionMutation(mutate, statusMessage) {
+  applySelectionMutation(mutate, statusMessage, { requireScaleEditable = false } = {}) {
     const selected = this.selectionController.getSelected();
     if (!selected) {
       this.ui.setStatus('Select an object first.', 'warning');
+      return;
+    }
+
+    if (requireScaleEditable && this.isPlayerRoot(selected)) {
+      this.ui.setStatus('Player Preview scale is locked.', 'warning');
       return;
     }
 
@@ -424,6 +500,11 @@ export class LayoutEditor {
     const selected = this.selectionController.getSelected();
     if (!selected) {
       this.ui.setStatus('Select an object first.', 'warning');
+      return;
+    }
+
+    if (this.isPlayerRoot(selected)) {
+      this.ui.setStatus('Player Preview cannot be duplicated.', 'warning');
       return;
     }
 
@@ -445,6 +526,11 @@ export class LayoutEditor {
       return;
     }
 
+    if (this.isPlayerRoot(selected)) {
+      this.ui.setStatus('Player Preview cannot be deleted.', 'warning');
+      return;
+    }
+
     const objectId = selected.userData.editorObjectId;
     this.layoutObjects.delete(objectId);
     this.sceneObjectsGroup.remove(selected);
@@ -458,12 +544,32 @@ export class LayoutEditor {
     }
 
     await this.loadLayoutData(LayoutSerializer.createEmptyLayout(this.ui.getLayoutName()), { replace: true, silent: true });
-    this.ui.setStatus('Started a new empty layout.');
+    this.ui.setStatus('Started a new layout with Player Preview.');
+  }
+
+  getPlayerTransform() {
+    if (!this.playerPreview?.root) {
+      return clonePlayerTransform(DEFAULT_PLAYER_TRANSFORM);
+    }
+
+    return {
+      position: [
+        this.playerPreview.root.position.x,
+        this.playerPreview.root.position.y,
+        this.playerPreview.root.position.z,
+      ],
+      rotation: [
+        toDegrees(this.playerPreview.root.rotation.x),
+        toDegrees(this.playerPreview.root.rotation.y),
+        toDegrees(this.playerPreview.root.rotation.z),
+      ],
+    };
   }
 
   saveLayout() {
     const serialized = LayoutSerializer.serialize(
       this.ui.getLayoutName(),
+      this.getPlayerTransform(),
       [...this.layoutObjects.values()].map((entry) => ({
         id: entry.id,
         assetId: entry.assetId,
@@ -532,18 +638,17 @@ export class LayoutEditor {
     this.ui.setLayoutName(layout.layoutName);
 
     this.clearLayoutObjects();
+    await this.ensurePlayerPreview(layout.player ?? DEFAULT_PLAYER_TRANSFORM);
 
     for (const object of layout.objects) {
       await this.spawnAssetById(object.assetId, object);
     }
 
-    if (layout.objects.length === 0) {
-      this.selectObject(null);
-    }
+    this.selectObject(this.playerPreview?.root ?? null);
 
     this.syncNextObjectIndex();
     if (!silent) {
-      this.ui.setStatus(`Loaded layout "${layout.layoutName}" with ${layout.objects.length} object(s).`);
+      this.ui.setStatus(`Loaded layout "${layout.layoutName}" with Player Preview and ${layout.objects.length} object(s).`);
     }
     return true;
   }
