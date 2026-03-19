@@ -7,8 +7,6 @@ const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
   position: [0, 0, 2],
   rotation: [0, 180, 0],
 });
-const FALLBACK_COLOR = 0xB89A74;
-
 function withBaseUrl(assetPath) {
   const normalized = assetPath.startsWith('/') ? assetPath.slice(1) : assetPath;
   return `${import.meta.env.BASE_URL}${normalized}`;
@@ -59,79 +57,20 @@ function ensureGeometryBoundingBox(geometry) {
     && Number.isFinite(geometry.boundingBox.max.z);
 }
 
-function createFallbackMaterial({ useVertexColors, side = THREE.FrontSide } = {}) {
-  return new THREE.MeshStandardMaterial({
-    color: FALLBACK_COLOR,
-    roughness: 0.92,
-    metalness: 0.0,
-    vertexColors: useVertexColors,
-    side,
-  });
-}
-
-function isReadableMaterial(material, useVertexColors) {
-  if (!material?.isMaterial) {
-    return false;
-  }
-
-  if (useVertexColors) {
-    return true;
-  }
-
-  if (material.map || material.emissiveMap) {
-    return true;
-  }
-
-  if (!material.color) {
-    return false;
-  }
-
-  return material.color.getHex() !== 0x000000;
-}
-
 function sanitizeMaterial(material, geometry) {
   const useVertexColors = hasVertexColors(geometry);
-  const sourceMaterial = material?.isMaterial ? material.clone() : null;
+  const clonedMaterial = material?.isMaterial ? material.clone() : null;
 
-  if (!sourceMaterial) {
-    return { material: createFallbackMaterial({ useVertexColors }), fallbackApplied: true };
+  if (!clonedMaterial) {
+    return { material: null, fallbackApplied: false };
   }
 
-  if (!isReadableMaterial(sourceMaterial, useVertexColors)) {
-    return {
-      material: createFallbackMaterial({ useVertexColors, side: sourceMaterial.side ?? THREE.FrontSide }),
-      fallbackApplied: true,
-    };
+  if ('vertexColors' in clonedMaterial) {
+    clonedMaterial.vertexColors = useVertexColors;
   }
 
-  const hasLoadedMap = !!sourceMaterial.map?.image;
-  const sourceColorHex = sourceMaterial.color?.getHex?.() ?? null;
-  const shouldUseWarmFallback = !useVertexColors && !hasLoadedMap
-    && (sourceColorHex === 0xffffff || sourceColorHex === 0x000000);
-
-  if (shouldUseWarmFallback) {
-    return {
-      material: createFallbackMaterial({ useVertexColors, side: sourceMaterial.side ?? THREE.FrontSide }),
-      fallbackApplied: true,
-    };
-  }
-
-  const readableMaterial = new THREE.MeshStandardMaterial({
-    color: sourceMaterial.color?.clone() ?? new THREE.Color(FALLBACK_COLOR),
-    map: hasLoadedMap ? sourceMaterial.map : null,
-    emissive: sourceMaterial.emissive?.clone?.() ?? new THREE.Color(0x000000),
-    emissiveMap: sourceMaterial.emissiveMap?.image ? sourceMaterial.emissiveMap : null,
-    roughness: THREE.MathUtils.clamp(sourceMaterial.roughness ?? 0.88, 0.35, 1.0),
-    metalness: THREE.MathUtils.clamp(sourceMaterial.metalness ?? 0.0, 0.0, 0.18),
-    transparent: sourceMaterial.transparent ?? false,
-    opacity: sourceMaterial.opacity ?? 1,
-    alphaTest: sourceMaterial.alphaTest ?? 0,
-    vertexColors: useVertexColors,
-    side: sourceMaterial.side ?? THREE.FrontSide,
-  });
-  readableMaterial.needsUpdate = true;
-
-  return { material: readableMaterial, fallbackApplied: false };
+  clonedMaterial.needsUpdate = true;
+  return { material: clonedMaterial, fallbackApplied: false };
 }
 
 function sanitizeMeshForRuntime(assetId, mesh, { emitLog = true } = {}) {
@@ -147,12 +86,12 @@ function sanitizeMeshForRuntime(assetId, mesh, { emitLog = true } = {}) {
     mesh.material = mesh.material.map((material) => {
       const sanitized = sanitizeMaterial(material, mesh.geometry);
       fallbackApplied ||= sanitized.fallbackApplied;
-      return sanitized.material;
+      return sanitized.material ?? material;
     });
   } else {
     const sanitized = sanitizeMaterial(mesh.material, mesh.geometry);
     fallbackApplied = sanitized.fallbackApplied;
-    mesh.material = sanitized.material;
+    mesh.material = sanitized.material ?? mesh.material;
   }
 
   mesh.castShadow = true;

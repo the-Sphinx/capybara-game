@@ -1,17 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-import {
-  Box3,
-  Group,
-  Matrix4,
-  Mesh,
-  Object3D,
-  Vector3,
-} from '../capy-village/node_modules/three/build/three.module.js';
-import { GLTFLoader } from '../capy-village/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
-import { GLTFExporter } from '../capy-village/node_modules/three/examples/jsm/exporters/GLTFExporter.js';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 
 type AssetEntry = {
   id: string;
@@ -24,163 +15,25 @@ type AssetRegistry = {
   assets: AssetEntry[];
 };
 
-type Bounds = {
-  width: number;
-  height: number;
-  depth: number;
-  minY: number;
-  maxY: number;
-  centerX: number;
-  centerZ: number;
+type GlbSummary = {
+  textures: number;
+  images: number;
+  materials: number;
+  sizeBytes: number;
 };
 
-type PolyfilledGlobal = typeof globalThis & {
-  FileReader?: typeof FileReader;
-  ProgressEvent?: typeof ProgressEvent;
-  self?: typeof globalThis;
-};
+const execFileAsync = promisify(execFile);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 const registryPath = path.resolve(repoRoot, 'config/asset_registry.json');
+const blenderScriptPath = path.resolve(repoRoot, 'scripts/blender_normalize_glb.py');
+const defaultBlenderBinary = '/Applications/Blender.app/Contents/MacOS/Blender';
+const normalizedHeight = 1;
 
-const NORMALIZED_HEIGHT = 1;
-
-const globalWithPolyfills = globalThis as PolyfilledGlobal;
-globalWithPolyfills.self ??= globalThis;
-globalWithPolyfills.ProgressEvent ??= class ProgressEvent extends Event {
-  loaded: number;
-  total: number;
-
-  constructor(type: string, init?: EventInit & { loaded?: number; total?: number }) {
-    super(type, init);
-    this.loaded = init?.loaded ?? 0;
-    this.total = init?.total ?? 0;
-  }
-};
-globalWithPolyfills.FileReader ??= class FileReader extends EventTarget {
-  static readonly EMPTY = 0;
-  static readonly LOADING = 1;
-  static readonly DONE = 2;
-
-  error: DOMException | null = null;
-  onabort: ((this: FileReader, ev: ProgressEvent) => unknown) | null = null;
-  onerror: ((this: FileReader, ev: ProgressEvent) => unknown) | null = null;
-  onload: ((this: FileReader, ev: ProgressEvent) => unknown) | null = null;
-  onloadend: ((this: FileReader, ev: ProgressEvent) => unknown) | null = null;
-  onloadstart: ((this: FileReader, ev: ProgressEvent) => unknown) | null = null;
-  onprogress: ((this: FileReader, ev: ProgressEvent) => unknown) | null = null;
-  readyState = 0;
-  result: ArrayBuffer | string | null = null;
-
-  abort(): void {
-    this.readyState = 2;
-    this.result = null;
-    this.dispatchReaderEvent('abort');
-    this.dispatchReaderEvent('loadend');
-  }
-
-  readAsArrayBuffer(blob: Blob): void {
-    void this.readBlob(blob, async () => blob.arrayBuffer());
-  }
-
-  readAsDataURL(blob: Blob): void {
-    void this.readBlob(blob, async () => {
-      const buffer = Buffer.from(await blob.arrayBuffer());
-      return `data:${blob.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
-    });
-  }
-
-  readAsText(blob: Blob): void {
-    void this.readBlob(blob, async () => blob.text());
-  }
-
-  private async readBlob(blob: Blob, read: () => Promise<ArrayBuffer | string>): Promise<void> {
-    this.readyState = 1;
-    this.dispatchReaderEvent('loadstart');
-
-    try {
-      this.result = await read();
-      this.readyState = 2;
-      this.dispatchReaderEvent('progress', { loaded: blob.size, total: blob.size });
-      this.dispatchReaderEvent('load');
-      this.dispatchReaderEvent('loadend');
-    } catch (error) {
-      this.error = error instanceof DOMException ? error : new DOMException(String(error));
-      this.readyState = 2;
-      this.dispatchReaderEvent('error');
-      this.dispatchReaderEvent('loadend');
-    }
-  }
-
-  private dispatchReaderEvent(type: string, init?: { loaded?: number; total?: number }): void {
-    const event = new globalWithPolyfills.ProgressEvent!(type, init);
-    this.dispatchEvent(event);
-
-    const handlerName = `on${type}` as const;
-    const handler = this[handlerName];
-    if (typeof handler === 'function') {
-      handler.call(this, event);
-    }
-  }
-};
-
-function formatNumber(value: number): string {
-  return Number.isFinite(value) ? value.toFixed(3).replace(/\.?0+$/, '') : 'n/a';
-}
-
-function cloneSceneForExport(source: Group): Group {
-  const clone = source.clone(true);
-
-  source.traverse((node) => {
-    if (!(node instanceof Mesh)) {
-      return;
-    }
-
-    const cloneNode = clone.getObjectByName(node.name);
-    if (!(cloneNode instanceof Mesh)) {
-      return;
-    }
-
-    cloneNode.geometry = node.geometry.clone();
-    cloneNode.material = Array.isArray(node.material)
-      ? node.material.map((material) => material.clone())
-      : node.material.clone();
-  });
-
-  return clone;
-}
-
-function getMeshCount(root: Object3D): number {
-  let meshCount = 0;
-  root.traverse((node) => {
-    if (node instanceof Mesh) {
-      meshCount += 1;
-    }
-  });
-  return meshCount;
-}
-
-function computeBounds(root: Object3D): Bounds | null {
-  root.updateMatrixWorld(true);
-  const boundingBox = new Box3().setFromObject(root);
-  if (boundingBox.isEmpty()) {
-    return null;
-  }
-
-  const size = boundingBox.getSize(new Vector3());
-  const center = boundingBox.getCenter(new Vector3());
-
-  return {
-    width: size.x,
-    height: size.y,
-    depth: size.z,
-    minY: boundingBox.min.y,
-    maxY: boundingBox.max.y,
-    centerX: center.x,
-    centerZ: center.z,
-  };
+function resolveBlenderBinary(): string {
+  return process.env.BLENDER_BIN || defaultBlenderBinary;
 }
 
 async function loadRegistry(): Promise<AssetRegistry> {
@@ -188,136 +41,100 @@ async function loadRegistry(): Promise<AssetRegistry> {
   return JSON.parse(raw) as AssetRegistry;
 }
 
-async function loadGlbScene(assetPath: string): Promise<Group> {
-  const loader = new GLTFLoader();
-  const absoluteAssetPath = path.resolve(repoRoot, assetPath);
-  const buffer = await fs.readFile(absoluteAssetPath);
-  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-
-  return await new Promise<Group>((resolve, reject) => {
-    loader.parse(
-      arrayBuffer,
-      path.dirname(absoluteAssetPath) + path.sep,
-      (gltf) => resolve(gltf.scene),
-      (error) => reject(error),
-    );
-  });
+function formatSize(sizeBytes: number): string {
+  if (sizeBytes >= 1024 * 1024) {
+    return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  if (sizeBytes >= 1024) {
+    return `${(sizeBytes / 1024).toFixed(1)} KB`;
+  }
+  return `${sizeBytes} B`;
 }
 
-function bakeTransforms(root: Object3D): void {
-  root.updateMatrixWorld(true);
+async function inspectGlb(assetPath: string): Promise<GlbSummary> {
+  const absolutePath = path.resolve(repoRoot, assetPath);
+  const buffer = await fs.readFile(absolutePath);
+  const length = buffer.readUInt32LE(8);
 
-  root.traverse((node) => {
-    if (!(node instanceof Mesh)) {
-      return;
+  let offset = 12;
+  while (offset < length) {
+    const chunkLength = buffer.readUInt32LE(offset);
+    const chunkType = buffer.toString('utf8', offset + 4, offset + 8);
+    const chunkData = buffer.slice(offset + 8, offset + 8 + chunkLength);
+
+    if (chunkType === 'JSON') {
+      const gltf = JSON.parse(chunkData.toString('utf8'));
+      return {
+        textures: (gltf.textures ?? []).length,
+        images: (gltf.images ?? []).length,
+        materials: (gltf.materials ?? []).length,
+        sizeBytes: buffer.byteLength,
+      };
     }
 
-    node.updateWorldMatrix(true, false);
-    node.geometry = node.geometry.clone();
-    node.geometry.applyMatrix4(node.matrixWorld);
-    node.position.set(0, 0, 0);
-    node.rotation.set(0, 0, 0);
-    node.quaternion.identity();
-    node.scale.set(1, 1, 1);
-    node.updateMatrix();
-    node.updateMatrixWorld(true);
-  });
-
-  root.position.set(0, 0, 0);
-  root.rotation.set(0, 0, 0);
-  root.quaternion.identity();
-  root.scale.set(1, 1, 1);
-  root.updateMatrix();
-  root.updateMatrixWorld(true);
-}
-
-async function exportGlb(root: Group, outputPath: string): Promise<void> {
-  const exporter = new GLTFExporter();
-  const absoluteOutputPath = path.resolve(repoRoot, outputPath);
-
-  await fs.mkdir(path.dirname(absoluteOutputPath), { recursive: true });
-
-  const result = await exporter.parseAsync(root, {
-    binary: true,
-    onlyVisible: false,
-  });
-
-  if (!(result instanceof ArrayBuffer)) {
-    throw new Error(`Expected binary GLB output for ${outputPath}.`);
+    offset += 8 + chunkLength;
   }
 
-  await fs.writeFile(absoluteOutputPath, Buffer.from(result));
+  throw new Error(`Could not locate JSON chunk in ${assetPath}`);
 }
 
-function printReport(asset: AssetEntry, originalBounds: Bounds, targetHeight: number, scaleFactor: number): void {
-  console.log(`Asset: ${asset.id}`);
-  console.log('');
-  console.log(`Original Height: ${formatNumber(originalBounds.height)}`);
-  console.log(`Target Height: ${formatNumber(targetHeight)}`);
-  console.log(`Scale Applied: ${formatNumber(scaleFactor)}`);
-  console.log('');
-  console.log('Pivot Adjusted: YES');
-  console.log('Ground Adjusted: YES');
-  console.log('');
-  console.log('Exported To:');
-  console.log(asset.output);
+async function runBlenderNormalize(asset: AssetEntry): Promise<string> {
+  const blenderBinary = resolveBlenderBinary();
+  const inputPath = path.resolve(repoRoot, asset.source);
+  const outputPath = path.resolve(repoRoot, asset.output);
+
+  const { stdout, stderr } = await execFileAsync(
+    blenderBinary,
+    [
+      '--background',
+      '--python',
+      blenderScriptPath,
+      '--',
+      '--input',
+      inputPath,
+      '--output',
+      outputPath,
+      '--target-height',
+      String(normalizedHeight),
+    ],
+    { cwd: repoRoot, maxBuffer: 1024 * 1024 * 16 },
+  );
+
+  const combinedOutput = [stdout, stderr].filter(Boolean).join('\n').trim();
+  return combinedOutput;
+}
+
+function printReport(asset: AssetEntry, inputSummary: GlbSummary, outputSummary: GlbSummary, status: string): void {
+  console.log(`[Normalize] ${path.basename(asset.source)}`);
+  console.log(`input textures: ${inputSummary.textures}`);
+  console.log(`output textures: ${outputSummary.textures}`);
+  console.log(`input images: ${inputSummary.images}`);
+  console.log(`output images: ${outputSummary.images}`);
+  console.log(`input size: ${formatSize(inputSummary.sizeBytes)}`);
+  console.log(`output size: ${formatSize(outputSummary.sizeBytes)}`);
+  console.log(`status: ${status}`);
   console.log('');
 }
 
 async function normalizeAsset(asset: AssetEntry): Promise<void> {
-  if (!asset.class) {
-    console.warn(`Warning: asset "${asset.id}" has unknown class "${asset.class}". Skipping.`);
-    return;
+  const inputSummary = await inspectGlb(asset.source);
+  const blenderOutput = await runBlenderNormalize(asset);
+  const outputSummary = await inspectGlb(asset.output);
+
+  const texturesPreserved = outputSummary.textures >= inputSummary.textures
+    && outputSummary.images >= inputSummary.images;
+
+  const status = texturesPreserved ? 'OK' : 'ERROR - TEXTURES LOST';
+  printReport(asset, inputSummary, outputSummary, status);
+
+  if (blenderOutput) {
+    console.log(blenderOutput);
+    console.log('');
   }
 
-  const scene = await loadGlbScene(asset.source);
-  if (getMeshCount(scene) === 0) {
-    console.warn(`Warning: asset "${asset.id}" contains no mesh. Skipping.`);
-    return;
+  if (!texturesPreserved) {
+    throw new Error(`Texture preservation failed for ${asset.id}.`);
   }
-
-  const workingScene = cloneSceneForExport(scene);
-  const originalBounds = computeBounds(workingScene);
-
-  if (!originalBounds) {
-    console.warn(`Warning: bounding box could not be computed for asset "${asset.id}". Skipping.`);
-    return;
-  }
-
-  const translation = new Matrix4().makeTranslation(
-    -originalBounds.centerX,
-    -originalBounds.minY,
-    -originalBounds.centerZ,
-  );
-  workingScene.applyMatrix4(translation);
-  workingScene.updateMatrixWorld(true);
-
-  const groundedBounds = computeBounds(workingScene);
-  if (!groundedBounds || groundedBounds.height <= 0) {
-    console.warn(`Warning: bounding box could not be computed for asset "${asset.id}" after alignment. Skipping.`);
-    return;
-  }
-
-  const targetHeight = NORMALIZED_HEIGHT;
-  const scaleFactor = targetHeight / groundedBounds.height;
-  workingScene.scale.multiplyScalar(scaleFactor);
-  workingScene.updateMatrixWorld(true);
-
-  bakeTransforms(workingScene);
-
-  const finalBounds = computeBounds(workingScene);
-  if (!finalBounds) {
-    console.warn(`Warning: bounding box could not be computed for asset "${asset.id}" after baking. Skipping.`);
-    return;
-  }
-
-  // Re-apply a final alignment pass to absorb numerical drift from baking.
-  const finalTranslation = new Matrix4().makeTranslation(-finalBounds.centerX, -finalBounds.minY, -finalBounds.centerZ);
-  workingScene.applyMatrix4(finalTranslation);
-  bakeTransforms(workingScene);
-
-  await exportGlb(workingScene, asset.output);
-  printReport(asset, originalBounds, targetHeight, scaleFactor);
 }
 
 async function main(): Promise<void> {
