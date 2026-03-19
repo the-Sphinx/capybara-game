@@ -32,6 +32,11 @@
 - Reduced right-panel clutter by removing extra helper copy and tightening transform rows.
 - Forced the top action bar into a single horizontal row.
 
+### Asset Flow Migration
+- Updated the normalization pipeline to use `assets/pipeline/models/raw` as input and `assets/pipeline/models/normalized` as output via the asset registry.
+- Switched editor asset discovery to curated assets under `assets/game_ready/models`.
+- Added editor-side filtering so `assets/game_ready/models/characters` and `assets/game_ready/models/accessories` are ignored for now.
+
 ## 2026-03-18
 
 ### Completed
