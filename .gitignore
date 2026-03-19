@@ -1,5 +1,6 @@
 node_modules/
 dist/
+*.blend
 *.blend1
 .DS_Store
 .claude/settings.local.json

@@ -3,7 +3,7 @@ const BASE_ACCESSORIES = {
   crown: { anchor: 'hat_anchor', path: 'models/accessories/crown.glb', scale: 1.0, tiltX: -7 },
   chef_hat: { anchor: 'hat_anchor', path: 'models/accessories/chef_hat.glb', scale: 1.0, tiltX: -7, color: 0xFFFFFF, roughness: 0.7 },
   beanie: { anchor: 'hat_anchor',  path: 'models/accessories/knit_beanie.glb', scale: 1.0, tiltX: -15, doubleSided: true, polygonOffsetPart: 'beanie_body' },
-  scarf: { anchor: 'neck_anchor', path: 'models/accessories/scarf_v2.glb', scale: 1.0, tiltX: 0, offset: { x: 0, y: -0.08, z: -0.3 } },
+  scarf: { anchor: 'neck_anchor', path: 'models/accessories/scarf_v2.glb', scale: 1.0, tiltX: 0, offset: { x: 0, y: -0.08, z: -0.22 } },
   // glasses: { anchor: 'face_anchor', path: 'glasses.glb', scale: 1.0, tiltX: 0 },
 };
 
