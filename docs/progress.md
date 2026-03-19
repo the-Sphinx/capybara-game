@@ -22,6 +22,16 @@
 - The editor currently downloads layout JSON rather than writing directly into `layouts/`.
 - Dev console still shows a harmless `favicon.ico` 404 and a Three.js duplicate-instance warning.
 
+### UI Polish
+- Enabled snap by default and kept grid visible by default.
+- Tuned the grid colors so the minor snap lines stay visible while the center axes still read clearly.
+- Simplified scale editing to a single uniform scale control.
+- Removed the editable object id field from the right panel.
+- Renamed the display-only asset field to `Asset Name`.
+- Moved duplicate/delete controls into the right panel.
+- Reduced right-panel clutter by removing extra helper copy and tightening transform rows.
+- Forced the top action bar into a single horizontal row.
+
 ## 2026-03-18
 
 ### Completed
