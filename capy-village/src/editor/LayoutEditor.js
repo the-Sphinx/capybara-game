@@ -164,6 +164,9 @@ export class LayoutEditor {
     this.scene.add(this.sceneObjectsGroup);
 
     this.selectionController = new SelectionController(this.scene);
+    this.raycaster = new THREE.Raycaster();
+    this.renderer.domElement.addEventListener('pointerdown', this.handleViewportPointerDown);
+
     this.transformController = new TransformController({
       camera: this.camera,
       domElement: this.renderer.domElement,
@@ -173,9 +176,6 @@ export class LayoutEditor {
       snapState: this.snapState,
     });
     this.transformController.connect();
-
-    this.raycaster = new THREE.Raycaster();
-    this.renderer.domElement.addEventListener('pointerdown', this.handleViewportPointerDown);
 
     window.addEventListener('resize', this.handleResize);
     this.animate();

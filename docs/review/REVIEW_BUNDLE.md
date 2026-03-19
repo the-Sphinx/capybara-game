@@ -65,6 +65,7 @@ The public-folder cleanup was handled by moving the curated source audio/images/
 - Browser verification still shows the harmless `favicon.ico` 404.
 - The runtime layout loader currently uses broad bounding-box colliders for authored assets; there is no per-asset custom collision authoring yet.
 - The editor verification confirmed player-preview UI behavior, but load-via-file was not re-automated end to end in Playwright during this task.
+- The editor relies on curated `assets/game_ready` binaries being present locally; missing game-ready GLBs are now skipped from the palette instead of surfacing as broken spawn entries.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: preserved, because published runtime assets now come from curated `assets/game_ready` sources rather than ad hoc public copies
@@ -81,6 +82,8 @@ The public-folder cleanup was handled by moving the curated source audio/images/
 - confirmed the player preview is selected on load
 - confirmed the right panel shows `Type = player`
 - confirmed duplicate/delete are disabled and scale controls are hidden/locked for the player preview
+- confirmed palette asset clicks load the `assets/game_ready` GLBs successfully without reproducing the earlier HTML/JSON parse failure
+- confirmed pointer handling now selects before transform drag, enabling immediate drag gestures on the player preview after clicking it
 - Verified the runtime in a real browser with Playwright:
 - confirmed requests for `/layouts/village_hub_v1.json`
 - confirmed requests for `/assets/manifest.json`
