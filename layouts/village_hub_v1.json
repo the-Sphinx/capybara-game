@@ -1,4 +1,62 @@
 {
   "layoutName": "village_hub_v1",
-  "objects": []
+  "objects": [
+    {
+      "id": "obj_001",
+      "assetId": "hut_1",
+      "position": [
+        -3.5,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1.8,
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "obj_002",
+      "assetId": "mushroom_house",
+      "position": [
+        0,
+        0,
+        -3.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.8,
+        1.8,
+        1.8
+      ]
+    },
+    {
+      "id": "obj_003",
+      "assetId": "book_statue",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  ]
 }
