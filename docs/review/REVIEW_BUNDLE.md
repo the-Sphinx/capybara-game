@@ -1,136 +1,114 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Player preview in editor, runtime layout loading, and public asset cleanup
+- Task name: Imported GLB visibility fix and toy lighting baseline
 - Date: 2026-03-19
-- Time: 23:08 +03
+- Time: 23:58 +03
 - Branch: scene-restructure
-- Commit hash: 3517ba3
+- Commit hash: 37d30f0
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Bridge the layout editor to the actual game runtime by introducing a special player preview transform in layout JSON, loading the published layout and manifest at runtime, spawning authored world assets from published outputs instead of the hardcoded prototype village, and cleaning the `capy-village/public` asset structure so generated publish artifacts live under `public/assets` while curated source assets live under `assets/game_ready`.
+Restore readable runtime rendering for imported published GLB world assets and establish a clean toy-village lighting baseline, without changing layout data, world placement, player logic, or editor behavior.
 
 ## 3. What Changed
-- Extended the layout schema and serializer with a top-level `player` block containing position and rotation.
-- Added a special player preview object to the editor that uses the real normalized capy, is selectable, and supports move/rotate only with scale locked to `[1, 1, 1]`.
-- Updated the editor UI so player selection shows `type: player`, hides scale editing, and disables duplicate/delete for the player preview.
-- Added runtime loading for `/layouts/village_hub_v1.json` and `/assets/manifest.json`, then instantiated authored world assets from the published manifest instead of defaulting to the prototype village.
-- Updated gameplay capy spawning so the runtime player uses the saved layout player transform while still being created by the normal character system.
-- Preserved the old prototype village as a fallback path when published layout loading fails.
-- Moved curated audio, UI images, and the remaining building source asset into `assets/game_ready`, updated asset/tool paths accordingly, and stopped tracking generated `capy-village/public/assets` and `capy-village/public/layouts` outputs in git.
+- Added runtime mesh diagnostics for imported published assets, including material type, material color, vertex-color usage, normals state, bounding-box validity, missing-material status, and fallback usage.
+- Added runtime geometry sanitation so imported meshes recompute vertex normals only when needed and ensure geometry bounding boxes are valid.
+- Added runtime material sanitation that preserves vertex colors, simplifies imported materials to a readable matte `MeshStandardMaterial` baseline, and applies a warm clay fallback for unreadable or effectively blank materials.
+- Added a targeted warm fallback path for white/no-map world meshes that were still rendering as unreadable silhouettes.
+- Updated the main runtime renderer to use `sRGB` output, `ACESFilmicToneMapping`, and exposure `1.0`.
+- Replaced the old ambient-only baseline with a warmer toy-like hemisphere fill plus a warm directional sun, and updated the world background/ground materials to match the softer baseline.
 
 ## 4. Files Changed
-- .gitignore
-- assets/game_ready/audio/apple_bite.mp3
-- assets/game_ready/audio/ding.mp3
-- assets/game_ready/audio/fail1.mp3
-- assets/game_ready/audio/fail2.mp3
-- assets/game_ready/audio/pop1.mp3
-- assets/game_ready/audio/pop2.mp3
-- assets/game_ready/audio/ticking_clock.mp3
-- assets/game_ready/audio/victory.mp3
-- assets/game_ready/images/ui_background.png
-- assets/game_ready/images/ui_frame.png
-- assets/game_ready/models/buildings/capy_store.glb
-- capy-village/src/capy.js
-- capy-village/src/config/sounds.js
-- capy-village/src/editor/LayoutEditor.js
-- capy-village/src/editor/LayoutEditorUI.js
-- capy-village/src/editor/LayoutSerializer.js
-- capy-village/src/editor/editor.css
-- capy-village/src/main.js
 - capy-village/src/runtimeLayout.js
-- capy-village/src/state.js
-- capy-village/src/ui.js
 - capy-village/src/world.js
-- config/layout_schemas/village_layout.schema.json
-- layouts/village_hub_v1.json
-- scripts/normalize_capy_assets.sh
-- tools/normalize_capy_assets.ts
-- tools/publish_assets.ts
-- tools/verify_capy_assets.ts
 
 ## 5. Architecture Impact
-This changes the layout data model, editor behavior, runtime world-loading path, and asset publishing structure. The game now prefers published layout-driven world composition over the prototype builder, while the player remains owned by gameplay code. The asset pipeline is cleaner because curated runtime assets now live in `assets/game_ready`, and `capy-village/public/assets` plus `public/layouts` are treated as generated publish output.
+This affects runtime rendering only. The change does not alter layout JSON, placement logic, player spawning, gameplay systems, or editor workflows. It changes how published GLB world assets are sanitized and shaded after load, and it changes the scene-wide renderer/light baseline used by both authored and fallback worlds.
 
 ## 6. Key Implementation Notes
-The player is intentionally kept separate from ordinary layout objects. The editor stores the player transform in a dedicated top-level layout block, not in the `objects` array, which keeps runtime loading simpler and avoids accidentally treating the player as a duplicable/scalable prop. Runtime loading was implemented as a dedicated `runtimeLayout.js` module that resolves published manifest entries, clones GLB scenes, applies authored transforms, and only falls back to `buildVillage(scene)` if the published files cannot be loaded successfully.
+The main fix lives in `runtimeLayout.js`. Imported GLB meshes are now inspected and sanitized as they load from the published manifest. If a mesh has no valid normals, normals are recomputed. If it has valid vertex colors, the runtime material keeps them enabled. Imported `MeshPhysicalMaterial` / similar materials are converted into a simpler readable `MeshStandardMaterial` baseline so the village remains inspectable under the lightweight runtime light rig. For meshes that still effectively have no usable color signal, a warm clay fallback material is applied instead.
 
-The public-folder cleanup was handled by moving the curated source audio/images/building asset into `assets/game_ready`, updating code to reference `assets/...` publish paths, updating publish tooling to remove legacy root-level `public/models`, `public/audio`, and `public/images`, and removing generated `public/assets` and `public/layouts` outputs from git tracking so the repo no longer mixes curated source assets with generated publish artifacts.
+The lighting update in `world.js` is intentionally conservative. It uses a soft sky background, a hemisphere fill (`#CDE1FF` / `#EBE1CD`, `0.48`), and a warm off-white directional key light (`#FFF4E0`, `1.0`) with ACES filmic tone mapping at exposure `1.0`. This is enough to judge shapes, placement, and relative scale without treating it as final art direction.
 
 ## 7. Risks / Known Issues
-- The editor still saves layouts by downloading a JSON file rather than writing directly back into `layouts/`.
+- The current fallback still produces a simplified clay-style look for some assets (`hut_1`, `book_statue`) rather than restoring authored final colors, because the imported material data was not producing readable results in runtime.
+- `mushroom_house` keeps its vertex-color path and is more neutral/pale than the clay-fallback assets, so the palette is readable but not yet stylistically unified.
 - Browser verification still shows the harmless `favicon.ico` 404.
-- The runtime layout loader currently uses broad bounding-box colliders for authored assets; there is no per-asset custom collision authoring yet.
-- The editor verification confirmed player-preview UI behavior, but load-via-file was not re-automated end to end in Playwright during this task.
-- The editor relies on curated `assets/game_ready` binaries being present locally; missing game-ready GLBs are now skipped from the palette instead of surfacing as broken spawn entries.
+- The runtime diagnostics are intentionally verbose right now; they are useful for this material-repair phase but may be worth gating behind a debug flag later.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: preserved, because published runtime assets now come from curated `assets/game_ready` sources rather than ad hoc public copies
+- source grounding: preserved, because the task only changes runtime rendering treatment after published assets load
 - hybrid retrieval: not affected
-- verification layer: improved via runtime publish/build/browser checks plus continued capy asset verification
-- generic schema: improved, because layout JSON now has a clearer separation between player transform and ordinary placed objects
-- inspectability: improved via manifest-driven runtime loading and a cleaner generated-vs-source asset boundary
+- verification layer: improved via per-mesh runtime diagnostics for imported GLBs
+- generic schema: not affected
+- inspectability: improved significantly because the village is readable again and imported asset material state is now visible in logs
 
 ## 9. Testing Performed
-- Ran `npm run publish-assets` successfully after the `assets/game_ready` migration.
-- Ran `npm run build` in `capy-village` successfully after fixing the runtime bootstrap.
-- Ran `npm run verify-capy-assets` and confirmed the published source capy still reports `height=1` and `minY=0`.
-- Verified the editor in a real browser with Playwright:
-- confirmed the player preview is selected on load
-- confirmed the right panel shows `Type = player`
-- confirmed duplicate/delete are disabled and scale controls are hidden/locked for the player preview
-- confirmed palette asset clicks load the `assets/game_ready` GLBs successfully without reproducing the earlier HTML/JSON parse failure
-- confirmed pointer handling now selects before transform drag, enabling immediate drag gestures on the player preview after clicking it
-- confirmed changing player preview position moves the visible capy mesh itself, not just the selection box, after switching the preview clone path to a skeleton-aware clone
-- Verified the runtime in a real browser with Playwright:
-- confirmed requests for `/layouts/village_hub_v1.json`
-- confirmed requests for `/assets/manifest.json`
-- confirmed runtime loading of published building GLBs and `assets/models/characters/capy_idle.glb`
-- captured a screenshot showing the authored village plus the spawned capy instead of the prototype-only scene
+- Ran `npm run build` in `capy-village` successfully.
+- Launched the live game in a headed browser and verified the authored runtime village still loads from published layout + manifest.
+- Captured runtime console diagnostics for the loaded published assets and confirmed:
+- `hut_1` preserved mesh normals, had no vertex colors, and used the warm fallback material
+- `mushroom_house` preserved vertex colors and stayed on the non-fallback readable path
+- `book_statue` preserved mesh normals, had no vertex colors, and used the warm fallback material
+- Captured before/after screenshots showing the world assets are no longer black silhouettes and are readable against the environment.
 
 ## 10. Example Output / Logs
 ```text
-[Publish] Copying assets...
-[Publish] Copied: apple_bite.mp3
-[Publish] Copied: ui_background.png
-[Publish] Copied: hut_1.glb
-[Publish] Copied: mushroom_house.glb
-[Publish] Copied: book_statue.glb
-[Publish] Copied: capy_idle.glb
-[Publish] Copying layouts...
-[Publish] Copied: village_hub_v1.json
-[Publish] Done.
+[Runtime Asset] hut_1
+mesh: node_0
+material: MeshStandardMaterial
+materialColor: #b89a74
+vertexColors: false
+normals: present
+bboxValid: true
+materialMissing: false
+fallbackApplied: true
 ```
 
 ```text
-capy_idle height=1 minY=0 maxY=1 width=0.6963 depth=1.3243
-crown height=0.1473 minY=-0.0004 maxY=0.1469 width=0.304 depth=0.3052
-chef_hat height=0.2284 minY=0.0005 maxY=0.2289 width=0.3042 depth=0.3048
-knit_beanie height=0.315 minY=0 maxY=0.315 width=0.3052 depth=0.3048
-scarf_v2 height=0.6208 minY=-0.3297 maxY=0.2911 width=0.6808 depth=0.6164
-[Verify] Capy character normalization checks passed.
+[Runtime Asset] mushroom_house
+mesh: node_0005
+material: MeshStandardMaterial
+materialColor: #ffffff
+vertexColors: true
+normals: present
+bboxValid: true
+materialMissing: false
+fallbackApplied: false
 ```
 
 ```text
-[GET] http://127.0.0.1:4173/capybara-game/layouts/village_hub_v1.json => [200] OK
-[GET] http://127.0.0.1:4173/capybara-game/assets/manifest.json => [200] OK
-[GET] http://127.0.0.1:4173/capybara-game/assets/models/buildings/hut_1.glb => [200] OK
-[GET] http://127.0.0.1:4173/capybara-game/assets/models/buildings/mushroom_house.glb => [200] OK
-[GET] http://127.0.0.1:4173/capybara-game/assets/models/buildings/book_statue.glb => [200] OK
-[GET] http://127.0.0.1:4173/capybara-game/assets/models/characters/capy_idle.glb => [200] OK
+[Runtime Asset] book_statue
+mesh: node_0
+material: MeshStandardMaterial
+materialColor: #b89a74
+vertexColors: false
+normals: present
+bboxValid: true
+materialMissing: false
+fallbackApplied: true
 ```
 
 ```text
-[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4173/favicon.ico:0
+Renderer:
+- outputColorSpace: THREE.SRGBColorSpace
+- toneMapping: THREE.ACESFilmicToneMapping
+- toneMappingExposure: 1.0
+
+Lighting:
+- directional: #FFF4E0 @ 1.0
+- hemisphere sky: #CDE1FF
+- hemisphere ground: #EBE1CD
+- hemisphere intensity: 0.48
+- background: #D6E8FF
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the runtime fallback should eventually reset/clear authored colliders explicitly if scene management becomes more dynamic.
-- Inspect whether the player preview should get a clearer in-editor visual treatment beyond the current locked controls.
-- Review whether generated `public/layouts` should remain fully ignored long term or whether a checked-in default published layout is still useful for onboarding.
+- Review whether the clay fallback should stay global for unreadable white/no-map assets or become asset-specific later.
+- Inspect whether the vertex-colored `mushroom_house` should get a small contrast/saturation boost so it sits better beside the fallback-treated assets.
+- Review whether the runtime diagnostics should remain always-on during this phase or move behind a debug toggle once the asset set stabilizes.
 
 ## 12. Suggested Next Step
-Add a small layout-to-runtime authoring loop improvement so the editor can publish the current layout directly into `layouts/` or trigger `npm run publish-assets` from a guided workflow, reducing the manual step between authoring and testing in the game.
+Tune the remaining authored village materials toward a more intentional toy-village palette by replacing the temporary clay fallback on a per-asset basis and nudging the capy/world color relationship so the environment feels more cohesive without losing readability.

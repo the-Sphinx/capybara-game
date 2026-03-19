@@ -2,6 +2,30 @@
 
 ## 2026-03-19
 
+### GLB Visibility And Lighting
+- Implemented `docs/tasks/capy_glb_visibility_and_toy_lighting_task.md`.
+- Added runtime GLB mesh diagnostics for material type, base color, vertex colors, normals state, bounding-box validity, and fallback usage.
+- Added runtime geometry sanitation so imported published meshes recompute vertex normals only when needed.
+- Simplified imported world materials to a readable matte `MeshStandardMaterial` baseline while preserving vertex colors and usable maps.
+- Added a warm clay fallback material for unreadable white/no-map published meshes.
+- Updated the runtime renderer to use `sRGB` output, `ACESFilmicToneMapping`, and exposure `1.0`.
+- Replaced the old ambient-only world lighting with a hemisphere fill and a warm directional key light.
+- Updated the runtime background and ground material so the village reads against a softer toy-like baseline.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Browser-verified the runtime authored village still loads from the published layout and manifest.
+- Verified imported published assets are no longer black silhouettes in the live runtime scene.
+- Verified runtime diagnostics report:
+- `hut_1` uses the warm fallback path
+- `mushroom_house` preserves vertex colors without fallback
+- `book_statue` uses the warm fallback path
+
+### Known Risks
+- Some assets now read as a temporary clay/wood fallback rather than their eventual final authored palette.
+- `mushroom_house` is readable but still visually paler than the fallback-treated assets.
+- Runtime diagnostics are intentionally verbose for now and may need gating later.
+
 ### Runtime Layout Bridge
 - Implemented `docs/tasks/capy_player_preview_and_runtime_layout_task.md`.
 - Extended layout JSON and schema with a top-level `player` transform block.
