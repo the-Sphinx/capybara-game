@@ -84,6 +84,95 @@ export function getActiveInteractable(cx, cz) {
   return null;
 }
 
+function createToyGround(scene) {
+  const baseRadius = BOUND + 7.5;
+
+  const baseRing = new THREE.Mesh(
+    new THREE.CylinderGeometry(baseRadius + 0.55, baseRadius + 0.95, 0.5, 48),
+    new THREE.MeshStandardMaterial({
+      color: 0x88a074,
+      roughness: 0.95,
+      metalness: 0.0,
+    }),
+  );
+  baseRing.position.y = -0.26;
+  baseRing.receiveShadow = true;
+  scene.add(baseRing);
+
+  const topBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(baseRadius, baseRadius + 0.2, 0.24, 48),
+    new THREE.MeshStandardMaterial({
+      color: 0xbfd8a6,
+      roughness: 0.9,
+      metalness: 0.0,
+    }),
+  );
+  topBase.position.y = -0.12;
+  topBase.receiveShadow = true;
+  scene.add(topBase);
+
+  const innerMeadow = new THREE.Mesh(
+    new THREE.CylinderGeometry(baseRadius - 2.1, baseRadius - 2.5, 0.05, 48),
+    new THREE.MeshStandardMaterial({
+      color: 0xcddfaf,
+      roughness: 0.92,
+      metalness: 0.0,
+    }),
+  );
+  innerMeadow.position.y = 0.005;
+  innerMeadow.receiveShadow = true;
+  scene.add(innerMeadow);
+
+  const softPatchMaterial = new THREE.MeshStandardMaterial({
+    color: 0xb2c98f,
+    roughness: 0.95,
+    metalness: 0.0,
+  });
+
+  const patches = [
+    { x: -4.4, z: -2.6, rx: 1.4, rz: 1.0, s: 1.0 },
+    { x: 3.8, z: -4.1, rx: -0.7, rz: 0.8, s: 0.9 },
+    { x: 5.1, z: 2.2, rx: 0.9, rz: -1.2, s: 1.15 },
+    { x: -1.9, z: 4.6, rx: -1.0, rz: 1.7, s: 0.85 },
+  ];
+
+  for (const patch of patches) {
+    const mesh = new THREE.Mesh(
+      new THREE.CircleGeometry(1.9 * patch.s, 32),
+      softPatchMaterial,
+    );
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(patch.x, 0.012, patch.z);
+    mesh.scale.set(1 + patch.rx * 0.08, 1, 1 + patch.rz * 0.08);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+  }
+
+  const plazaBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.45, 2.62, 0.16, 40),
+    new THREE.MeshStandardMaterial({
+      color: 0xc2b292,
+      roughness: 0.94,
+      metalness: 0.0,
+    }),
+  );
+  plazaBase.position.y = -0.03;
+  plazaBase.receiveShadow = true;
+  scene.add(plazaBase);
+
+  const plazaTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.2, 2.28, 0.08, 40),
+    new THREE.MeshStandardMaterial({
+      color: 0xe8d8b5,
+      roughness: 0.9,
+      metalness: 0.0,
+    }),
+  );
+  plazaTop.position.y = 0.03;
+  plazaTop.receiveShadow = true;
+  scene.add(plazaTop);
+}
+
 // ─── Scene init ───────────────────────────────────────────────────────────────
 export function initScene() {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -91,14 +180,15 @@ export function initScene() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.physicallyCorrectLights = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
-  renderer.setClearColor(0xD6E8FF);
+  renderer.toneMappingExposure = 1.1;
+  renderer.setClearColor(0xdfeaf5);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0xD6E8FF);
+  scene.background = new THREE.Color(0xdfeaf5);
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(0, 2.5, 4.5);
   camera.lookAt(0, 0.5, 0);
@@ -107,31 +197,32 @@ export function initScene() {
   const CAM_LERP   = 0.1;
   const camTarget  = new THREE.Vector3();
 
-  const hemiLight = new THREE.HemisphereLight(0xCDE1FF, 0xEBE1CD, 0.48);
+  const hemiLight = new THREE.HemisphereLight(0xfff5d6, 0x9dbf87, 0.6);
   scene.add(hemiLight);
 
-  const dirLight = new THREE.DirectionalLight(0xFFF4E0, 1.0);
-  dirLight.position.set(7, 9, 4);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+  scene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xfff2cc, 1.2);
+  dirLight.position.set(5, 10, 5);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width  = 2048;
-  dirLight.shadow.mapSize.height = 2048;
+  dirLight.shadow.mapSize.width  = 1024;
+  dirLight.shadow.mapSize.height = 1024;
   const shadowExtent = BOUND + 6;   // margin beyond walkable area
-  dirLight.shadow.camera.near   = 0.1;
-  dirLight.shadow.camera.far    = 60;
+  dirLight.shadow.camera.near   = 0.5;
+  dirLight.shadow.camera.far    = 50;
   dirLight.shadow.camera.left   = -shadowExtent;
   dirLight.shadow.camera.right  =  shadowExtent;
   dirLight.shadow.camera.top    =  shadowExtent;
   dirLight.shadow.camera.bottom = -shadowExtent;
+  dirLight.shadow.bias = -0.00015;
+  dirLight.shadow.normalBias = 0.03;
+  if ('radius' in dirLight.shadow) {
+    dirLight.shadow.radius = 2.2;
+  }
   scene.add(dirLight);
 
-  const groundSize = (BOUND + 6) * 2;
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(groundSize, groundSize),
-    new THREE.MeshStandardMaterial({ color: 0x9FC987, roughness: 0.98, metalness: 0.0 })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  createToyGround(scene);
 
   const clock = new THREE.Clock();
 
