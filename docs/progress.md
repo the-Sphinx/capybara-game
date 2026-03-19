@@ -3,6 +3,11 @@
 ## 2026-03-19
 
 ### Completed
+- Normalized the capy character runtime GLB to `height = 1` and grounded it at `Y = 0`.
+- Rescaled the live accessory runtime GLBs (`crown`, `chef_hat`, `knit_beanie`, `scarf_v2`) with the same shared factor used for the capy.
+- Updated `capy-village/src/capy.js` so runtime grounding uses bounding-box `minY` rather than assuming the model is vertically centered.
+- Added `npm run normalize-capy-assets` and `npm run verify-capy-assets`.
+- Added reusable GLB tooling for loading, measuring, and re-exporting normalized character/accessory assets.
 - Implemented the Phase 1 layout editor from `docs/tasks/capy_layout_editor_phase1_spec.md`.
 - Added a dedicated editor entry page at `capy-village/editor.html`.
 - Added the editor UI, asset palette, selection/highlight flow, transform editing, duplication, deletion, save, and load plumbing.
@@ -11,6 +16,10 @@
 - Browser-verified the core manual composition flow with Playwright.
 
 ### Self-Check
+- Verified the capy runtime GLB still contains animation plus `hat_anchor` and `neck_anchor` after normalization.
+- Verified `npm run verify-capy-assets` reports `capy_idle height=1` and `minY=0`.
+- Verified the live game no longer logs missing anchor warnings after the normalized character GLB is loaded.
+- Verified `npm run build` still passes in `capy-village`.
 - Asset palette reads from the existing registry and spawns normalized asset instances.
 - New objects are selected immediately and expose editable position, rotation, and scale fields.
 - Duplicate and delete are wired to per-instance object ids.
@@ -18,6 +27,9 @@
 - Build emits `dist/editor.html` alongside the main game entry.
 
 ### Known Risks
+- The Blender source-blend normalization path is present but opt-in because direct Blender CLI invocation from the packaged command was unstable in this environment.
+- The local source `.blend` files under `assets/source/**` were updated during the task but remain ignored and therefore are not part of the git history.
+- Accessory fit verification is currently based on preserved anchors and runtime sanity checks, not a dedicated automated visual diff.
 - Load-via-file is implemented but was not exercised end-to-end in browser automation during this task.
 - The editor currently downloads layout JSON rather than writing directly into `layouts/`.
 - Dev console still shows a harmless `favicon.ico` 404 and a Three.js duplicate-instance warning.

@@ -1,80 +1,91 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Implement publish pipeline and .gitignore fix
+- Task name: Normalize capy character to unit height and retune live accessories
 - Date: 2026-03-19
-- Time: 16:52 +03
+- Time: 21:45 +03
 - Branch: scene-restructure
-- Commit hash: 11eb014
+- Commit hash: 6535014
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Create a simple publish bridge that copies curated runtime assets and layouts into `capy-village/public`, generates a manifest for runtime asset lookup, and narrows `.gitignore` so the asset folder structure can live in the repo without committing heavy binaries.
+Normalize the main capy character so the gameplay GLB is `height = 1` and grounded at `Y = 0`, keep the existing runtime paths intact, preserve animation and attachment anchors, and rescale all live accessory assets so they continue matching the capy at the new unit convention.
 
 ## 3. What Changed
-- Added `tools/publish_assets.ts`.
-- Added root npm command `npm run publish-assets`.
-- Implemented recursive publish from `assets/game_ready/**` to `capy-village/public/assets/`.
-- Implemented recursive publish from `layouts/**` to `capy-village/public/layouts/`.
-- Added target-folder cleanup before publish.
-- Added generated `capy-village/public/assets/manifest.json` with `.glb` asset ids and public paths.
-- Reworked `.gitignore` to ignore heavy asset binaries while keeping directory structure and metadata visible.
-- Updated the GitHub Pages workflow to run the publish step before building `capy-village`.
+- Updated the capy runtime grounding logic to use bounding-box `minY` instead of assuming the GLB is vertically centered.
+- Added a reusable Node GLB utility module for loading, measuring, and exporting GLBs from the repo toolchain.
+- Added `npm run normalize-capy-assets` to normalize the capy/accessory GLBs and keep the source-side companion GLBs in sync.
+- Added `npm run verify-capy-assets` to measure the normalized character and live accessories.
+- Regenerated the runtime character GLB so it is `height = 1`, grounded at `Y = 0`, and still includes animation plus `hat_anchor` and `neck_anchor`.
+- Regenerated the live accessory GLBs (`crown`, `chef_hat`, `knit_beanie`, `scarf_v2`) with the same shared normalization factor used for the character.
+- Added a shell helper for the Blender-side source-blend step so the character/accessory `.blend` sources can be scaled alongside the runtime assets when desired.
 
 ## 4. Files Changed
-- .gitignore
+- capy-village/src/capy.js
 - package.json
-- tools/publish_assets.ts
-- .github/workflows/verify.yml
+- scripts/normalize_capy_assets.sh
+- tools/lib/gltf_node.ts
+- tools/normalize_capy_assets.ts
+- tools/verify_capy_assets.ts
+- capy-village/public/models/characters/capy_idle.glb
+- capy-village/public/models/accessories/crown.glb
+- capy-village/public/models/accessories/chef_hat.glb
+- capy-village/public/models/accessories/knit_beanie.glb
+- capy-village/public/models/accessories/scarf_v2.glb
 
 ## 5. Architecture Impact
-This adds a lightweight publish stage between curated game-ready assets and the runtime app. The game build can now depend on generated `public/assets` and `public/layouts` rather than directly coupling runtime loading to source or pipeline asset locations.
+This changes the asset-size convention for the main playable character and its live accessories. Runtime character placement now follows the same grounding convention as normalized environment assets, and the toolchain now has a dedicated capy/accessory normalization and verification path. The change affects runtime asset loading, binary asset outputs, and local asset-maintenance workflow.
 
 ## 6. Key Implementation Notes
-The publish script keeps the implementation intentionally simple: clear target directories, recursively copy files, and generate a flat GLB manifest keyed by filename stem. The workflow runs from the repo root and does not introduce any new package dependencies or bundler plugins.
+The final implementation splits the work into two layers. The reliable automated path is GLB-first: measure the current capy runtime GLB, compute the shared scale factor, normalize the runtime GLB plus source-side companion GLBs, and verify the results. A separate Blender shell helper exists for scaling the local `.blend` sources with the same factor. During implementation, direct Blender CLI export stripped the armature when used for the character runtime export, so the runtime binaries were normalized from the original animated GLBs instead of depending on Blender export for the final gameplay output.
 
 ## 7. Risks / Known Issues
-- `manifest.json` currently keys assets by filename only, so duplicate `.glb` filenames in different subfolders would collide.
-- Generated `capy-village/public/assets/` and `capy-village/public/layouts/` outputs are not committed by this task; they are produced locally and in CI by running `npm run publish-assets`.
-- Existing runtime code still has older public model paths for unrelated character/accessory content; this task only adds the publish bridge and does not refactor all loaders.
+- `npm run normalize-capy-assets` defaults to the reliable GLB normalization path and skips the Blender source-blend step unless `CAPY_NORMALIZE_SOURCE_BLENDS=1` is set.
+- The local source `.blend` files were normalized manually during this task, but they live under ignored `assets/source/**` paths and are therefore not part of the git commit.
+- Accessory fit was validated by restored anchor presence and removal of runtime anchor warnings, but there is still no dedicated automated visual regression harness for wearable placement.
+- The verification helper intentionally checks strict normalization only for the capy; accessories are reported for inspection but not hard-failed on absolute dimensions.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: not applicable to this task
+- source grounding: improved, because the capy runtime asset now follows the same grounded-at-zero convention as normalized world assets
 - hybrid retrieval: not affected
-- verification layer: not affected
-- generic schema: preserved
-- inspectability: improved through the published manifest and explicit runtime asset boundary
+- verification layer: improved via `npm run verify-capy-assets`
+- generic schema: not affected
+- inspectability: improved via explicit GLB measurement output and dedicated normalization tooling
 
 ## 9. Testing Performed
-- Ran `npm run publish-assets` from the repo root.
-- Verified published outputs exist in `capy-village/public/assets` and `capy-village/public/layouts`.
-- Verified `capy-village/public/assets/manifest.json` contains the expected runtime paths.
-- Ran `npm run build` in `capy-village` after publish and confirmed the app still builds successfully.
+- Ran `npm run verify-capy-assets` and confirmed the capy runtime GLB reports `height=1` and `minY=0`.
+- Inspected the normalized capy runtime GLB node list and confirmed it still contains one animation plus `hat_anchor` and `neck_anchor`.
+- Ran `npm run build` in `capy-village` successfully after the runtime grounding change and binary asset updates.
+- Opened the live game in a headed browser and confirmed the earlier anchor warnings disappeared; only the existing `favicon.ico` 404 remained.
+- Re-ran `npm run normalize-capy-assets` on the normalized workspace and confirmed the GLB normalization path is idempotent.
 
 ## 10. Example Output / Logs
 ```text
-[Publish] Copying assets...
-[Publish] Copied: book_statue.glb
-[Publish] Copied: hut_1.glb
-[Publish] Copied: mushroom_house.glb
-[Publish] Copying layouts...
-[Publish] Copied: village_hub_v1.json
-[Publish] Done.
+capy_idle height=1 minY=-0 maxY=1 width=0.6963 depth=1.3243
+crown height=0.1473 minY=-0.0004 maxY=0.1469 width=0.304 depth=0.3052
+chef_hat height=0.2284 minY=0.0005 maxY=0.2289 width=0.3042 depth=0.3048
+knit_beanie height=0.315 minY=0 maxY=0.315 width=0.3052 depth=0.3048
+scarf_v2 height=0.6208 minY=-0.3297 maxY=0.2911 width=0.6808 depth=0.6164
+[Verify] Capy character normalization checks passed.
 ```
 
 ```json
 {
-  "book_statue": "/assets/models/book_statue.glb",
-  "hut_1": "/assets/models/hut_1.glb",
-  "mushroom_house": "/assets/models/mushroom_house.glb"
+  "animations": 1,
+  "hasHat": true,
+  "hasNeck": true
 }
 ```
 
+```text
+[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/favicon.ico:0
+```
+
 ## 11. Recommended Reviewer Focus
-- Check whether manifest keying by basename is sufficient or should be replaced with category-aware ids.
-- Review whether generated public publish outputs should stay untracked or be ignored explicitly to avoid noisy working trees.
-- Confirm the GitHub Pages workflow ordering matches the intended deployment model.
+- Review whether the Blender source-blend step should remain opt-in or be made fully reliable from the packaged command.
+- Check whether accessory verification should add anchor-relative spatial assertions instead of only reporting raw bounds.
+- Inspect whether the current character/public GLB duplication strategy is the right long-term home for source-side companion exports.
 
 ## 12. Suggested Next Step
-Refactor the runtime/world loader to consume published layout and asset manifest data directly from `public/assets` and `public/layouts`.
+Add a small runtime or editor-side size-reference scene that places the unit-height capy beside unit-height normalized environment assets, so building scale decisions can be tuned visually with the new shared convention.
