@@ -1,68 +1,108 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Normalize capy character to unit height and retune live accessories
+- Task name: Player preview in editor, runtime layout loading, and public asset cleanup
 - Date: 2026-03-19
-- Time: 21:45 +03
+- Time: 23:08 +03
 - Branch: scene-restructure
-- Commit hash: 6535014
+- Commit hash: 3517ba3
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Normalize the main capy character so the gameplay GLB is `height = 1` and grounded at `Y = 0`, keep the existing runtime paths intact, preserve animation and attachment anchors, and rescale all live accessory assets so they continue matching the capy at the new unit convention.
+Bridge the layout editor to the actual game runtime by introducing a special player preview transform in layout JSON, loading the published layout and manifest at runtime, spawning authored world assets from published outputs instead of the hardcoded prototype village, and cleaning the `capy-village/public` asset structure so generated publish artifacts live under `public/assets` while curated source assets live under `assets/game_ready`.
 
 ## 3. What Changed
-- Updated the capy runtime grounding logic to use bounding-box `minY` instead of assuming the GLB is vertically centered.
-- Added a reusable Node GLB utility module for loading, measuring, and exporting GLBs from the repo toolchain.
-- Added `npm run normalize-capy-assets` to normalize the capy/accessory GLBs and keep the source-side companion GLBs in sync.
-- Added `npm run verify-capy-assets` to measure the normalized character and live accessories.
-- Regenerated the runtime character GLB so it is `height = 1`, grounded at `Y = 0`, and still includes animation plus `hat_anchor` and `neck_anchor`.
-- Regenerated the live accessory GLBs (`crown`, `chef_hat`, `knit_beanie`, `scarf_v2`) with the same shared normalization factor used for the character.
-- Added a shell helper for the Blender-side source-blend step so the character/accessory `.blend` sources can be scaled alongside the runtime assets when desired.
+- Extended the layout schema and serializer with a top-level `player` block containing position and rotation.
+- Added a special player preview object to the editor that uses the real normalized capy, is selectable, and supports move/rotate only with scale locked to `[1, 1, 1]`.
+- Updated the editor UI so player selection shows `type: player`, hides scale editing, and disables duplicate/delete for the player preview.
+- Added runtime loading for `/layouts/village_hub_v1.json` and `/assets/manifest.json`, then instantiated authored world assets from the published manifest instead of defaulting to the prototype village.
+- Updated gameplay capy spawning so the runtime player uses the saved layout player transform while still being created by the normal character system.
+- Preserved the old prototype village as a fallback path when published layout loading fails.
+- Moved curated audio, UI images, and the remaining building source asset into `assets/game_ready`, updated asset/tool paths accordingly, and stopped tracking generated `capy-village/public/assets` and `capy-village/public/layouts` outputs in git.
 
 ## 4. Files Changed
+- .gitignore
+- assets/game_ready/audio/apple_bite.mp3
+- assets/game_ready/audio/ding.mp3
+- assets/game_ready/audio/fail1.mp3
+- assets/game_ready/audio/fail2.mp3
+- assets/game_ready/audio/pop1.mp3
+- assets/game_ready/audio/pop2.mp3
+- assets/game_ready/audio/ticking_clock.mp3
+- assets/game_ready/audio/victory.mp3
+- assets/game_ready/images/ui_background.png
+- assets/game_ready/images/ui_frame.png
+- assets/game_ready/models/buildings/capy_store.glb
 - capy-village/src/capy.js
-- package.json
+- capy-village/src/config/sounds.js
+- capy-village/src/editor/LayoutEditor.js
+- capy-village/src/editor/LayoutEditorUI.js
+- capy-village/src/editor/LayoutSerializer.js
+- capy-village/src/editor/editor.css
+- capy-village/src/main.js
+- capy-village/src/runtimeLayout.js
+- capy-village/src/state.js
+- capy-village/src/ui.js
+- capy-village/src/world.js
+- config/layout_schemas/village_layout.schema.json
+- layouts/village_hub_v1.json
 - scripts/normalize_capy_assets.sh
-- tools/lib/gltf_node.ts
 - tools/normalize_capy_assets.ts
+- tools/publish_assets.ts
 - tools/verify_capy_assets.ts
-- capy-village/public/models/characters/capy_idle.glb
-- capy-village/public/models/accessories/crown.glb
-- capy-village/public/models/accessories/chef_hat.glb
-- capy-village/public/models/accessories/knit_beanie.glb
-- capy-village/public/models/accessories/scarf_v2.glb
 
 ## 5. Architecture Impact
-This changes the asset-size convention for the main playable character and its live accessories. Runtime character placement now follows the same grounding convention as normalized environment assets, and the toolchain now has a dedicated capy/accessory normalization and verification path. The change affects runtime asset loading, binary asset outputs, and local asset-maintenance workflow.
+This changes the layout data model, editor behavior, runtime world-loading path, and asset publishing structure. The game now prefers published layout-driven world composition over the prototype builder, while the player remains owned by gameplay code. The asset pipeline is cleaner because curated runtime assets now live in `assets/game_ready`, and `capy-village/public/assets` plus `public/layouts` are treated as generated publish output.
 
 ## 6. Key Implementation Notes
-The final implementation splits the work into two layers. The reliable automated path is GLB-first: measure the current capy runtime GLB, compute the shared scale factor, normalize the runtime GLB plus source-side companion GLBs, and verify the results. A separate Blender shell helper exists for scaling the local `.blend` sources with the same factor. During implementation, direct Blender CLI export stripped the armature when used for the character runtime export, so the runtime binaries were normalized from the original animated GLBs instead of depending on Blender export for the final gameplay output.
+The player is intentionally kept separate from ordinary layout objects. The editor stores the player transform in a dedicated top-level layout block, not in the `objects` array, which keeps runtime loading simpler and avoids accidentally treating the player as a duplicable/scalable prop. Runtime loading was implemented as a dedicated `runtimeLayout.js` module that resolves published manifest entries, clones GLB scenes, applies authored transforms, and only falls back to `buildVillage(scene)` if the published files cannot be loaded successfully.
+
+The public-folder cleanup was handled by moving the curated source audio/images/building asset into `assets/game_ready`, updating code to reference `assets/...` publish paths, updating publish tooling to remove legacy root-level `public/models`, `public/audio`, and `public/images`, and removing generated `public/assets` and `public/layouts` outputs from git tracking so the repo no longer mixes curated source assets with generated publish artifacts.
 
 ## 7. Risks / Known Issues
-- `npm run normalize-capy-assets` defaults to the reliable GLB normalization path and skips the Blender source-blend step unless `CAPY_NORMALIZE_SOURCE_BLENDS=1` is set.
-- The local source `.blend` files were normalized manually during this task, but they live under ignored `assets/source/**` paths and are therefore not part of the git commit.
-- Accessory fit was validated by restored anchor presence and removal of runtime anchor warnings, but there is still no dedicated automated visual regression harness for wearable placement.
-- The verification helper intentionally checks strict normalization only for the capy; accessories are reported for inspection but not hard-failed on absolute dimensions.
+- The editor still saves layouts by downloading a JSON file rather than writing directly back into `layouts/`.
+- Browser verification still shows the harmless `favicon.ico` 404.
+- The runtime layout loader currently uses broad bounding-box colliders for authored assets; there is no per-asset custom collision authoring yet.
+- The editor verification confirmed player-preview UI behavior, but load-via-file was not re-automated end to end in Playwright during this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: improved, because the capy runtime asset now follows the same grounded-at-zero convention as normalized world assets
+- source grounding: preserved, because published runtime assets now come from curated `assets/game_ready` sources rather than ad hoc public copies
 - hybrid retrieval: not affected
-- verification layer: improved via `npm run verify-capy-assets`
-- generic schema: not affected
-- inspectability: improved via explicit GLB measurement output and dedicated normalization tooling
+- verification layer: improved via runtime publish/build/browser checks plus continued capy asset verification
+- generic schema: improved, because layout JSON now has a clearer separation between player transform and ordinary placed objects
+- inspectability: improved via manifest-driven runtime loading and a cleaner generated-vs-source asset boundary
 
 ## 9. Testing Performed
-- Ran `npm run verify-capy-assets` and confirmed the capy runtime GLB reports `height=1` and `minY=0`.
-- Inspected the normalized capy runtime GLB node list and confirmed it still contains one animation plus `hat_anchor` and `neck_anchor`.
-- Ran `npm run build` in `capy-village` successfully after the runtime grounding change and binary asset updates.
-- Opened the live game in a headed browser and confirmed the earlier anchor warnings disappeared; only the existing `favicon.ico` 404 remained.
-- Re-ran `npm run normalize-capy-assets` on the normalized workspace and confirmed the GLB normalization path is idempotent.
+- Ran `npm run publish-assets` successfully after the `assets/game_ready` migration.
+- Ran `npm run build` in `capy-village` successfully after fixing the runtime bootstrap.
+- Ran `npm run verify-capy-assets` and confirmed the published source capy still reports `height=1` and `minY=0`.
+- Verified the editor in a real browser with Playwright:
+- confirmed the player preview is selected on load
+- confirmed the right panel shows `Type = player`
+- confirmed duplicate/delete are disabled and scale controls are hidden/locked for the player preview
+- Verified the runtime in a real browser with Playwright:
+- confirmed requests for `/layouts/village_hub_v1.json`
+- confirmed requests for `/assets/manifest.json`
+- confirmed runtime loading of published building GLBs and `assets/models/characters/capy_idle.glb`
+- captured a screenshot showing the authored village plus the spawned capy instead of the prototype-only scene
 
 ## 10. Example Output / Logs
 ```text
-capy_idle height=1 minY=-0 maxY=1 width=0.6963 depth=1.3243
+[Publish] Copying assets...
+[Publish] Copied: apple_bite.mp3
+[Publish] Copied: ui_background.png
+[Publish] Copied: hut_1.glb
+[Publish] Copied: mushroom_house.glb
+[Publish] Copied: book_statue.glb
+[Publish] Copied: capy_idle.glb
+[Publish] Copying layouts...
+[Publish] Copied: village_hub_v1.json
+[Publish] Done.
+```
+
+```text
+capy_idle height=1 minY=0 maxY=1 width=0.6963 depth=1.3243
 crown height=0.1473 minY=-0.0004 maxY=0.1469 width=0.304 depth=0.3052
 chef_hat height=0.2284 minY=0.0005 maxY=0.2289 width=0.3042 depth=0.3048
 knit_beanie height=0.315 minY=0 maxY=0.315 width=0.3052 depth=0.3048
@@ -70,22 +110,23 @@ scarf_v2 height=0.6208 minY=-0.3297 maxY=0.2911 width=0.6808 depth=0.6164
 [Verify] Capy character normalization checks passed.
 ```
 
-```json
-{
-  "animations": 1,
-  "hasHat": true,
-  "hasNeck": true
-}
+```text
+[GET] http://127.0.0.1:4173/capybara-game/layouts/village_hub_v1.json => [200] OK
+[GET] http://127.0.0.1:4173/capybara-game/assets/manifest.json => [200] OK
+[GET] http://127.0.0.1:4173/capybara-game/assets/models/buildings/hut_1.glb => [200] OK
+[GET] http://127.0.0.1:4173/capybara-game/assets/models/buildings/mushroom_house.glb => [200] OK
+[GET] http://127.0.0.1:4173/capybara-game/assets/models/buildings/book_statue.glb => [200] OK
+[GET] http://127.0.0.1:4173/capybara-game/assets/models/characters/capy_idle.glb => [200] OK
 ```
 
 ```text
-[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/favicon.ico:0
+[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4173/favicon.ico:0
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the Blender source-blend step should remain opt-in or be made fully reliable from the packaged command.
-- Check whether accessory verification should add anchor-relative spatial assertions instead of only reporting raw bounds.
-- Inspect whether the current character/public GLB duplication strategy is the right long-term home for source-side companion exports.
+- Review whether the runtime fallback should eventually reset/clear authored colliders explicitly if scene management becomes more dynamic.
+- Inspect whether the player preview should get a clearer in-editor visual treatment beyond the current locked controls.
+- Review whether generated `public/layouts` should remain fully ignored long term or whether a checked-in default published layout is still useful for onboarding.
 
 ## 12. Suggested Next Step
-Add a small runtime or editor-side size-reference scene that places the unit-height capy beside unit-height normalized environment assets, so building scale decisions can be tuned visually with the new shared convention.
+Add a small layout-to-runtime authoring loop improvement so the editor can publish the current layout directly into `layouts/` or trigger `npm run publish-assets` from a guided workflow, reducing the manual step between authoring and testing in the game.

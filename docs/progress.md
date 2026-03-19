@@ -2,6 +2,46 @@
 
 ## 2026-03-19
 
+### Runtime Layout Bridge
+- Implemented `docs/tasks/capy_player_preview_and_runtime_layout_task.md`.
+- Extended layout JSON and schema with a top-level `player` transform block.
+- Added a real capy player preview to the editor at locked scale `1`.
+- Made player preview selectable but non-scalable, non-duplicable, and non-deletable.
+- Updated the editor save/load flow to persist `layout.player.position` and `layout.player.rotation`.
+- Added runtime loading for published `/layouts/village_hub_v1.json` and `/assets/manifest.json`.
+- Switched the main game path to spawn world assets from the published layout instead of using the hardcoded prototype village by default.
+- Kept the prototype village as a fallback when published layout loading fails.
+- Updated runtime capy spawning to use the saved layout player transform.
+
+### Public Asset Cleanup
+- Moved curated audio files into `assets/game_ready/audio`.
+- Moved curated UI images into `assets/game_ready/images`.
+- Moved the remaining curated `capy_store` building source into `assets/game_ready/models/buildings`.
+- Updated gameplay asset paths so runtime now reads from published `assets/...` locations instead of legacy root `public/models`, `public/audio`, and `public/images`.
+- Updated publish tooling to remove legacy root-level public asset folders after publishing.
+- Stopped tracking generated `capy-village/public/assets` and `capy-village/public/layouts` outputs in git so `assets/game_ready` remains the source of truth.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds after the `assets/game_ready` cleanup.
+- Verified `npm run build` succeeds in `capy-village`.
+- Verified `npm run verify-capy-assets` still reports `capy_idle height=1` and `minY=0`.
+- Browser-verified the editor player preview in Playwright:
+- player preview appears and is selected
+- `Type` shows `player`
+- duplicate/delete are disabled
+- scale control is hidden/locked
+- Browser-verified the runtime in Playwright:
+- requests `/layouts/village_hub_v1.json`
+- requests `/assets/manifest.json`
+- loads published building GLBs and the published capy GLB
+- renders the authored village with the capy in the scene
+
+### Known Risks
+- The editor still downloads layouts instead of writing directly to `layouts/`.
+- The browser still logs a harmless `favicon.ico` 404.
+- Runtime authored-world collision uses broad bounding boxes rather than hand-authored collision volumes.
+- The editor flow still requires a publish step before the game reflects the latest saved layout.
+
 ### Completed
 - Normalized the capy character runtime GLB to `height = 1` and grounded it at `Y = 0`.
 - Rescaled the live accessory runtime GLBs (`crown`, `chef_hat`, `knit_beanie`, `scarf_v2`) with the same shared factor used for the capy.
