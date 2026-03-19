@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 import initialLayout from '../../../layouts/village_hub_v1.json';
 import playerPreviewUrl from '../../../assets/game_ready/models/characters/capy_idle.glb?url';
@@ -16,7 +17,14 @@ const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0.75, 0);
 const PLAYER_PREVIEW_ID = 'player_preview';
 
 function cloneAssetScene(scene) {
-  const clone = scene.clone(true);
+  let hasSkinnedMesh = false;
+  scene.traverse((node) => {
+    if (node.isSkinnedMesh) {
+      hasSkinnedMesh = true;
+    }
+  });
+
+  const clone = hasSkinnedMesh ? SkeletonUtils.clone(scene) : scene.clone(true);
   clone.traverse((node) => {
     if (node.isMesh) {
       node.castShadow = true;

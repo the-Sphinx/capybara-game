@@ -84,6 +84,7 @@ The public-folder cleanup was handled by moving the curated source audio/images/
 - confirmed duplicate/delete are disabled and scale controls are hidden/locked for the player preview
 - confirmed palette asset clicks load the `assets/game_ready` GLBs successfully without reproducing the earlier HTML/JSON parse failure
 - confirmed pointer handling now selects before transform drag, enabling immediate drag gestures on the player preview after clicking it
+- confirmed changing player preview position moves the visible capy mesh itself, not just the selection box, after switching the preview clone path to a skeleton-aware clone
 - Verified the runtime in a real browser with Playwright:
 - confirmed requests for `/layouts/village_hub_v1.json`
 - confirmed requests for `/assets/manifest.json`

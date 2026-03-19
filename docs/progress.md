@@ -32,6 +32,7 @@
 - scale control is hidden/locked
 - palette asset clicks resolve against local `assets/game_ready` GLBs successfully
 - selection now happens before transform-drag handling, so the player preview can be clicked and dragged more directly
+- skeleton-aware preview cloning keeps the visible capy mesh moving with the player transform instead of leaving only the selection box behind
 - Browser-verified the runtime in Playwright:
 - requests `/layouts/village_hub_v1.json`
 - requests `/assets/manifest.json`

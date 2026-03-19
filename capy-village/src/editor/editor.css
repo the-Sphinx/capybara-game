@@ -130,6 +130,15 @@ input {
   color: #255c24;
 }
 
+.layout-editor__actions button:disabled,
+.layout-editor__property-actions button:disabled {
+  background: linear-gradient(180deg, #f1e7d7 0%, #e3d4bd 100%);
+  color: rgba(107, 63, 29, 0.5);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .layout-editor__body {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr) 376px;
