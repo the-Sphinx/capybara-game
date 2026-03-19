@@ -37,6 +37,14 @@
 - Switched editor asset discovery to curated assets under `assets/game_ready/models`.
 - Added editor-side filtering so `assets/game_ready/models/characters` and `assets/game_ready/models/accessories` are ignored for now.
 
+### Publish Bridge
+- Added `npm run publish-assets` at the repo root.
+- Added `tools/publish_assets.ts` to copy curated game-ready assets into `capy-village/public/assets`.
+- Added layout publishing into `capy-village/public/layouts`.
+- Added generated runtime `manifest.json` for published `.glb` assets.
+- Tightened `.gitignore` so heavy binaries stay ignored while asset folder structure and metadata remain visible.
+- Updated the GitHub Pages workflow to publish assets before building.
+
 ## 2026-03-18
 
 ### Completed

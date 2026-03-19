@@ -1,73 +1,80 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Migrate asset tooling to source/pipeline/game_ready paths
+- Task name: Implement publish pipeline and .gitignore fix
 - Date: 2026-03-19
 - Time: 16:52 +03
 - Branch: scene-restructure
-- Commit hash: c0f62af
+- Commit hash: 11eb014
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Update the normalization pipeline and layout editor so they follow the new asset workflow: raw pipeline inputs under `assets/pipeline/models/raw`, normalized outputs under `assets/pipeline/models/normalized`, and editor/runtime-curated assets under `assets/game_ready/models`.
+Create a simple publish bridge that copies curated runtime assets and layouts into `capy-village/public`, generates a manifest for runtime asset lookup, and narrows `.gitignore` so the asset folder structure can live in the repo without committing heavy binaries.
 
 ## 3. What Changed
-- Updated the asset registry source/output paths to the new pipeline directories.
-- Kept the normalization script working through the registry, so it now reads and writes through the new pipeline layout automatically.
-- Switched the editor asset discovery from normalized pipeline outputs to curated `assets/game_ready/models/**`.
-- Added filtering so the editor ignores `characters` and `accessories` folders under `assets/game_ready/models`.
-- Updated the tracked normalization task doc to describe the new pipeline folder structure.
+- Added `tools/publish_assets.ts`.
+- Added root npm command `npm run publish-assets`.
+- Implemented recursive publish from `assets/game_ready/**` to `capy-village/public/assets/`.
+- Implemented recursive publish from `layouts/**` to `capy-village/public/layouts/`.
+- Added target-folder cleanup before publish.
+- Added generated `capy-village/public/assets/manifest.json` with `.glb` asset ids and public paths.
+- Reworked `.gitignore` to ignore heavy asset binaries while keeping directory structure and metadata visible.
+- Updated the GitHub Pages workflow to run the publish step before building `capy-village`.
 
 ## 4. Files Changed
-- config/asset_registry.json
-- capy-village/src/editor/assetRegistry.js
-- docs/tasks/capy_asset_normalization_pipeline.md
+- .gitignore
+- package.json
+- tools/publish_assets.ts
+- .github/workflows/verify.yml
 
 ## 5. Architecture Impact
-This changes the asset flow contract rather than the editor/runtime architecture. The pipeline remains registry-driven, while the editor now depends on a curated game-ready asset layer instead of directly consuming normalized pipeline outputs.
+This adds a lightweight publish stage between curated game-ready assets and the runtime app. The game build can now depend on generated `public/assets` and `public/layouts` rather than directly coupling runtime loading to source or pipeline asset locations.
 
 ## 6. Key Implementation Notes
-The editor still uses the registry for asset metadata and ids, but it resolves actual GLB URLs from `assets/game_ready/models` by filename match. This preserves the existing layout JSON and editor behavior while matching the new manual curation step between normalization and gameplay/editor use.
+The publish script keeps the implementation intentionally simple: clear target directories, recursively copy files, and generate a flat GLB manifest keyed by filename stem. The workflow runs from the repo root and does not introduce any new package dependencies or bundler plugins.
 
 ## 7. Risks / Known Issues
-- The editor path migration currently matches game-ready files by basename, so duplicate filenames across different game-ready subfolders would be ambiguous.
-- `assets/game_ready/models/book_statue.glb`, `hut_1.glb`, and `mushroom_house.glb` are currently at the root of `models/`; if you later move them into category subfolders, the current glob still works as long as filenames remain unique.
-- The untracked task file `docs/tasks/capy_layout_editor_phase1_spec.md` was updated locally but intentionally not committed because it is part of your ongoing docs/task restructuring.
+- `manifest.json` currently keys assets by filename only, so duplicate `.glb` filenames in different subfolders would collide.
+- Generated `capy-village/public/assets/` and `capy-village/public/layouts/` outputs are not committed by this task; they are produced locally and in CI by running `npm run publish-assets`.
+- Existing runtime code still has older public model paths for unrelated character/accessory content; this task only adds the publish bridge and does not refactor all loaders.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: not applicable to this task
 - hybrid retrieval: not affected
 - verification layer: not affected
 - generic schema: preserved
-- inspectability: improved through a clearer separation between pipeline assets and curated game-ready assets
+- inspectability: improved through the published manifest and explicit runtime asset boundary
 
 ## 9. Testing Performed
-- Ran `npm run normalize-assets hut_1` from the repo root and verified output now lands in `assets/pipeline/models/normalized/hut_1.glb`.
-- Ran `npm run build` in `capy-village` and verified the editor still bundles curated game-ready assets successfully.
+- Ran `npm run publish-assets` from the repo root.
+- Verified published outputs exist in `capy-village/public/assets` and `capy-village/public/layouts`.
+- Verified `capy-village/public/assets/manifest.json` contains the expected runtime paths.
+- Ran `npm run build` in `capy-village` after publish and confirmed the app still builds successfully.
 
 ## 10. Example Output / Logs
 ```text
-Asset: hut_1
-
-Original Height: 0.903
-Target Height: 1
-Scale Applied: 1.107
-
-Exported To:
-assets/pipeline/models/normalized/hut_1.glb
+[Publish] Copying assets...
+[Publish] Copied: book_statue.glb
+[Publish] Copied: hut_1.glb
+[Publish] Copied: mushroom_house.glb
+[Publish] Copying layouts...
+[Publish] Copied: village_hub_v1.json
+[Publish] Done.
 ```
 
-```text
-dist/assets/hut_1-Cw3vMzkg.glb
-dist/assets/book_statue-D0qXl9AV.glb
-dist/assets/mushroom_house-DgfpGVTv.glb
+```json
+{
+  "book_statue": "/assets/models/book_statue.glb",
+  "hut_1": "/assets/models/hut_1.glb",
+  "mushroom_house": "/assets/models/mushroom_house.glb"
+}
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether filename-based matching between registry entries and curated game-ready assets is sufficient or whether the registry should gain an explicit `gameReady` path field.
-- Check whether the editor should eventually derive its asset list directly from `game_ready/models` instead of registry-plus-match.
-- Confirm the new asset folder contract is documented clearly enough for future contributors.
+- Check whether manifest keying by basename is sufficient or should be replaced with category-aware ids.
+- Review whether generated public publish outputs should stay untracked or be ignored explicitly to avoid noisy working trees.
+- Confirm the GitHub Pages workflow ordering matches the intended deployment model.
 
 ## 12. Suggested Next Step
-Add explicit `gameReady` paths or categories to the registry so curated game assets can move into `buildings/`, `props/`, and future folders without relying on basename matching.
+Refactor the runtime/world loader to consume published layout and asset manifest data directly from `public/assets` and `public/layouts`.
