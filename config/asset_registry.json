@@ -2,20 +2,20 @@
   "assets": [
     {
       "id": "hut_1",
-      "source": "assets/raw_assets/hut_1.glb",
-      "output": "assets/normalized_assets/hut_1.glb",
+      "source": "assets/pipeline/models/raw/hut_1.glb",
+      "output": "assets/pipeline/models/normalized/hut_1.glb",
       "class": "house"
     },
     {
       "id": "mushroom_house",
-      "source": "assets/raw_assets/mushroom_house.glb",
-      "output": "assets/normalized_assets/mushroom_house.glb",
+      "source": "assets/pipeline/models/raw/mushroom_house.glb",
+      "output": "assets/pipeline/models/normalized/mushroom_house.glb",
       "class": "house"
     },
     {
       "id": "book_statue",
-      "source": "assets/raw_assets/book_statue.glb",
-      "output": "assets/normalized_assets/book_statue.glb",
+      "source": "assets/pipeline/models/raw/book_statue.glb",
+      "output": "assets/pipeline/models/normalized/book_statue.glb",
       "class": "centerpiece"
     }
   ]

@@ -12,7 +12,7 @@ The goal is to ensure every asset:
 • belongs to a known asset category  
 • can be safely placed in layouts later
 
-The normalization script will process assets from `raw_assets/` and produce corrected assets in `normalized_assets/`.
+The normalization script will process assets from `assets/pipeline/models/raw/` and produce corrected assets in `assets/pipeline/models/normalized/`.
 
 The original files must NEVER be modified.
 
@@ -24,8 +24,13 @@ The project must contain the following structure.
 
 ```
 assets/
-    raw_assets/
-    normalized_assets/
+    source/
+    pipeline/
+        models/
+            raw/
+            normalized/
+    game_ready/
+        models/
 config/
     asset_registry.json
 tools/
@@ -51,14 +56,14 @@ Example:
   "assets": [
     {
       "id": "hut_round_small",
-      "source": "assets/raw_assets/hut_round_small.glb",
-      "output": "assets/normalized_assets/hut_round_small.glb",
+      "source": "assets/pipeline/models/raw/hut_round_small.glb",
+      "output": "assets/pipeline/models/normalized/hut_round_small.glb",
       "class": "house"
     },
     {
       "id": "center_book_statue",
-      "source": "assets/raw_assets/center_book_statue.glb",
-      "output": "assets/normalized_assets/center_book_statue.glb",
+      "source": "assets/pipeline/models/raw/center_book_statue.glb",
+      "output": "assets/pipeline/models/normalized/center_book_statue.glb",
       "class": "centerpiece"
     }
   ]
@@ -214,7 +219,7 @@ position = 0
 Export result to:
 
 ```
-assets/normalized_assets/
+assets/pipeline/models/normalized/
 ```
 
 Never overwrite raw files.
@@ -258,7 +263,7 @@ Pivot Adjusted: YES
 Ground Adjusted: YES
 
 Exported To:
-assets/normalized_assets/hut_round_small.glb
+assets/pipeline/models/normalized/hut_round_small.glb
 ```
 
 ---
