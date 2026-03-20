@@ -2,6 +2,20 @@
 
 ## 2026-03-20
 
+### Asset Registry Removal
+- Removed `config/asset_registry.json`.
+- Simplified the editor to auto-discover palette assets directly from `assets/game_ready/models/**/*.glb`.
+- Kept editor filtering so `characters/` and `accessories/` stay excluded.
+- Updated the workflow doc to note that there is currently no asset registry file to maintain.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Verified the editor no longer imports `config/asset_registry.json`.
+
+### Known Risks
+- Asset ids still come from curated GLB filenames, so renaming a game-ready file changes its id.
+- If custom labels/categories are needed later, a new purpose-built metadata file may be added back.
+
 ### Raw-Folder Normalization Workflow
 - Updated the normalization pipeline so it no longer depends on `config/asset_registry.json`.
 - Switched `npm run normalize-assets` to scan every `.glb` file under `assets/pipeline/models/raw`.
