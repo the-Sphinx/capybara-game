@@ -2,6 +2,24 @@
 
 ## 2026-03-20
 
+### Camera And Composition Lock
+- Implemented `docs/tasks/capy_camera_composition_task.md`.
+- Removed the runtime follow-camera behavior.
+- Locked the gameplay view to a fixed diorama camera with a curated position, center look target, subtle tilt, and slightly wider framing.
+- Preserved the user-authored statue-centered layout and recent prop additions as the main composition structure.
+- Updated publish to skip hidden files like `.DS_Store`.
+- Added ignore rules for `tmp/` and nested `.DS_Store` files.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Browser-verified that the runtime camera no longer follows the player dynamically.
+- Verified publish logs no longer include copied `.DS_Store` files.
+
+### Known Risks
+- Live `vite dev` verification is still partially blocked by an existing GLB-loading fallback issue, so the browser screenshots do not yet show the fully authored published village.
+- The fixed camera may need occasional retuning if the authored layout footprint grows.
+
 ### Asset Registry Removal
 - Removed `config/asset_registry.json`.
 - Simplified the editor to auto-discover palette assets directly from `assets/game_ready/models/**/*.glb`.

@@ -1,72 +1,84 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Remove asset registry file
+- Task name: Camera and composition lock
 - Date: 2026-03-20
-- Time: 11:49 +03
+- Time: 22:22 +03
 - Branch: scene-restructure
-- Commit hash: 14bc8a2
+- Commit hash: e348ce3
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Delete the now-obsolete `config/asset_registry.json` file and simplify the editor so it relies entirely on auto-discovered curated assets from `assets/game_ready/models`.
+Lock the runtime view into a fixed toy-diorama camera and tighten the remaining scene presentation work around the user-authored layout, without revisiting materials or lighting direction.
 
 ## 3. What Changed
-- Removed the editor import of `config/asset_registry.json`.
-- Simplified editor asset discovery so it builds the palette directly from `assets/game_ready/models/**/*.glb`.
-- Preserved folder-based filtering so `characters/` and `accessories/` remain excluded from the editor palette.
-- Kept id generation filename-based and class inference folder-based.
-- Deleted `config/asset_registry.json`.
-- Updated the workflow doc to state that no asset registry maintenance is currently required.
+- Removed the dynamic follow-camera behavior from runtime animation.
+- Switched the main camera to a fixed diorama framing with a curated position, look target, slightly wider framing, and a subtle Dutch tilt.
+- Kept the statue-centered village composition and user-authored layout as the primary scene anchor.
+- Kept player movement/gameplay intact while decoupling it from camera motion.
+- Updated publish behavior to ignore hidden files like `.DS_Store`.
+- Added `.gitignore` coverage for `tmp/` and nested `.DS_Store` files to keep the worktree cleaner.
 
 ## 4. Files Changed
-- capy-village/src/editor/assetRegistry.js
-- config/asset_registry.json
-- docs/asset_to_game_workflow.md
+- capy-village/src/main.js
+- capy-village/src/world.js
+- tools/publish_assets.ts
+- .gitignore
 
 ## 5. Architecture Impact
-This affects editor asset discovery only. The editor now uses curated game-ready assets as its sole source of truth for palette entries. Normalization, publishing, runtime manifest generation, and layout schema are unchanged.
+This affects runtime presentation and build hygiene only. The camera is now a fixed scene camera rather than a gameplay-follow camera, and publish no longer copies hidden filesystem artifacts into `public/assets`. Layout data, asset normalization, and runtime asset loading architecture remain unchanged.
 
 ## 6. Key Implementation Notes
-The old registry file was carrying stale source/output fields from when normalization depended on it. Since normalization is now raw-folder-driven and the editor already had fallback auto-discovery behavior, the cleanest path was to remove the registry entirely and let the editor always derive its available assets from the `game_ready` folder.
+The previous runtime camera still used the older follow offset/lerp path. That behavior was removed from `main.js`, and `world.js` now owns a fixed diorama camera definition. The camera starts at a deliberately staged position, looks toward the village center/statue anchor, and applies a small `z` tilt to give the scene a toy-photography feel.
 
-Asset ids remain the GLB basenames, and classes remain inferred from folder names such as `buildings/` and `props/`. That keeps the current layout/editor behavior stable without maintaining a second metadata file.
+The user’s recent layout and prop additions already covered much of the composition side of the task, so the implementation focused on the camera lock itself rather than reworking authored placement. A small publish cleanup was bundled in after verification exposed `.DS_Store` files being copied into published assets.
 
 ## 7. Risks / Known Issues
-- Asset ids are still filename-derived, so renaming a curated game-ready file changes the editor/runtime-facing asset id.
-- If curated metadata such as custom display names or durable ids are needed later, a new registry may need to be reintroduced with a clearer purpose.
-- There are unrelated local edits in `capy-village/src/world.js` and `layouts/village_hub_v1.json` that were intentionally left out of this change.
+- Live `vite dev` verification is still affected by an existing GLB-loading issue that causes fallback-world rendering in dev, so browser screenshots do not yet reflect the full authored published village.
+- Because the camera is fully fixed now, future layout expansions may require occasional camera retuning if the village footprint grows significantly.
+- The fixed view improves diorama composition, but it intentionally reduces the old “camera follows the player” readability during movement.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: preserved
 - hybrid retrieval: not affected
 - verification layer: not materially changed
 - generic schema: not affected
-- inspectability: improved slightly because the asset pipeline now has one less stale source of truth to reconcile
+- inspectability: improved because the scene now has a consistent intentional viewing angle instead of a drifting gameplay camera
 
 ## 9. Testing Performed
+- Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Verified the build includes auto-discovered game-ready assets in the editor bundle.
-- Verified no code references to `config/asset_registry.json` remain outside historical docs/task docs.
+- Launched the game in a headed browser and captured screenshots of the fixed camera framing.
+- Verified that the runtime camera no longer follows the player dynamically.
+- Verified publish output no longer logs copied `.DS_Store` files.
 
 ## 10. Example Output / Logs
 ```text
-Editor asset source:
-- assets/game_ready/models/**/*.glb
-- excludes /characters/
-- excludes /accessories/
+Fixed diorama camera:
+- position: (7.4, 4.4, 7.6)
+- lookAt: (0, 0.85, 0)
+- roll / tilt: -0.05
+- fov: 54
 ```
 
 ```text
-Build:
-- npm run build
-- result: success
+Publish:
+- hidden dotfiles skipped
+- no `.DS_Store` copies logged during publish
+```
+
+```text
+Visual verification:
+- screenshots captured at:
+  - .playwright-cli/page-2026-03-20T19-21-17-406Z.png
+  - .playwright-cli/page-2026-03-20T19-22-10-745Z.png
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether filename-derived asset ids are still sufficient for long-term layout stability.
-- Inspect whether curated display metadata should eventually live in a lighter-weight editor-only config instead of a full asset registry.
+- Review whether the fixed camera should stay fully static or eventually gain only very subtle player-aware parallax without becoming a follow camera again.
+- Inspect whether the current authored village footprint still wants one final camera nudge once the dev GLB-loading issue is resolved and the full published village is visible in-browser.
+- Review whether a small dedicated diorama-camera config object should be introduced if more composition tuning is expected.
 
 ## 12. Suggested Next Step
-If asset naming starts to drift, add a small optional curated metadata layer focused only on stable ids, labels, and categories for game-ready assets.
+Resolve the remaining dev-time published-asset loading issue so live browser verification reflects the authored village reliably, then do one final composition polish pass against the fully loaded scene.
