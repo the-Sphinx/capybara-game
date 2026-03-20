@@ -3,6 +3,8 @@ dist/
 *.blend
 *.blend1
 .DS_Store
+**/.DS_Store
+tmp/
 .claude/settings.local.json
 .playwright-cli/
 capy-village/public/assets/

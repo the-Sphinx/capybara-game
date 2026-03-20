@@ -175,6 +175,9 @@ function createToyGround(scene) {
 
 // ─── Scene init ───────────────────────────────────────────────────────────────
 export function initScene() {
+  const DIORAMA_CAMERA_POSITION = new THREE.Vector3(7.4, 4.4, 7.6);
+  const DIORAMA_CAMERA_TARGET = new THREE.Vector3(0, 0.85, 0);
+
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -189,13 +192,10 @@ export function initScene() {
 
   const scene  = new THREE.Scene();
   scene.background = new THREE.Color(0xdfeaf5);
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 2.5, 4.5);
-  camera.lookAt(0, 0.5, 0);
-
-  const CAM_OFFSET = new THREE.Vector3(0, 2.5, 4.5);
-  const CAM_LERP   = 0.1;
-  const camTarget  = new THREE.Vector3();
+  const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.copy(DIORAMA_CAMERA_POSITION);
+  camera.lookAt(DIORAMA_CAMERA_TARGET);
+  camera.rotation.z = -0.05;
 
   const hemiLight = new THREE.HemisphereLight(0xfff5d6, 0x9dbf87, 0.6);
   scene.add(hemiLight);
@@ -226,7 +226,7 @@ export function initScene() {
 
   const clock = new THREE.Clock();
 
-  return { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP };
+  return { renderer, scene, camera, clock };
 }
 
 // ─── Village helpers (private) ────────────────────────────────────────────────

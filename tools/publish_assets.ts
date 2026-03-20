@@ -51,6 +51,10 @@ async function copyRecursive(sourceDir: string, targetDir: string, onFile: (sour
   await ensureDir(targetDir);
 
   for (const entry of entries) {
+    if (entry.name.startsWith('.')) {
+      continue;
+    }
+
     const sourcePath = path.join(sourceDir, entry.name);
     const targetPath = path.join(targetDir, entry.name);
 

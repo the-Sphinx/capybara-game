@@ -22,7 +22,7 @@ import { saveManager } from './SaveManager.js';
 
 async function bootstrap() {
   // ─── Scene setup ────────────────────────────────────────────────────────────
-  const { renderer, scene, camera, clock, camTarget, CAM_OFFSET, CAM_LERP } = initScene();
+  const { renderer, scene, camera, clock } = initScene();
   const runtimeLayout = await loadPublishedVillage(scene);
   if (!runtimeLayout.success) {
     setInteractablesEnabled(true);
@@ -121,12 +121,6 @@ async function bootstrap() {
     }
 
     updateOcclusion(camera);
-
-    const desired = capy.position.clone().add(CAM_OFFSET);
-    camera.position.lerp(desired, CAM_LERP);
-    camTarget.copy(capy.position);
-    camTarget.y += 0.5;
-    camera.lookAt(camTarget);
   }
 
   if (mixer) mixer.update(delta);
