@@ -15,14 +15,14 @@ function getAssetIdFromModulePath(modulePath) {
 
 function getClassFromModulePath(modulePath) {
   if (modulePath.includes('/buildings/')) {
-    return 'building';
+    return 'buildings';
   }
 
   if (modulePath.includes('/props/')) {
-    return 'prop';
+    return 'props';
   }
 
-  return 'asset';
+  return 'other';
 }
 
 function isEditorEligibleAsset(modulePath) {

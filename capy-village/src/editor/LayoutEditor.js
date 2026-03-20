@@ -55,7 +55,9 @@ function vectorToForm(object3D) {
 
 function uniformScaleToForm(object3D) {
   return {
-    uniform: object3D.x.toFixed(2),
+    x: object3D.x.toFixed(2),
+    y: object3D.y.toFixed(2),
+    z: object3D.z.toFixed(2),
   };
 }
 
@@ -76,6 +78,7 @@ export class LayoutEditor {
     this.loader = new GLTFLoader();
     this.snapState = { enabled: true, step: 0.5, keepOnGround: true };
     this.gridVisible = true;
+    this.scaleLockEnabled = true;
     this.nextObjectIndex = 1;
     this.layoutName = initialLayout.layoutName || 'village_hub_v1';
     this.playerPreviewCache = null;
@@ -297,6 +300,11 @@ export class LayoutEditor {
           root.position.y = 0;
         }, 'Selected object moved to ground.');
         break;
+      case 'toggle-scale-lock':
+        this.scaleLockEnabled = !this.scaleLockEnabled;
+        this.updateSelectionPanel(this.selectionController.getSelected());
+        this.ui.setStatus(`Scale lock ${this.scaleLockEnabled ? 'enabled' : 'disabled'}.`);
+        break;
       default:
         break;
     }
@@ -322,7 +330,11 @@ export class LayoutEditor {
     }
 
     if (field === 'scale' && !this.isPlayerRoot(selected)) {
-      selected.scale.setScalar(value.value);
+      if (this.scaleLockEnabled) {
+        selected.scale.setScalar(value.value);
+      } else {
+        selected.scale[value.axis] = value.value;
+      }
     }
 
     this.onObjectTransformed(selected);
@@ -452,11 +464,12 @@ export class LayoutEditor {
       assetName: isPlayer ? 'capy_idle' : root.userData.assetId,
       position: vectorToForm(root.position),
       rotation: {
-        x: toDegrees(root.rotation.x).toFixed(2),
-        y: toDegrees(root.rotation.y).toFixed(2),
-        z: toDegrees(root.rotation.z).toFixed(2),
+        x: Math.round(toDegrees(root.rotation.x)).toString(),
+        y: Math.round(toDegrees(root.rotation.y)).toString(),
+        z: Math.round(toDegrees(root.rotation.z)).toString(),
       },
       scale: uniformScaleToForm(root.scale),
+      scaleLocked: this.scaleLockEnabled,
       showScale: !isPlayer,
       scaleEditable: !isPlayer,
       canDuplicate: !isPlayer,

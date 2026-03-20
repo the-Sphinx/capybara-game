@@ -57,7 +57,7 @@ export class LayoutEditorUI {
               ${this.renderTripletInputs('Position', 'position')}
               ${this.renderTripletInputs('Rotation', 'rotation')}
               <div class="layout-editor__scale-wrap" data-role="scale-wrap">
-                ${this.renderScalarInput('Scale', 'scale')}
+                ${this.renderScaleInputs()}
               </div>
             </div>
             <div class="layout-editor__property-actions">
@@ -98,6 +98,7 @@ export class LayoutEditorUI {
   }
 
   renderTripletInputs(label, group) {
+    const step = group === 'rotation' ? '1' : '0.1';
     return `
       <fieldset class="layout-editor__triplet" data-role="${group}">
         <legend>${label}</legend>
@@ -106,7 +107,7 @@ export class LayoutEditorUI {
             <span class="layout-editor__axis-label">${axis.toUpperCase()}</span>
             <input
               type="number"
-              step="0.1"
+              step="${step}"
               aria-label="${label} ${axis.toUpperCase()}"
               data-group="${group}"
               data-axis="${axis}"
@@ -117,12 +118,34 @@ export class LayoutEditorUI {
     `;
   }
 
-  renderScalarInput(label, group) {
+  renderScaleInputs() {
     return `
-      <label class="layout-editor__field">
-        <span>${label}</span>
-        <input type="number" step="0.1" min="0.1" data-group="${group}" data-axis="uniform" />
-      </label>
+              <fieldset class="layout-editor__triplet" data-role="scale">
+        <legend class="layout-editor__scale-legend">
+          <span class="layout-editor__scale-label">Scale</span>
+          <button
+            type="button"
+            class="layout-editor__lock-button"
+            data-action="toggle-scale-lock"
+            data-state="on"
+            aria-label="Toggle uniform scale lock"
+            title="Toggle uniform scale lock"
+          >🔒</button>
+        </legend>
+        ${['x', 'y', 'z'].map((axis) => `
+          <label class="layout-editor__triplet-field">
+            <span class="layout-editor__axis-label">${axis.toUpperCase()}</span>
+            <input
+              type="number"
+              step="0.1"
+              min="0.1"
+              aria-label="Scale ${axis.toUpperCase()}"
+              data-group="scale"
+              data-axis="${axis}"
+            />
+          </label>
+        `).join('')}
+      </fieldset>
     `;
   }
 
@@ -184,10 +207,17 @@ export class LayoutEditorUI {
       }
     }
 
-    const scaleInput = this.host.querySelector('input[data-group="scale"][data-axis="uniform"]');
     this.elements.scaleWrap.hidden = hasSelection ? !details.showScale : false;
-    scaleInput.disabled = !(hasSelection && details.scaleEditable);
-    scaleInput.value = hasSelection ? details.scale.uniform : '';
+    for (const axis of ['x', 'y', 'z']) {
+      const scaleInput = this.host.querySelector(`input[data-group="scale"][data-axis="${axis}"]`);
+      scaleInput.disabled = !(hasSelection && details.scaleEditable);
+      scaleInput.value = hasSelection ? details.scale[axis] : '';
+    }
+
+    const lockButton = this.host.querySelector('[data-action="toggle-scale-lock"]');
+    lockButton.disabled = !(hasSelection && details.scaleEditable);
+    lockButton.textContent = details?.scaleLocked ? '🔒' : '🔓';
+    lockButton.dataset.state = details?.scaleLocked ? 'on' : 'off';
 
     this.setActionEnabled('duplicate-selected', hasSelection && details.canDuplicate);
     this.setActionEnabled('delete-selected', hasSelection && details.canDelete);
