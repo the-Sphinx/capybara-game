@@ -2,6 +2,21 @@
 
 ## 2026-03-20
 
+### Raw-Folder Normalization Workflow
+- Updated the normalization pipeline so it no longer depends on `config/asset_registry.json`.
+- Switched `npm run normalize-assets` to scan every `.glb` file under `assets/pipeline/models/raw`.
+- Kept normalized outputs aligned by writing to `assets/pipeline/models/normalized` with the same basenames.
+- Preserved single-asset normalization via filename-based ids such as `tree_1`.
+
+### Self-Check
+- Verified `npm run normalize-assets` succeeds against the current raw folder contents.
+- Verified the command normalized `cubes_1`, `tree_1`, and `tree_2`.
+- Verified all three runs preserved textures/images and reported `status: OK`.
+
+### Known Risks
+- Filename-derived ids are convenient for the raw pipeline, but a separate curated metadata registry is still the better place for durable editor/runtime asset ids later.
+- Some normalized assets still land extremely close to `Y=0` rather than exactly `Y=0`.
+
 ### Toy Ground And Warm Lighting
 - Implemented `docs/tasks/capy_ground_lighting_task.md`.
 - Replaced the old flat green plane with a layered circular toy-base ground.

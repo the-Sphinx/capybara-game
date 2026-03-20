@@ -1,89 +1,88 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Toy ground and warm lighting pass
+- Task name: Raw-folder normalization workflow
 - Date: 2026-03-20
-- Time: 00:49 +03
+- Time: 11:37 +03
 - Branch: scene-restructure
-- Commit hash: 982d5a5
+- Commit hash: pending
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Replace the prototype flat ground and cooler placeholder lighting with a warmer toy-base presentation that improves softness, depth, and overall miniature-village feel without modifying any asset materials.
+Align the normalization pipeline with the current asset workflow so `npm run normalize-assets` processes every GLB found in `assets/pipeline/models/raw` automatically, without depending on `config/asset_registry.json`.
 
 ## 3. What Changed
-- Replaced the old flat green plane in `world.js` with a layered circular toy-base ground built from stacked cylinders.
-- Added a darker lower ring and inset top platform to create a soft toy-base edge silhouette.
-- Added subtle ground variation using several softly tinted circular patches instead of a single uniform surface.
-- Added a raised central plaza disk with a beige top and darker base ring so the village center reads more intentionally.
-- Updated scene lighting to use physically correct lights, a warm directional sun, warmer hemisphere bounce, and a soft ambient fill.
-- Increased tone-mapping exposure slightly and shifted the background toward a softer sky tone.
-- Kept all asset materials untouched; only scene-level ground/light presentation changed.
+- Removed the normalization pipeline’s dependency on `config/asset_registry.json`.
+- Updated `tools/normalize_assets.ts` to scan `assets/pipeline/models/raw` for every `.glb` file.
+- Kept output naming simple by writing normalized files to `assets/pipeline/models/normalized/<same-file-name>.glb`.
+- Preserved support for single-asset normalization by accepting a filename-based id like `tree_1`.
+- Kept the Blender-backed texture-preserving normalization path unchanged.
 
 ## 4. Files Changed
-- capy-village/src/world.js
+- tools/normalize_assets.ts
 
 ## 5. Architecture Impact
-This affects only runtime scene presentation. It changes the global renderer/light setup and the procedural ground meshes created at scene initialization. It does not alter layout JSON, runtime asset loading, materials authored in GLBs, editor behavior, or player/gameplay data structures.
+This affects only the normalization workflow. It does not change publish behavior, runtime layout loading, or the game-ready asset manifest. It removes the registry as a normalization driver so the raw folder itself becomes the authoritative input list.
 
 ## 6. Key Implementation Notes
-The new `createToyGround()` helper builds the ground from simple `MeshStandardMaterial` primitives rather than textures or shader tricks, which keeps the change lightweight and easy to iterate on. The layered cylinders create a more toy-like base profile, while the inset meadow and small circular patches break the previous flat monotone look.
+The new workflow derives asset ids directly from raw GLB filenames. Hidden files and non-GLB files are ignored, and outputs are written with the same basename under the normalized pipeline folder. This better matches the intended “drop files in raw, normalize everything, manually promote selected outputs to game_ready” flow.
 
-The light rig now follows the task spec more closely: warm sun (`0xfff2cc`, `1.2`), warm hemisphere fill (`0xfff5d6` / `0x9dbf87`, `0.6`), and a soft ambient top-up (`0.2`). Renderer settings now enable physically correct lights and slightly brighter ACES exposure (`1.1`) so the scene reads warmer without washing out authored GLB colors.
+This change does not remove `config/asset_registry.json` from the repo, because that file can still be repurposed later for curated editor metadata, categories, or durable asset ids. It is simply no longer consulted by `npm run normalize-assets`.
 
 ## 7. Risks / Known Issues
-- The visual verification in `vite dev` hit an existing published-layout fallback warning, so the screenshot review used the fallback village rather than the fully authored published layout.
-- The new plaza is centered at the world origin; if future authored layouts move the main centerpiece far away from the origin, that plaza placement may need to become layout-driven.
-- Ground variation is intentionally simple and procedural for now; it improves flatness but is not final environment art.
+- Single-asset targeting now depends on filename-derived ids, so renaming a raw file changes the CLI target id.
+- The current Blender script still leaves a small non-zero `min_z` on some assets, so ground alignment is effectively correct but not mathematically exact yet.
+- There are unrelated local edits in `capy-village/src/world.js` and `layouts/village_hub_v1.json` that were intentionally left out of this workflow change.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: preserved, because no authored asset materials or geometry were changed
+- source grounding: preserved, because Blender-based normalization remains the authoritative geometry/material path
 - hybrid retrieval: not affected
-- verification layer: not materially changed
+- verification layer: preserved via texture/image count reporting during normalization
 - generic schema: not affected
-- inspectability: improved, because the world now reads more clearly with a distinct base, softer shadows, and warmer depth cues
+- inspectability: improved for pipeline operations because the raw folder now directly determines what will be normalized
 
 ## 9. Testing Performed
-- Ran `npm run build` successfully in `capy-village`.
-- Ran `npm run publish-assets` successfully before the live visual check.
-- Launched the game in a headed automation browser and captured a screenshot of the updated scene.
-- Verified visually that:
-- the flat plane is gone
-- the base now has layered edge definition
-- the center plaza reads as a separate warm platform
-- shadows are softer and visible
-- scene lighting feels warmer overall
+- Ran `npm run normalize-assets` successfully.
+- Verified the command normalized all current raw assets:
+- `cubes_1`
+- `tree_1`
+- `tree_2`
+- Verified each normalized asset reported `status: OK`.
+- Verified texture/image counts were preserved for each run.
 
 ## 10. Example Output / Logs
 ```text
-Renderer:
-- physicallyCorrectLights: true
-- outputColorSpace: THREE.SRGBColorSpace
-- toneMapping: THREE.ACESFilmicToneMapping
-- toneMappingExposure: 1.1
+[Normalize] cubes_1.glb
+input textures: 3
+output textures: 3
+input images: 3
+output images: 3
+status: OK
 ```
 
 ```text
-Lighting:
-- directional: #fff2cc @ 1.2
-- hemisphere sky: #fff5d6
-- hemisphere ground: #9dbf87
-- hemisphere intensity: 0.6
-- ambient: #ffffff @ 0.2
+[Normalize] tree_1.glb
+input textures: 3
+output textures: 3
+input images: 3
+output images: 3
+status: OK
 ```
 
 ```text
-Visual verification:
-- Screenshot captured at .playwright-cli/page-2026-03-19T21-47-33-788Z.png
-- Ground shows darker outer base ring, lighter main top, and raised center disk
-- Warm sunlight and soft shadows visible in scene
+[Normalize] tree_2.glb
+input textures: 3
+output textures: 3
+input images: 3
+output images: 3
+status: OK
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the plaza diameter and placement should remain fixed at the origin or become data-driven from the authored layout.
-- Inspect whether the ground patches need slightly more tonal contrast now that textured authored buildings are back in the scene.
-- Review the remaining dev-only layout fallback warning separately so live dev visual checks reflect the published authored village consistently.
+- Review whether filename-derived ids are sufficient for the raw-folder workflow or whether a separate curated metadata registry should be added for editor/runtime-facing ids later.
+- Inspect whether the Blender script should get a tighter final grounding pass so `min_z` is consistently at zero.
+- Review whether normalized output cleanup should remove stale files when raw files disappear, or whether manual cleanup is preferred.
 
 ## 12. Suggested Next Step
-Tune camera composition and framing against the new toy-base scene so the player and main village cluster read as a stronger hero composition from the default gameplay view.
+Create a separate curated game-ready asset metadata registry for editor categories and durable layout-facing ids, while leaving raw-folder normalization fully automatic.

@@ -8,11 +8,6 @@ type AssetEntry = {
   id: string;
   source: string;
   output: string;
-  class: string;
-};
-
-type AssetRegistry = {
-  assets: AssetEntry[];
 };
 
 type GlbSummary = {
@@ -27,18 +22,14 @@ const execFileAsync = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const registryPath = path.resolve(repoRoot, 'config/asset_registry.json');
+const rawModelsDir = path.resolve(repoRoot, 'assets/pipeline/models/raw');
+const normalizedModelsDir = path.resolve(repoRoot, 'assets/pipeline/models/normalized');
 const blenderScriptPath = path.resolve(repoRoot, 'scripts/blender_normalize_glb.py');
 const defaultBlenderBinary = '/Applications/Blender.app/Contents/MacOS/Blender';
 const normalizedHeight = 1;
 
 function resolveBlenderBinary(): string {
   return process.env.BLENDER_BIN || defaultBlenderBinary;
-}
-
-async function loadRegistry(): Promise<AssetRegistry> {
-  const raw = await fs.readFile(registryPath, 'utf8');
-  return JSON.parse(raw) as AssetRegistry;
 }
 
 function formatSize(sizeBytes: number): string {
@@ -49,6 +40,23 @@ function formatSize(sizeBytes: number): string {
     return `${(sizeBytes / 1024).toFixed(1)} KB`;
   }
   return `${sizeBytes} B`;
+}
+
+function getAssetIdFromFileName(fileName: string): string {
+  return fileName.replace(/\.glb$/i, '');
+}
+
+async function loadRawAssets(): Promise<AssetEntry[]> {
+  const entries = await fs.readdir(rawModelsDir, { withFileTypes: true });
+
+  return entries
+    .filter((entry) => entry.isFile() && path.extname(entry.name).toLowerCase() === '.glb')
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((entry) => ({
+      id: getAssetIdFromFileName(entry.name),
+      source: path.relative(repoRoot, path.join(rawModelsDir, entry.name)),
+      output: path.relative(repoRoot, path.join(normalizedModelsDir, entry.name)),
+    }));
 }
 
 async function inspectGlb(assetPath: string): Promise<GlbSummary> {
@@ -83,6 +91,8 @@ async function runBlenderNormalize(asset: AssetEntry): Promise<string> {
   const inputPath = path.resolve(repoRoot, asset.source);
   const outputPath = path.resolve(repoRoot, asset.output);
 
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+
   const { stdout, stderr } = await execFileAsync(
     blenderBinary,
     [
@@ -101,8 +111,7 @@ async function runBlenderNormalize(asset: AssetEntry): Promise<string> {
     { cwd: repoRoot, maxBuffer: 1024 * 1024 * 16 },
   );
 
-  const combinedOutput = [stdout, stderr].filter(Boolean).join('\n').trim();
-  return combinedOutput;
+  return [stdout, stderr].filter(Boolean).join('\n').trim();
 }
 
 function printReport(asset: AssetEntry, inputSummary: GlbSummary, outputSummary: GlbSummary, status: string): void {
@@ -139,15 +148,20 @@ async function normalizeAsset(asset: AssetEntry): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const registry = await loadRegistry();
   const requestedId = process.argv[2];
+  const assets = await loadRawAssets();
   const selectedAssets = requestedId
-    ? registry.assets.filter((asset) => asset.id === requestedId)
-    : registry.assets;
+    ? assets.filter((asset) => asset.id === requestedId)
+    : assets;
 
   if (requestedId && selectedAssets.length === 0) {
-    console.error(`Asset "${requestedId}" was not found in config/asset_registry.json.`);
+    console.error(`Asset "${requestedId}" was not found in assets/pipeline/models/raw.`);
     process.exitCode = 1;
+    return;
+  }
+
+  if (assets.length === 0) {
+    console.log('No raw GLB assets found in assets/pipeline/models/raw.');
     return;
   }
 
