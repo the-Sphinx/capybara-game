@@ -149,7 +149,7 @@ function createToyGround(scene) {
   }
 
   const plazaBase = new THREE.Mesh(
-    new THREE.CylinderGeometry(2.45, 2.62, 0.16, 40),
+    new THREE.CylinderGeometry(3.35, 3.58, 0.16, 40),
     new THREE.MeshStandardMaterial({
       color: 0xc2b292,
       roughness: 0.94,
@@ -161,7 +161,7 @@ function createToyGround(scene) {
   scene.add(plazaBase);
 
   const plazaTop = new THREE.Mesh(
-    new THREE.CylinderGeometry(2.2, 2.28, 0.08, 40),
+    new THREE.CylinderGeometry(3.02, 3.14, 0.08, 40),
     new THREE.MeshStandardMaterial({
       color: 0xe8d8b5,
       roughness: 0.9,
