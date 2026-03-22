@@ -1,38 +1,40 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Camera follow dead-zone system
+- Task name: Camera visibility safeguard + soft village bounds
 - Date: 2026-03-22
-- Time: 16:40 +03
+- Time: 16:49 +03
 - Branch: scene-restructure
-- Commit hash: 3c4aa1b
+- Commit hash: 566faef
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Reintroduce camera follow so the gameplay camera responds to the capy smoothly without breaking the current diorama composition, using a soft dead-zone instead of a rigid player lock or a fully static view.
+Keep the capy visible without breaking the hybrid diorama composition by strengthening camera response only near the edges and adding soft movement bounds so the player stays within the designed village footprint.
 
 ## 3. What Changed
-- Added a dead-zone follow system in the main runtime loop.
-- Kept the current fixed diorama framing as the baseline and derived follow motion from that existing camera offset.
-- Camera now stays still during small player movement and only starts moving when the capy exits the dead zone.
-- Applied smoothing through anchor interpolation so the camera nudges softly instead of snapping.
-- Left world lighting, ground, layout loading, and player movement logic unchanged.
+- Kept the current hybrid camera base instead of replacing it.
+- Added a second, stronger edge-response zone on top of the existing safe-zone follow behavior.
+- Selected follow strength dynamically:
+  - soft follow inside the edge zone
+  - stronger follow near the frame edge
+- Added soft movement bounds to keep the capy inside the designed village area.
+- Kept the composition-preserving partial look-target bias toward the village center/statue.
 
 ## 4. Files Changed
 - capy-village/src/main.js
 
 ## 5. Architecture Impact
-This change affects runtime camera behavior only. The camera follow state now lives in `bootstrap()`/`animate()` inside `main.js`, using a persistent anchor plus offset model. No asset, layout, editor, lighting, or collision architecture changed.
+This affects runtime camera response and player movement clamping only. The camera follow state remains in `main.js`, now with two response zones and explicit movement bounds. No camera FOV, base angle, lighting, layout, or material systems changed.
 
 ## 6. Key Implementation Notes
-The task wanted the camera to keep the current composition while following only when needed. To do that, the implementation captures the current camera-to-capy offset once the capy is available, then maintains a `cameraAnchor` centered on the player's current focus point. Movement inside the dead zone does nothing; movement beyond it shifts the desired anchor only by the overflow amount.
+The existing hybrid camera already had a composition-preserving anchor and partial look-target follow. This pass keeps that structure and layers in an outer edge zone using the task’s suggested values. When the capy is outside the safe zone but still inside the edge zone, the camera uses the gentler `0.025` follow strength. When the capy pushes beyond the edge zone, follow strength increases to `0.07` so the player is less likely to drift off-frame.
 
-That desired anchor is then smoothed with `lerp(..., 0.05)`, and the actual camera position is rebuilt from the preserved offset. This keeps the established diorama angle/height while making the scene breathe with player movement. The dead-zone values used are `x: 1.5` and `z: 1.5`.
+The player movement path was also clamped into a soft authored village footprint using `minX: -7.5`, `maxX: 7.5`, `minZ: -6.5`, and `maxZ: 7.0`. This keeps movement free within the village but prevents wandering into empty off-stage space that would undermine the diorama framing.
 
 ## 7. Risks / Known Issues
-- This pass does not add bounds clamping yet, so in very edge-heavy future layouts the camera may drift farther than ideal.
-- The camera always looks at the smoothed anchor, so if a future task wants stronger composition bias toward the village center, a blended target may be better.
+- This pass does not include a direct viewport-space visibility test, so the safeguard is still heuristic via follow zones and movement bounds.
+- The current max camera shift remains capped, so if the layout footprint grows significantly the bounds and camera cap may want retuning together.
 - Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
@@ -40,36 +42,38 @@ That desired anchor is then smoothed with `lerp(..., 0.05)`, and the actual came
 - hybrid retrieval: unchanged
 - verification layer: preserved through build checks
 - generic schema: unchanged
-- inspectability: improved because the player can move without leaving the curated diorama framing abruptly
+- inspectability: improved because the player stays within the staged village while the statue-centered composition remains mostly intact
 
 ## 9. Testing Performed
 - Ran `npm run build` successfully in `capy-village`.
 - Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
-- Verified the implementation keeps the current camera offset as the follow baseline instead of replacing the framing.
+- Verified the camera still uses the current composition-biased look logic instead of fully centering on the capy at all times.
 
 ## 10. Example Output / Logs
 ```text
-Dead zone:
-- x: 1.5
-- z: 1.5
+Follow zones:
+- deadZone: x=3.5, z=3.0
+- edgeZone: x=5.0, z=4.2
 ```
 
 ```text
-Smoothing:
-- anchor lerp factor: 0.05
-- follow style: offset-preserving dead-zone follow
+Follow strengths:
+- soft: 0.025
+- strong: 0.07
 ```
 
 ```text
-Camera behavior:
-- small movement inside dead zone: no camera movement
-- larger movement outside dead zone: smooth follow
+Movement bounds:
+- minX: -7.5
+- maxX: 7.5
+- minZ: -6.5
+- maxZ: 7.0
 ```
 
 ## 11. Recommended Reviewer Focus
-- Check whether the current `0.05` smoothing feels responsive enough without becoming floaty.
-- Verify the player remains comfortably framed near the village edges.
-- Review whether a future clamp should be added once the authored layout footprint stabilizes.
+- Check whether the stronger edge response is enough to keep the capy visible without making the camera feel nervous.
+- Verify the movement bounds feel invisible rather than restrictive.
+- Review whether the current max camera shift and movement bounds still fit comfortably if the authored village expands.
 
 ## 12. Suggested Next Step
-Add gentle camera bounds clamping and only if needed a slightly center-biased look target, while keeping the same dead-zone structure.
+If visibility still occasionally feels tight, add a lightweight viewport-aware safeguard before considering any stronger recentering behavior.

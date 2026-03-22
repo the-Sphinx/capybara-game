@@ -2,6 +2,26 @@
 
 ## 2026-03-22
 
+### Camera Visibility Safeguard And Soft Bounds
+- Implemented `docs/tasks/capy_camera_visibility_safeguard_and_bounds.md`.
+- Kept the current hybrid diorama camera base and composition-preserving look-target bias.
+- Added a second edge-response zone so camera follow strengthens only when the capy approaches the frame edge.
+- Used `deadZone = { x: 3.5, z: 3.0 }` and `edgeZone = { x: 5.0, z: 4.2 }`.
+- Used `followLerpSoft = 0.025` and `followLerpStrong = 0.07`.
+- Added soft player movement bounds:
+- `minX: -7.5`
+- `maxX: 7.5`
+- `minZ: -6.5`
+- `maxZ: 7.0`
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
+
+### Known Risks
+- The visibility safeguard is still behavior-based rather than using a direct viewport visibility test.
+- If the authored village footprint grows further, the movement bounds and max camera shift may need joint retuning.
+
 ### Camera Follow Dead-Zone
 - Implemented `docs/tasks/capy_camera_follow_deadzone_task.md`.
 - Reintroduced runtime camera follow using a soft dead-zone system instead of the temporary fully static debug camera.
