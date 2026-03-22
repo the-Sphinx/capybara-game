@@ -186,28 +186,29 @@ export function initScene() {
   renderer.physicallyCorrectLights = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
-  renderer.setClearColor(0xdfeaf5);
+  renderer.toneMappingExposure = 1.08;
+  renderer.setClearColor(0xdfeaf6);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0xdfeaf5);
+  scene.background = new THREE.Color(0xdfeaf6);
+  scene.fog = new THREE.Fog(0xdfeaf6, 18, 40);
   const camera = new THREE.PerspectiveCamera(26, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.copy(DIORAMA_CAMERA_POSITION);
   camera.lookAt(DIORAMA_CAMERA_TARGET);
   camera.updateProjectionMatrix();
 
-  const hemiLight = new THREE.HemisphereLight(0xfff5d6, 0x9dbf87, 0.6);
+  const hemiLight = new THREE.HemisphereLight(0xe9f2ff, 0xc8c29b, 0.85);
   scene.add(hemiLight);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.18);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xfff2cc, 1.2);
-  dirLight.position.set(5, 10, 5);
+  const dirLight = new THREE.DirectionalLight(0xffefcf, 1.15);
+  dirLight.position.set(6, 10, 5);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width  = 1024;
-  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.mapSize.width  = 2048;
+  dirLight.shadow.mapSize.height = 2048;
   const shadowExtent = BOUND + 6;   // margin beyond walkable area
   dirLight.shadow.camera.near   = 0.5;
   dirLight.shadow.camera.far    = 50;
@@ -215,10 +216,10 @@ export function initScene() {
   dirLight.shadow.camera.right  =  shadowExtent;
   dirLight.shadow.camera.top    =  shadowExtent;
   dirLight.shadow.camera.bottom = -shadowExtent;
-  dirLight.shadow.bias = -0.00015;
+  dirLight.shadow.bias = -0.0005;
   dirLight.shadow.normalBias = 0.03;
   if ('radius' in dirLight.shadow) {
-    dirLight.shadow.radius = 2.2;
+    dirLight.shadow.radius = 2.8;
   }
   scene.add(dirLight);
 
