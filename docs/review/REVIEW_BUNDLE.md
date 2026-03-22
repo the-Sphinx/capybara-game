@@ -1,84 +1,87 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Camera and composition lock
-- Date: 2026-03-20
-- Time: 22:22 +03
+- Task name: Diorama camera pass
+- Date: 2026-03-22
+- Time: 13:49 +03
 - Branch: scene-restructure
-- Commit hash: e348ce3
+- Commit hash: pending
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Lock the runtime view into a fixed toy-diorama camera and tighten the remaining scene presentation work around the user-authored layout, without revisiting materials or lighting direction.
+Replace the current gameplay framing with a toy-diorama camera pass using a narrower FOV, higher/further vantage point, and soft follow dead-zone behavior, while also addressing the movement issue caused by tiny decorative props behaving like full blockers.
 
 ## 3. What Changed
-- Removed the dynamic follow-camera behavior from runtime animation.
-- Switched the main camera to a fixed diorama framing with a curated position, look target, slightly wider framing, and a subtle Dutch tilt.
-- Kept the statue-centered village composition and user-authored layout as the primary scene anchor.
-- Kept player movement/gameplay intact while decoupling it from camera motion.
-- Updated publish behavior to ignore hidden files like `.DS_Store`.
-- Added `.gitignore` coverage for `tmp/` and nested `.DS_Store` files to keep the worktree cleaner.
+- Updated the main runtime camera to use a narrower `FOV = 30`, `near = 0.1`, `far = 1000`, and a higher diorama-style starting position.
+- Reintroduced camera motion as a soft dead-zone follow instead of a hard player lock or the previous close follow camera.
+- Added clamping for the camera target so the diorama framing stays centered on the village.
+- Kept lighting, materials, layout placement, and player movement logic otherwise unchanged.
+- Adjusted runtime collider generation so small decorative props such as stones/stems/cubes do not block the capy like buildings or trees.
 
 ## 4. Files Changed
-- capy-village/src/main.js
 - capy-village/src/world.js
-- tools/publish_assets.ts
-- .gitignore
+- capy-village/src/main.js
+- capy-village/src/runtimeLayout.js
 
 ## 5. Architecture Impact
-This affects runtime presentation and build hygiene only. The camera is now a fixed scene camera rather than a gameplay-follow camera, and publish no longer copies hidden filesystem artifacts into `public/assets`. Layout data, asset normalization, and runtime asset loading architecture remain unchanged.
+This affects runtime camera behavior and collider generation only. It does not change asset data, authored layout files, the editor, lighting, materials, or layout serialization. The camera is now a scene-level diorama camera with dead-zone follow, and collider generation now distinguishes between structural blockers and tiny decorative props.
 
 ## 6. Key Implementation Notes
-The previous runtime camera still used the older follow offset/lerp path. That behavior was removed from `main.js`, and `world.js` now owns a fixed diorama camera definition. The camera starts at a deliberately staged position, looks toward the village center/statue anchor, and applies a small `z` tilt to give the scene a toy-photography feel.
+The task spec called for a diorama camera with a narrow FOV and soft dead-zone follow, so `world.js` now initializes the camera with a farther/higher setup and `main.js` owns a dead-zone tracking target with clamp limits. The result is a camera that keeps most of the village in frame while still nudging with player movement.
 
-The user’s recent layout and prop additions already covered much of the composition side of the task, so the implementation focused on the camera lock itself rather than reworking authored placement. A small publish cleanup was bundled in after verification exposed `.DS_Store` files being copied into published assets.
+The movement issue appeared to come from the runtime collider system creating blockers for every laid-out object. Rather than altering player logic, `runtimeLayout.js` now treats very small decorative props and certain known tiny prop ids as non-blocking. That keeps the world dressed while letting the capy move through the layout more naturally.
 
 ## 7. Risks / Known Issues
-- Live `vite dev` verification is still affected by an existing GLB-loading issue that causes fallback-world rendering in dev, so browser screenshots do not yet reflect the full authored published village.
-- Because the camera is fully fixed now, future layout expansions may require occasional camera retuning if the village footprint grows significantly.
-- The fixed view improves diorama composition, but it intentionally reduces the old “camera follows the player” readability during movement.
+- The collider filter currently uses a mixed heuristic of asset-id prefixes and small bounding-box size, so if a future decorative asset should block movement it may need a more explicit rule.
+- The authored layout file has additional user-side changes in the worktree and was intentionally not modified or committed as part of this task.
+- The new camera framing is validated against the current published local scene and may want one more tune after the broader village asset set stabilizes.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: preserved
 - hybrid retrieval: not affected
 - verification layer: not materially changed
 - generic schema: not affected
-- inspectability: improved because the scene now has a consistent intentional viewing angle instead of a drifting gameplay camera
+- inspectability: improved because the village now reads more like a single photographed diorama and the player remains visible without wide-angle distortion
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Launched the game in a headed browser and captured screenshots of the fixed camera framing.
-- Verified that the runtime camera no longer follows the player dynamically.
-- Verified publish output no longer logs copied `.DS_Store` files.
+- Launched the game in a headed browser and captured a published-scene screenshot.
+- Verified the published scene loads cleanly in dev with the new diorama framing.
+- Sent movement input in the live scene after making tiny props non-blocking.
 
 ## 10. Example Output / Logs
 ```text
-Fixed diorama camera:
-- position: (7.4, 4.4, 7.6)
-- lookAt: (0, 0.85, 0)
-- roll / tilt: -0.05
-- fov: 54
+Camera:
+- fov: 30
+- near: 0.1
+- far: 1000
+- start position: (0, 14, 18)
+- dead zone radius: 2.5
+- follow strength: 0.08
+- clamp x/z: [-6, 6]
 ```
 
 ```text
-Publish:
-- hidden dotfiles skipped
-- no `.DS_Store` copies logged during publish
+Non-blocking decorative props:
+- stones_
+- stem_
+- milk
+- pumpkin
+- cubes_
 ```
 
 ```text
 Visual verification:
-- screenshots captured at:
-  - .playwright-cli/page-2026-03-20T19-21-17-406Z.png
-  - .playwright-cli/page-2026-03-20T19-22-10-745Z.png
+- screenshot captured at .playwright-cli/page-2026-03-22T10-48-06-645Z.png
+- follow-up movement screenshot captured at .playwright-cli/page-2026-03-22T10-48-47-444Z.png
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the fixed camera should stay fully static or eventually gain only very subtle player-aware parallax without becoming a follow camera again.
-- Inspect whether the current authored village footprint still wants one final camera nudge once the dev GLB-loading issue is resolved and the full published village is visible in-browser.
-- Review whether a small dedicated diorama-camera config object should be introduced if more composition tuning is expected.
+- Review whether the non-blocking prop heuristic should eventually become explicit metadata instead of filename-based rules.
+- Inspect whether the dead-zone follow strength should be tuned slightly lower or higher once the full authored village footprint is settled.
+- Review whether any medium-sized props should still block movement selectively rather than relying purely on the current heuristic.
 
 ## 12. Suggested Next Step
-Resolve the remaining dev-time published-asset loading issue so live browser verification reflects the authored village reliably, then do one final composition polish pass against the fully loaded scene.
+Introduce explicit runtime collision metadata for curated game-ready assets so decorative vs blocking behavior no longer depends on filename conventions or size heuristics.

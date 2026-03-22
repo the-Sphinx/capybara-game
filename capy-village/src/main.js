@@ -23,6 +23,12 @@ import { saveManager } from './SaveManager.js';
 async function bootstrap() {
   // ─── Scene setup ────────────────────────────────────────────────────────────
   const { renderer, scene, camera, clock } = initScene();
+  const cameraTarget = new THREE.Vector3(0, 0, 0);
+  const cameraLookTarget = new THREE.Vector3();
+  const DEAD_ZONE_RADIUS = 2.5;
+  const CAMERA_FOLLOW_STRENGTH = 0.08;
+  const CAMERA_OFFSET_Y = 14;
+  const CAMERA_OFFSET_Z = 18;
   const runtimeLayout = await loadPublishedVillage(scene);
   if (!runtimeLayout.success) {
     setInteractablesEnabled(true);
@@ -121,6 +127,21 @@ async function bootstrap() {
     }
 
     updateOcclusion(camera);
+
+    const capyDelta = capy.position.clone().sub(cameraTarget);
+    capyDelta.y = 0;
+    if (capyDelta.length() > DEAD_ZONE_RADIUS) {
+      cameraTarget.add(capyDelta.multiplyScalar(CAMERA_FOLLOW_STRENGTH));
+    }
+
+    cameraTarget.x = Math.max(-6, Math.min(6, cameraTarget.x));
+    cameraTarget.z = Math.max(-6, Math.min(6, cameraTarget.z));
+
+    camera.position.x = cameraTarget.x;
+    camera.position.y = CAMERA_OFFSET_Y;
+    camera.position.z = cameraTarget.z + CAMERA_OFFSET_Z;
+    cameraLookTarget.set(cameraTarget.x, 0, cameraTarget.z);
+    camera.lookAt(cameraLookTarget);
   }
 
   if (mixer) mixer.update(delta);

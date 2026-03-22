@@ -137,10 +137,23 @@ function applyObjectTransform(root, object) {
   root.scale.set(object.scale[0], object.scale[1], object.scale[2]);
 }
 
-function getColliderForObject(root) {
+function isNonBlockingDecor(assetId, size) {
+  const nonBlockingPrefixes = ['stones_', 'stem_', 'milk', 'pumpkin', 'cubes_'];
+  if (nonBlockingPrefixes.some((prefix) => assetId.startsWith(prefix))) {
+    return true;
+  }
+
+  return size.y < 0.9 && Math.max(size.x, size.z) < 1.6;
+}
+
+function getColliderForObject(root, assetId) {
   const bbox = new THREE.Box3().setFromObject(root);
   const size = bbox.getSize(new THREE.Vector3());
   const center = bbox.getCenter(new THREE.Vector3());
+  if (isNonBlockingDecor(assetId, size)) {
+    return null;
+  }
+
   if (size.x > 0.01 && size.z > 0.01) {
     return {
       x: center.x,
@@ -191,7 +204,7 @@ export async function loadPublishedVillage(scene) {
       const instance = clonePublishedScene(templateCache.get(object.assetId), object.assetId);
       applyObjectTransform(instance, object);
       villageGroup.add(instance);
-      const collider = getColliderForObject(instance);
+      const collider = getColliderForObject(instance, object.assetId);
       if (collider) {
         colliders.push(collider);
       }

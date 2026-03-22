@@ -1,5 +1,24 @@
 # Progress
 
+## 2026-03-22
+
+### Diorama Camera Pass
+- Implemented `docs/tasks/camera_pass_diorama.md`.
+- Updated the runtime camera to a higher/further diorama setup with `FOV = 30`.
+- Added soft dead-zone follow behavior so the camera tracks the player gently instead of snapping or using the old close follow framing.
+- Added camera target clamping so the village stays framed like a miniature scene.
+- Adjusted runtime collision generation so tiny decorative props do not block the capy like buildings.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Browser-verified the published scene loads with the new diorama framing.
+- Verified movement input can be sent in the live scene after the decorative-prop collider filter was added.
+
+### Known Risks
+- Decorative-prop collision filtering is still heuristic and may evolve into explicit metadata later.
+- The authored layout has additional user-side work in the tree and was intentionally left out of this task commit.
+
 ## 2026-03-20
 
 ### Camera And Composition Lock

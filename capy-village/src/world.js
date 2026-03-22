@@ -175,8 +175,8 @@ function createToyGround(scene) {
 
 // ─── Scene init ───────────────────────────────────────────────────────────────
 export function initScene() {
-  const DIORAMA_CAMERA_POSITION = new THREE.Vector3(7.4, 4.4, 7.6);
-  const DIORAMA_CAMERA_TARGET = new THREE.Vector3(0, 0.85, 0);
+  const DIORAMA_CAMERA_POSITION = new THREE.Vector3(0, 14, 18);
+  const DIORAMA_CAMERA_TARGET = new THREE.Vector3(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -192,10 +192,10 @@ export function initScene() {
 
   const scene  = new THREE.Scene();
   scene.background = new THREE.Color(0xdfeaf5);
-  const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.copy(DIORAMA_CAMERA_POSITION);
   camera.lookAt(DIORAMA_CAMERA_TARGET);
-  camera.rotation.z = -0.05;
+  camera.updateProjectionMatrix();
 
   const hemiLight = new THREE.HemisphereLight(0xfff5d6, 0x9dbf87, 0.6);
   scene.add(hemiLight);
