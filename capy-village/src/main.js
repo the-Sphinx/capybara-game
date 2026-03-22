@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import './style.css';
-import { gameState, ACCESSORIES, EQUIPPED, SELECTED, MOVE_SPEED, BOUND } from './state.js';
+import { gameState, ACCESSORIES, EQUIPPED, SELECTED, MOVE_SPEED } from './state.js';
 import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable, setInteractablesEnabled } from './world.js';
 import { loadCapy, accessoryMounts, previewAccessoryMounts, previewState } from './capy.js';
 import { promptEl, openModal, closeModal, openCloset, closeCloset } from './ui.js';
@@ -86,6 +86,18 @@ async function bootstrap() {
   const moveDir = new THREE.Vector3();
   const _wp = new THREE.Vector3();
   const deadZone = { x: 3.5, z: 3.0 };
+  const edgeZone = { x: 5.0, z: 4.2 };
+  const followLerpSoft = 0.025;
+  const followLerpStrong = 0.07;
+  const lookFollowFactor = 0.35;
+  const compositionBias = 0.15;
+  const maxCameraShift = { x: 2.8, z: 2.4 };
+  const movementBounds = {
+    minX: -7.5,
+    maxX: 7.5,
+    minZ: -6.5,
+    maxZ: 7.0,
+  };
   const cameraPlanarOffset = new THREE.Vector2();
   const cameraAnchor = new THREE.Vector2();
   const desiredAnchor = new THREE.Vector2();
@@ -111,8 +123,16 @@ async function bootstrap() {
       if (moveDir.lengthSq() > 0) {
         moveDir.normalize();
         capy.rotation.y = Math.atan2(moveDir.x, moveDir.z);
-        const nx = Math.max(-BOUND, Math.min(BOUND, capy.position.x + moveDir.x * MOVE_SPEED * delta));
-        const nz = Math.max(-BOUND, Math.min(BOUND, capy.position.z + moveDir.z * MOVE_SPEED * delta));
+        const nx = THREE.MathUtils.clamp(
+          capy.position.x + moveDir.x * MOVE_SPEED * delta,
+          movementBounds.minX,
+          movementBounds.maxX,
+        );
+        const nz = THREE.MathUtils.clamp(
+          capy.position.z + moveDir.z * MOVE_SPEED * delta,
+          movementBounds.minZ,
+          movementBounds.maxZ,
+        );
         if (!collides(nx, capy.position.z)) capy.position.x = nx;
         if (!collides(capy.position.x, nz)) capy.position.z = nz;
         capy.position.y = groundY;
@@ -127,11 +147,6 @@ async function bootstrap() {
     }
 
     updateOcclusion(camera);
-
-    const deadZone = { x: 3.5, z: 3.0 };
-    const followLerp = 0.025;
-    const lookFollowFactor = 0.35;
-    const maxCameraShift = { x: 2.8, z: 2.4 };
 
     if (!cameraFollowReady) {
       // Start from the designed village center, not from the capy position.
@@ -158,7 +173,11 @@ async function bootstrap() {
       desiredAnchor.y += dz - Math.sign(dz) * deadZone.z;
     }
 
-    // Keep the camera from drifting too far off the diorama.
+    const currentFollowLerp =
+      Math.abs(dx) > edgeZone.x || Math.abs(dz) > edgeZone.z
+        ? followLerpStrong
+        : followLerpSoft;
+
     desiredAnchor.x = THREE.MathUtils.clamp(
       desiredAnchor.x,
       -maxCameraShift.x,
@@ -170,7 +189,8 @@ async function bootstrap() {
       maxCameraShift.z
     );
 
-    cameraAnchor.lerp(desiredAnchor, followLerp);
+    cameraAnchor.x = THREE.MathUtils.lerp(cameraAnchor.x, desiredAnchor.x, currentFollowLerp);
+    cameraAnchor.y = THREE.MathUtils.lerp(cameraAnchor.y, desiredAnchor.y, currentFollowLerp);
 
     camera.position.x = cameraAnchor.x + cameraPlanarOffset.x;
     camera.position.z = cameraAnchor.y + cameraPlanarOffset.y;
