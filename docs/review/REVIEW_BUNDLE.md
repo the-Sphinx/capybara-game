@@ -1,79 +1,83 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Sky + cute cloud layer
+- Task name: Performance optimization pass (repo-aligned)
 - Date: 2026-03-22
-- Time: 16:57 +03
+- Time: 19:10 +03
 - Branch: scene-restructure
-- Commit hash: 07529d8
+- Commit hash: c00213b
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Add a soft stylized sky and a lightweight animated cloud layer that supports the toy-diorama atmosphere without distracting from gameplay or changing the lighting model.
+Improve runtime performance without changing the authored village look by instancing repeated non-blocking decor inside the existing published-layout runtime loader.
 
 ## 3. What Changed
-- Replaced the background/clear color with a softer pastel sky blue.
-- Added four reusable low-poly cloud variants built from overlapping sphere puffs.
-- Added eight cloud instances positioned high and behind the village tree line.
-- Reused a single material for all clouds and disabled cloud shadows entirely.
-- Added a tiny per-frame cloud updater so clouds drift slowly and wrap across the scene.
+- Added a focused instancing path to `loadPublishedVillage(scene)` for repeated non-blocking decor groups only.
+- Kept the current `templateCache`, `sanitizeMeshForRuntime()`, `clonePublishedScene()`, `applyObjectTransform()`, and collider helpers intact.
+- Grouped layout objects by `assetId` before runtime instantiation.
+- Built one `THREE.InstancedMesh` per mesh node for eligible repeated decor assets.
+- Kept hero assets, unique assets, and blocking assets on the existing clone path.
+- Limited detailed sanitize logging to dev mode while retaining lightweight instancing summary logs.
 
 ## 4. Files Changed
-- capy-village/src/world.js
-- capy-village/src/main.js
+- capy-village/src/runtimeLayout.js
 
 ## 5. Architecture Impact
-This is a lightweight runtime atmosphere pass. `world.js` now creates a reusable cloud layer and returns an `updateSky` function from `initScene()`, while `main.js` calls that updater once per frame. No gameplay, lighting intensities, camera FOV, layout, or material systems were altered beyond the sky background color.
+This is a focused runtime asset-instantiation optimization. The published layout loader now has two paths:
+- normal clone path for unique/blocking/hero assets
+- instanced path for repeated non-blocking decor
+
+No camera, lighting, layout schema, asset transforms, or player logic changed.
 
 ## 6. Key Implementation Notes
-The task explicitly called for stylized, cheap clouds rather than textures or skyboxes, so each cloud variant is a small group of 2 to 4 low-poly sphere meshes using one shared `MeshStandardMaterial` tinted `0xfff8f0`. Variants cover the requested shapes: puff, medium horizontal, tall stacked, and wide stretched.
+The implementation starts by grouping authored layout objects by `assetId`. Each asset is still loaded once and cached once. For groups with more than one object, the loader checks whether every authored instance remains non-blocking under the existing repo logic in `isNonBlockingDecor(assetId, size)`. Only then does it build instanced meshes.
 
-Clouds are placed roughly in the `y = 9.6` to `12.2` range and behind the village at negative `z`, so they add depth without intersecting gameplay objects. Movement is intentionally very slow, with speeds around `0.028` to `0.05` world units per second, and wrapping resets them from `x > 24` back to `x = -24`.
+Template meshes are sanitized once, then their world matrices are combined with each authored object transform matrix to produce instance matrices. This preserves placement, rotation, and scale while reducing repeated decorative draw overhead. Collider generation remains unchanged for blocking objects and is skipped entirely for instanced non-blocking decor.
 
 ## 7. Risks / Known Issues
-- Because the cloud layer is purely world-space and not camera-anchored, a much larger future camera shift range may expose empty sky spacing that wants more instances.
-- The current cloud wrap is simple and can produce long reuse cycles, which is fine for calm background motion but not for a busier sky style.
+- Instancing is intentionally limited to repeated static non-blocking decor and does not attempt to optimize blocking or hero assets.
+- Multi-mesh repeated assets still create one `InstancedMesh` per mesh node, so gains are best on simple repeated props.
 - Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
 - hybrid retrieval: unchanged
-- verification layer: preserved through build checks
+- verification layer: preserved through publish/build checks
 - generic schema: unchanged
-- inspectability: improved because the scene now has more atmospheric depth while keeping the central village composition calm
+- inspectability: improved because busy repeated decor is cheaper without changing authored composition
 
 ## 9. Testing Performed
+- Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed the task-constrained runtime changes are isolated to the sky/background setup and the frame update hook.
-- Verified clouds do not cast or receive shadows.
+- Inspected the current authored layout repetition counts to confirm repeated decor candidates exist in the real scene.
 
 ## 10. Example Output / Logs
 ```text
-Sky:
-- background: 0xdceeff
-- clear color: 0xdceeff
+Current repeated decor candidates in layout:
+- stones_4: 28
+- stones_1: 3
+- stones_3: 2
+- cubes_1: 2
 ```
 
 ```text
-Cloud variants:
-- puff
-- medium horizontal
-- tall stacked
-- wide stretched
+Instancing eligibility:
+- repeated more than once
+- must satisfy current non-blocking decor rules
+- no colliders added for instanced decor
 ```
 
 ```text
-Cloud runtime:
-- instances: 8
-- speed range: 0.028 to 0.05
-- wrap: x > 24 -> x = -24
+Runtime logging:
+- detailed mesh/material sanitize logs: dev only
+- instanced asset summary log: kept
 ```
 
 ## 11. Recommended Reviewer Focus
-- Check whether the cloud spacing feels balanced from the current camera framing.
-- Verify the cloud motion is subtle enough to stay in the background.
-- Review whether the sky blue still works with the current warm ground/lighting palette.
+- Check that repeated stones and simple repeated decor now follow the instanced path.
+- Verify blocking assets still generate colliders and behave exactly as before.
+- Review whether more repeated decor categories should be added only after confirming their collider/material behavior is equally safe.
 
 ## 12. Suggested Next Step
-If the atmosphere feels good, the next likely polish step is a small performance pass around repeated decorative props such as stones and trees.
+If this pass is stable, the next performance target is a second narrow pass for other repeated static decor that is visually simple but still cloned today.

@@ -2,6 +2,23 @@
 
 ## 2026-03-22
 
+### Performance Optimization Pass
+- Implemented `docs/tasks/capy_performance_optimization_repo_aligned.md`.
+- Added a focused instancing path in `capy-village/src/runtimeLayout.js` for repeated non-blocking decor only.
+- Grouped authored layout objects by `assetId` and kept the existing clone path for unique, blocking, and hero assets.
+- Built one `THREE.InstancedMesh` per template mesh for eligible repeated decor groups.
+- Kept collider behavior unchanged for blocking assets and skipped colliders for instanced non-blocking decor.
+- Reduced detailed sanitize logging to dev mode while keeping lightweight instancing summary logs.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the current authored layout contains repeated eligible decor such as `stones_4`, `stones_1`, `stones_3`, and `cubes_1`.
+
+### Known Risks
+- Instancing is intentionally scoped to repeated static non-blocking decor and does not attempt to optimize hero assets or anything that may need independent collider/animation behavior later.
+- Multi-mesh repeated assets still create one instanced object per mesh node, so gains are strongest on simple repeated props.
+
 ### Sky And Cute Clouds
 - Implemented `docs/tasks/capy_sky_clouds.md`.
 - Updated the runtime sky background to a softer pastel blue.
