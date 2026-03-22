@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { addCollider } from './world.js';
 
+const RUNTIME_ASSET_DEBUG = import.meta.env.DEV;
 const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
   position: [0, 0, 2],
   rotation: [0, 180, 0],
@@ -127,6 +128,18 @@ function clonePublishedScene(scene, assetId) {
   return clone;
 }
 
+function buildObjectMatrix(object) {
+  const position = new THREE.Vector3(object.position[0], object.position[1], object.position[2]);
+  const rotation = new THREE.Euler(
+    THREE.MathUtils.degToRad(object.rotation[0]),
+    THREE.MathUtils.degToRad(object.rotation[1]),
+    THREE.MathUtils.degToRad(object.rotation[2]),
+  );
+  const quaternion = new THREE.Quaternion().setFromEuler(rotation);
+  const scale = new THREE.Vector3(object.scale[0], object.scale[1], object.scale[2]);
+  return new THREE.Matrix4().compose(position, quaternion, scale);
+}
+
 function applyObjectTransform(root, object) {
   root.position.set(object.position[0], object.position[1], object.position[2]);
   root.rotation.set(
@@ -165,6 +178,92 @@ function getColliderForObject(root, assetId) {
   return null;
 }
 
+function getSceneSize(root) {
+  return new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+}
+
+function getScaledSize(baseSize, scale) {
+  return new THREE.Vector3(
+    Math.abs(baseSize.x * scale[0]),
+    Math.abs(baseSize.y * scale[1]),
+    Math.abs(baseSize.z * scale[2]),
+  );
+}
+
+function getInstancedMeshSources(root) {
+  root.updateMatrixWorld(true);
+  const meshes = [];
+  root.traverse((node) => {
+    if (!node.isMesh || node.isSkinnedMesh) {
+      return;
+    }
+
+    meshes.push({
+      geometry: node.geometry,
+      material: node.material,
+      matrixWorld: node.matrixWorld.clone(),
+      castShadow: node.castShadow,
+      receiveShadow: node.receiveShadow,
+    });
+  });
+  return meshes;
+}
+
+function canInstanceDecorGroup(assetId, templateRoot, objects) {
+  if (objects.length <= 1) {
+    return false;
+  }
+
+  const meshSources = getInstancedMeshSources(templateRoot);
+  if (meshSources.length === 0) {
+    return false;
+  }
+
+  const baseSize = getSceneSize(templateRoot);
+  return objects.every((object) => isNonBlockingDecor(assetId, getScaledSize(baseSize, object.scale)));
+}
+
+function buildInstancedDecorGroup(assetId, templateRoot, objects) {
+  const meshSources = getInstancedMeshSources(templateRoot);
+  const instancedGroup = new THREE.Group();
+  instancedGroup.name = `${assetId}_instanced_group`;
+
+  const objectMatrix = new THREE.Matrix4();
+  const instanceMatrix = new THREE.Matrix4();
+
+  for (const [meshIndex, source] of meshSources.entries()) {
+    const material = Array.isArray(source.material)
+      ? source.material.map((entry) => entry?.isMaterial ? entry.clone() : entry)
+      : source.material?.isMaterial
+        ? source.material.clone()
+        : source.material;
+
+    const instancedMesh = new THREE.InstancedMesh(source.geometry, material, objects.length);
+    instancedMesh.name = `${assetId}_instanced_${meshIndex}`;
+    instancedMesh.castShadow = source.castShadow;
+    instancedMesh.receiveShadow = source.receiveShadow;
+    instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+    for (const [index, object] of objects.entries()) {
+      objectMatrix.copy(buildObjectMatrix(object));
+      instanceMatrix.multiplyMatrices(objectMatrix, source.matrixWorld);
+      instancedMesh.setMatrixAt(index, instanceMatrix);
+    }
+
+    instancedMesh.instanceMatrix.needsUpdate = true;
+    if (instancedMesh.computeBoundingSphere) {
+      instancedMesh.computeBoundingSphere();
+    }
+    if (instancedMesh.computeBoundingBox) {
+      instancedMesh.computeBoundingBox();
+    }
+    instancedGroup.add(instancedMesh);
+  }
+
+  console.info(`[Runtime Asset] ${assetId}\ninstanced: true\ncount: ${objects.length}`);
+  return instancedGroup;
+}
+
 async function fetchJson(url) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -184,29 +283,46 @@ export async function loadPublishedVillage(scene) {
     const templateCache = new Map();
     const villageGroup = new THREE.Group();
     const colliders = [];
+    const objectsByAssetId = new Map();
 
     for (const object of layout.objects ?? []) {
-      const assetPath = manifest[object.assetId];
+      if (!objectsByAssetId.has(object.assetId)) {
+        objectsByAssetId.set(object.assetId, []);
+      }
+      objectsByAssetId.get(object.assetId).push(object);
+    }
+
+    for (const [assetId, objects] of objectsByAssetId.entries()) {
+      const assetPath = manifest[assetId];
       if (!assetPath) {
-        throw new Error(`Asset "${object.assetId}" is missing from the published manifest.`);
+        throw new Error(`Asset "${assetId}" is missing from the published manifest.`);
       }
 
-      if (!templateCache.has(object.assetId)) {
+      if (!templateCache.has(assetId)) {
         const gltf = await loader.loadAsync(withBaseUrl(assetPath));
         gltf.scene.traverse((node) => {
           if (node.isMesh) {
-            sanitizeMeshForRuntime(object.assetId, node);
+            sanitizeMeshForRuntime(assetId, node, { emitLog: RUNTIME_ASSET_DEBUG });
           }
         });
-        templateCache.set(object.assetId, gltf.scene);
+        templateCache.set(assetId, gltf.scene);
       }
 
-      const instance = clonePublishedScene(templateCache.get(object.assetId), object.assetId);
-      applyObjectTransform(instance, object);
-      villageGroup.add(instance);
-      const collider = getColliderForObject(instance, object.assetId);
-      if (collider) {
-        colliders.push(collider);
+      const template = templateCache.get(assetId);
+
+      if (canInstanceDecorGroup(assetId, template, objects)) {
+        villageGroup.add(buildInstancedDecorGroup(assetId, template, objects));
+        continue;
+      }
+
+      for (const object of objects) {
+        const instance = clonePublishedScene(template, assetId);
+        applyObjectTransform(instance, object);
+        villageGroup.add(instance);
+        const collider = getColliderForObject(instance, assetId);
+        if (collider) {
+          colliders.push(collider);
+        }
       }
     }
 
