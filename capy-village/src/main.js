@@ -85,6 +85,11 @@ async function bootstrap() {
   // ─── Animate ────────────────────────────────────────────────────────────────
   const moveDir = new THREE.Vector3();
   const _wp = new THREE.Vector3();
+  const deadZone = { x: 1.5, z: 1.5 };
+  const cameraOffset = new THREE.Vector3();
+  const cameraAnchor = new THREE.Vector3();
+  const desiredAnchor = new THREE.Vector3();
+  let cameraFollowReady = false;
 
   function animate() {
   requestAnimationFrame(animate);
@@ -121,6 +126,31 @@ async function bootstrap() {
     }
 
     updateOcclusion(camera);
+
+    if (!cameraFollowReady) {
+      cameraAnchor.set(capy.position.x, capy.position.y + 1.6, capy.position.z);
+      cameraOffset.copy(camera.position).sub(cameraAnchor);
+      cameraFollowReady = true;
+    }
+
+    desiredAnchor.copy(cameraAnchor);
+
+    const dx = capy.position.x - cameraAnchor.x;
+    const dz = capy.position.z - cameraAnchor.z;
+
+    if (Math.abs(dx) > deadZone.x) {
+      desiredAnchor.x += dx - Math.sign(dx) * deadZone.x;
+    }
+
+    if (Math.abs(dz) > deadZone.z) {
+      desiredAnchor.z += dz - Math.sign(dz) * deadZone.z;
+    }
+
+    cameraAnchor.lerp(desiredAnchor, 0.05);
+    camera.position.x = cameraAnchor.x + cameraOffset.x;
+    camera.position.y = cameraOffset.y + cameraAnchor.y;
+    camera.position.z = cameraAnchor.z + cameraOffset.z;
+    camera.lookAt(cameraAnchor);
   }
 
   if (mixer) mixer.update(delta);
