@@ -1,87 +1,81 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Diorama camera pass
+- Task name: Lighting + color softening pass
 - Date: 2026-03-22
-- Time: 13:49 +03
+- Time: 16:10 +03
 - Branch: scene-restructure
-- Commit hash: ba9bedc
+- Commit hash: 4ff36ec
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Replace the current gameplay framing with a toy-diorama camera pass using a narrower FOV, higher/further vantage point, and soft follow dead-zone behavior, while also addressing the movement issue caused by tiny decorative props behaving like full blockers.
+Transform the runtime scene into a warmer, softer, toy-like diorama by adjusting only the lighting rig, renderer tone/exposure, background color, and optional fog, while leaving camera, layout, props, and gameplay untouched.
 
 ## 3. What Changed
-- Updated the main runtime camera to use a narrower `FOV = 30`, `near = 0.1`, `far = 1000`, and a higher diorama-style starting position.
-- Reintroduced camera motion as a soft dead-zone follow instead of a hard player lock or the previous close follow camera.
-- Added clamping for the camera target so the diorama framing stays centered on the village.
-- Kept lighting, materials, layout placement, and player movement logic otherwise unchanged.
-- Adjusted runtime collider generation so small decorative props such as stones/stems/cubes do not block the capy like buildings or trees.
+- Replaced the active runtime light balance with the softer lighting values from the task spec.
+- Kept a single warm directional sun using the requested color, intensity, and position.
+- Raised hemisphere fill to soften shadowed areas and warm the ground bounce.
+- Kept ambient support subtle so the scene stays readable without washing out forms.
+- Shifted the background/clear color to a lighter pastel sky blue.
+- Added very light fog to soften depth without changing scene composition.
+- Slightly softened shadow rendering through higher shadow resolution and a larger blur radius.
 
 ## 4. Files Changed
 - capy-village/src/world.js
-- capy-village/src/main.js
-- capy-village/src/runtimeLayout.js
 
 ## 5. Architecture Impact
-This affects runtime camera behavior and collider generation only. It does not change asset data, authored layout files, the editor, lighting, materials, or layout serialization. The camera is now a scene-level diorama camera with dead-zone follow, and collider generation now distinguishes between structural blockers and tiny decorative props.
+This is a presentation-only runtime pass. It affects renderer setup and scene lighting in `initScene()` and does not alter camera framing, layout loading, player logic, materials, or asset transforms.
 
 ## 6. Key Implementation Notes
-The task spec called for a diorama camera with a narrow FOV and soft dead-zone follow, so `world.js` now initializes the camera with a farther/higher setup and `main.js` owns a dead-zone tracking target with clamp limits. The result is a camera that keeps most of the village in frame while still nudging with player movement.
+The task called for removing the previous runtime lighting feel and replacing it with a single simple warm-light rig. `world.js` now uses the exact requested baseline for the sun, hemisphere fill, ambient support, tone mapping, and sky color, with only a small shadow softness adjustment through `shadow.radius`.
 
-The movement issue appeared to come from the runtime collider system creating blockers for every laid-out object. Rather than altering player logic, `runtimeLayout.js` now treats very small decorative props and certain known tiny prop ids as non-blocking. That keeps the world dressed while letting the capy move through the layout more naturally.
+The optional fog clause in the task was used because it helps the ground and distant props read as part of a single cozy diorama. The fog matches the sky color and starts far enough away that it should soften contrast without obscuring the center layout.
 
 ## 7. Risks / Known Issues
-- The collider filter currently uses a mixed heuristic of asset-id prefixes and small bounding-box size, so if a future decorative asset should block movement it may need a more explicit rule.
-- The authored layout file has additional user-side changes in the worktree and was intentionally not modified or committed as part of this task.
-- The new camera framing is validated against the current published local scene and may want one more tune after the broader village asset set stabilizes.
+- The fog is intentionally subtle, but if future layout expansion pushes important assets farther out it may need retuning or removal.
+- The scene still relies on existing asset materials, so very saturated source textures may remain more vivid than the softened lighting alone.
+- Build output still reports large GLB chunk warnings, which are unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: preserved
-- hybrid retrieval: not affected
-- verification layer: not materially changed
-- generic schema: not affected
-- inspectability: improved because the village now reads more like a single photographed diorama and the player remains visible without wide-angle distortion
+- source grounding: unchanged
+- hybrid retrieval: unchanged
+- verification layer: preserved through publish/build checks
+- generic schema: unchanged
+- inspectability: improved because forms, shadows, and colors now read more softly without changing authored composition
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Launched the game in a headed browser and captured a published-scene screenshot.
-- Verified the published scene loads cleanly in dev with the new diorama framing.
-- Sent movement input in the live scene after making tiny props non-blocking.
+- Confirmed no camera, layout, or gameplay code was changed as part of this pass.
 
 ## 10. Example Output / Logs
 ```text
-Camera:
-- fov: 30
-- near: 0.1
-- far: 1000
-- start position: (0, 14, 18)
-- dead zone radius: 2.5
-- follow strength: 0.08
-- clamp x/z: [-6, 6]
+Directional light:
+- color: 0xffefcf
+- intensity: 1.15
+- position: (6, 10, 5)
 ```
 
 ```text
-Non-blocking decorative props:
-- stones_
-- stem_
-- milk
-- pumpkin
-- cubes_
+Fill lights:
+- hemisphere: sky 0xe9f2ff, ground 0xc8c29b, intensity 0.85
+- ambient: 0xffffff @ 0.18
 ```
 
 ```text
-Visual verification:
-- screenshot captured at .playwright-cli/page-2026-03-22T10-48-06-645Z.png
-- follow-up movement screenshot captured at .playwright-cli/page-2026-03-22T10-48-47-444Z.png
+Renderer:
+- outputColorSpace: SRGBColorSpace
+- toneMapping: ACESFilmicToneMapping
+- toneMappingExposure: 1.08
+- background: 0xdfeaf6
+- fog: enabled, near 18, far 40
 ```
 
 ## 11. Recommended Reviewer Focus
-- Review whether the non-blocking prop heuristic should eventually become explicit metadata instead of filename-based rules.
-- Inspect whether the dead-zone follow strength should be tuned slightly lower or higher once the full authored village footprint is settled.
-- Review whether any medium-sized props should still block movement selectively rather than relying purely on the current heuristic.
+- Validate that the fog softens depth without making the far edge of the village feel hazy.
+- Confirm the current light warmth is soft enough for the buildings while still keeping the capy readable.
+- Review whether the tree greens now feel calmer under the new fill light balance.
 
 ## 12. Suggested Next Step
-Introduce explicit runtime collision metadata for curated game-ready assets so decorative vs blocking behavior no longer depends on filename conventions or size heuristics.
+After the fixed debug camera framing is finalized, reintroduce camera follow behavior carefully against this softer lighting baseline so movement can be tuned without conflating it with presentation changes.

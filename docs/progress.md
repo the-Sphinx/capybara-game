@@ -2,6 +2,24 @@
 
 ## 2026-03-22
 
+### Lighting And Color Softening Pass
+- Implemented `docs/tasks/capy_lighting_color_softening_pass.md`.
+- Updated the runtime lighting rig to a softer toy-diorama baseline using a warm directional sun, cooler sky fill, warmer ground bounce, and restrained ambient support.
+- Set the renderer to the requested ACES + sRGB baseline with `toneMappingExposure = 1.08`.
+- Shifted the runtime background to a softer pastel sky color.
+- Added subtle sky-matched fog to reduce harshness and improve miniature softness.
+- Increased shadow softness by using a larger shadow map and blur radius on the main sun.
+- Kept camera framing, layout, props, and gameplay logic unchanged.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/world.js`.
+
+### Known Risks
+- The optional fog may want one more tune if the village footprint expands farther from center.
+- Saturated source asset textures may still read stronger than the softer lighting alone in some future layouts.
+
 ### Diorama Camera Pass
 - Implemented `docs/tasks/camera_pass_diorama.md`.
 - Updated the runtime camera to a higher/further diorama setup with `FOV = 30`.
