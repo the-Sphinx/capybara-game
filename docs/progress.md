@@ -2,6 +2,23 @@
 
 ## 2026-03-22
 
+### Ground Boundary Cleanup
+- Implemented `docs/tasks/capy_ground_boundary_cleanup_task.md`.
+- Removed the overlapping large circular ground layers that were still making the island edge feel dirty and mismatched.
+- Simplified the runtime base to one clean island mesh and one central plaza mesh.
+- Switched the island base to a single clean beige material using `0xe2dcc2`.
+- Kept the island radius at `12` and did not add extra trees during this cleanup.
+
+### Self-Check
+- Verified there is no old infinite `PlaneGeometry` floor in the runtime scene code.
+- Temporarily added ground debug logging during the pass to confirm the active ground meshes, then removed it afterward.
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+
+### Known Risks
+- The cleaner island is intentionally more minimal, so some earlier soft meadow variation is gone.
+- If edge gaps are still visible from the fixed camera, the next adjustment should be sparse boundary trees rather than more ground layers.
+
 ### Ground Boundary And Horizon Control
 - Implemented `docs/tasks/capy_ground_boundary_pass.md`.
 - Reworked the runtime ground into a contained circular island with a lighter top surface and darker supporting body.

@@ -1,79 +1,77 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Ground boundary + horizon control
+- Task name: Ground boundary cleanup
 - Date: 2026-03-22
-- Time: 16:24 +03
+- Time: 16:33 +03
 - Branch: scene-restructure
-- Commit hash: 2ac857d
+- Commit hash: 05af8ea
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Replace the flatter platform feel with a more contained toy-island ground so the village reads like a bounded diorama with sky beyond it, without changing camera, lighting, layout, props, or gameplay.
+Clean up the outer ground boundary so the beige edge reads as one intentional toy-island base instead of layered, stretched, or dirty-looking overlapping ground systems.
 
 ## 3. What Changed
-- Reworked the runtime ground into a more island-like bounded shape with a circular top surface and darker supporting body.
-- Added a subtle vertex-color falloff on the main ground disk so the island edges lighten toward the sky instead of ending abruptly.
-- Kept the top surface slightly lowered to soften the visible horizon line.
-- Retained the central plaza and soft decorative patches on top of the new island base.
-- Matched the renderer clear color to the sky background so no background seam shows at the edge.
-- Kept fog disabled.
+- Removed the overlapping large ground layers from the previous island pass.
+- Simplified the runtime ground system down to one main island mesh plus one central plaza mesh.
+- Replaced the mixed outer beige treatment with a single clean island material.
+- Kept the overall island footprint contained and unchanged in spirit rather than redesigning the scene.
+- Left camera, lighting, layout placement, and gameplay untouched.
 
 ## 4. Files Changed
 - capy-village/src/world.js
 
 ## 5. Architecture Impact
-This is a runtime presentation/ground-geometry pass only. It changes the base meshes created in `createToyGround()` and aligns the clear color with the sky background. Camera, lighting values, player logic, layout loading, and asset transforms remain unchanged.
+This is a runtime ground-mesh cleanup only. It affects `createToyGround()` and removes redundant overlapping floor geometry. No gameplay, camera, asset, layout, or lighting systems changed.
 
 ## 6. Key Implementation Notes
-The task asked for a contained island world rather than an endless plane. The runtime already used bounded geometry, so this pass focused on changing that base from a stacked platform feel into a softer island read. The new main ground uses a `CircleGeometry` with vertex colors to create a center-to-edge fade from `0xd8d2a8` toward `0xded8b8`, which helps the edge blend visually into the sky.
+Inspection of `world.js` showed there was no old infinite `PlaneGeometry`, but there were still several overlapping large circular layers acting like multiple ground systems: the island body, a separate top disk, an inner meadow disk, several large patch disks, and a two-part plaza. That overlap was the likely cause of the dirty/mismatched outer beige read.
 
-To keep a sense of physical miniature thickness, the top disk sits over a darker cylindrical body. The main disk is offset downward to `y = -0.05` as requested, which helps remove the harsher horizon read without affecting gameplay surfaces. The sky background remains `0xe6efe8`, and fog was intentionally left off to preserve depth.
+The cleanup pass collapses that into a single clean island cylinder using `0xe2dcc2` as the base material color and one simplified central plaza mesh. I also temporarily added debug logging during the pass to confirm the active ground meshes, then removed it once the cleanup was verified.
 
 ## 7. Risks / Known Issues
-- The tree ring itself was not adjusted in code during this pass, so horizon blocking still depends on the current authored layout and fallback tree placement.
-- Because the island remains a simple geometric form, very edge-heavy future layouts may still expose more of the perimeter than desired.
+- Some of the earlier soft meadow color variation is intentionally gone, so the result is cleaner but more minimal.
+- Tree density at the boundary was not changed, so horizon hiding still depends on the current authored layout and existing tree placements.
 - Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
 - hybrid retrieval: unchanged
-- verification layer: preserved through publish/build checks
+- verification layer: preserved through build/publish checks and temporary debug confirmation
 - generic schema: unchanged
-- inspectability: improved because the world reads as a contained miniature scene instead of continuing outward visually
+- inspectability: improved because the outer island edge now reads as one intentional surface instead of layered floor artifacts
 
 ## 9. Testing Performed
+- Searched the runtime scene code for old plane/ground creation and confirmed no separate infinite plane remained.
+- Temporarily added debug logging to verify only the intended ground meshes remained active, then removed that log afterward.
 - Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/world.js`.
 
 ## 10. Example Output / Logs
 ```text
-Ground:
+Old floor/plane found:
+- no infinite PlaneGeometry floor found
+- duplicate issue came from overlapping circular/cylindrical ground layers
+```
+
+```text
+Final island:
 - radius: 12
-- top disk y: -0.05
-- edge fade: enabled via vertex colors
-- lower body: enabled
+- material color: 0xe2dcc2
+- extra edge trees added: no
 ```
 
 ```text
-Horizon:
-- background: 0xe6efe8
-- clear color: 0xe6efe8
-- fog: disabled
-```
-
-```text
-Tree ring:
-- adjusted: no
-- relies on current layout/fallback tree placements
+Active ground system after cleanup:
+- one main island mesh
+- one central plaza mesh
 ```
 
 ## 11. Recommended Reviewer Focus
-- Check whether the current authored tree placement is enough to hide most of the island perimeter from the fixed camera.
-- Review whether the edge fade is subtle enough to feel natural rather than painted.
-- Confirm the darker island body reads as handcrafted diorama thickness rather than a visible pedestal.
+- Verify the cleaner single-material island no longer shows the dirty outer beige ring from the fixed camera.
+- Confirm the simplified island still feels soft enough without the removed meadow/patch layers.
+- Check whether any edge gaps now want a future tree placement tweak, rather than another ground layer.
 
 ## 12. Suggested Next Step
-Reintroduce the camera dead-zone + soft follow system against this bounded-island baseline so motion can be tuned with the final horizon framing in place.
+If any boundary gaps remain visually noticeable, address them with a few selective edge trees rather than reintroducing extra floor meshes.
