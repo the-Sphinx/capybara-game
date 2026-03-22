@@ -85,10 +85,11 @@ async function bootstrap() {
   // ─── Animate ────────────────────────────────────────────────────────────────
   const moveDir = new THREE.Vector3();
   const _wp = new THREE.Vector3();
-  const deadZone = { x: 1.5, z: 1.5 };
-  const cameraOffset = new THREE.Vector3();
-  const cameraAnchor = new THREE.Vector3();
-  const desiredAnchor = new THREE.Vector3();
+  const deadZone = { x: 3.5, z: 3.0 };
+  const cameraPlanarOffset = new THREE.Vector2();
+  const cameraAnchor = new THREE.Vector2();
+  const desiredAnchor = new THREE.Vector2();
+  const baseLookTarget = new THREE.Vector3();
   let cameraFollowReady = false;
 
   function animate() {
@@ -128,29 +129,36 @@ async function bootstrap() {
     updateOcclusion(camera);
 
     if (!cameraFollowReady) {
-      cameraAnchor.set(capy.position.x, capy.position.y + 1.6, capy.position.z);
-      cameraOffset.copy(camera.position).sub(cameraAnchor);
+      cameraAnchor.set(capy.position.x, capy.position.z);
+      cameraPlanarOffset.set(
+        camera.position.x - capy.position.x,
+        camera.position.z - capy.position.z,
+      );
+      baseLookTarget.set(
+        camera.position.x - cameraPlanarOffset.x,
+        1.6,
+        camera.position.z - cameraPlanarOffset.y,
+      );
       cameraFollowReady = true;
     }
 
     desiredAnchor.copy(cameraAnchor);
 
     const dx = capy.position.x - cameraAnchor.x;
-    const dz = capy.position.z - cameraAnchor.z;
+    const dz = capy.position.z - cameraAnchor.y;
 
     if (Math.abs(dx) > deadZone.x) {
       desiredAnchor.x += dx - Math.sign(dx) * deadZone.x;
     }
 
     if (Math.abs(dz) > deadZone.z) {
-      desiredAnchor.z += dz - Math.sign(dz) * deadZone.z;
+      desiredAnchor.y += dz - Math.sign(dz) * deadZone.z;
     }
 
-    cameraAnchor.lerp(desiredAnchor, 0.05);
-    camera.position.x = cameraAnchor.x + cameraOffset.x;
-    camera.position.y = cameraOffset.y + cameraAnchor.y;
-    camera.position.z = cameraAnchor.z + cameraOffset.z;
-    camera.lookAt(cameraAnchor);
+    cameraAnchor.lerp(desiredAnchor, 0.035);
+    camera.position.x = cameraAnchor.x + cameraPlanarOffset.x;
+    camera.position.z = cameraAnchor.y + cameraPlanarOffset.y;
+    camera.lookAt(cameraAnchor.x, baseLookTarget.y, cameraAnchor.y);
   }
 
   if (mixer) mixer.update(delta);
