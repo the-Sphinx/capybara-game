@@ -22,7 +22,7 @@ import { saveManager } from './SaveManager.js';
 
 async function bootstrap() {
   // ─── Scene setup ────────────────────────────────────────────────────────────
-  const { renderer, scene, camera, clock } = initScene();
+  const { renderer, scene, camera, clock, updateSky } = initScene();
   const runtimeLayout = await loadPublishedVillage(scene);
   if (!runtimeLayout.success) {
     setInteractablesEnabled(true);
@@ -109,6 +109,7 @@ async function bootstrap() {
   const delta = clock.getDelta();
 
   gameManager.update(delta);
+  updateSky?.(delta);
 
   const { capy, mixer, groundY } = gameState;
 

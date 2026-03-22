@@ -123,6 +123,95 @@ function createToyGround(scene) {
   scene.add(plaza);
 }
 
+function createCloudVariant(parts, material) {
+  const group = new THREE.Group();
+  for (const part of parts) {
+    const puff = new THREE.Mesh(
+      new THREE.SphereGeometry(part.radius, 10, 8),
+      material,
+    );
+    puff.position.set(part.x, part.y, part.z);
+    puff.scale.set(part.sx ?? 1, part.sy ?? 1, part.sz ?? 1);
+    puff.castShadow = false;
+    puff.receiveShadow = false;
+    group.add(puff);
+  }
+  return group;
+}
+
+function createSkyCloudLayer(scene) {
+  const cloudMaterial = new THREE.MeshStandardMaterial({
+    color: 0xfff8f0,
+    roughness: 1.0,
+    metalness: 0.0,
+  });
+
+  const variants = [
+    createCloudVariant([
+      { x: -0.55, y: 0.0, z: 0, radius: 0.48 },
+      { x: 0.0, y: 0.12, z: 0.08, radius: 0.62 },
+      { x: 0.58, y: 0.02, z: -0.06, radius: 0.45 },
+    ], cloudMaterial),
+    createCloudVariant([
+      { x: -0.95, y: 0.04, z: 0.02, radius: 0.48, sx: 1.2 },
+      { x: -0.24, y: 0.18, z: 0.06, radius: 0.66, sx: 1.1 },
+      { x: 0.48, y: 0.1, z: -0.05, radius: 0.56, sx: 1.25 },
+      { x: 1.08, y: 0.02, z: 0.04, radius: 0.42, sx: 1.15 },
+    ], cloudMaterial),
+    createCloudVariant([
+      { x: -0.18, y: 0.0, z: 0.02, radius: 0.52 },
+      { x: 0.16, y: 0.54, z: 0.0, radius: 0.44 },
+      { x: 0.48, y: 0.18, z: -0.04, radius: 0.36 },
+    ], cloudMaterial),
+    createCloudVariant([
+      { x: -1.08, y: 0.02, z: 0, radius: 0.36, sx: 1.25 },
+      { x: -0.3, y: 0.1, z: 0.04, radius: 0.58, sx: 1.45 },
+      { x: 0.58, y: 0.12, z: -0.03, radius: 0.5, sx: 1.3 },
+      { x: 1.28, y: 0.02, z: 0.03, radius: 0.34, sx: 1.15 },
+    ], cloudMaterial),
+  ];
+
+  const cloudRoot = new THREE.Group();
+  scene.add(cloudRoot);
+
+  const cloudEntries = [
+    { variant: 0, position: [-13.5, 9.6, -12.5], scale: 1.2, speed: 0.045 },
+    { variant: 1, position: [-8.8, 11.2, -15.6], scale: 1.55, speed: 0.035 },
+    { variant: 2, position: [-3.2, 10.1, -13.8], scale: 1.15, speed: 0.04 },
+    { variant: 3, position: [2.5, 11.8, -16.4], scale: 1.45, speed: 0.03 },
+    { variant: 0, position: [7.6, 9.9, -13.1], scale: 1.05, speed: 0.05 },
+    { variant: 1, position: [12.8, 10.8, -15.2], scale: 1.35, speed: 0.032 },
+    { variant: 2, position: [17.2, 12.2, -14.4], scale: 1.25, speed: 0.028 },
+    { variant: 3, position: [22.4, 10.4, -16.8], scale: 1.15, speed: 0.038 },
+  ].map((entry) => {
+    const cloud = variants[entry.variant].clone(true);
+    cloud.position.set(...entry.position);
+    cloud.scale.setScalar(entry.scale);
+    cloud.traverse((node) => {
+      if (node.isMesh) {
+        node.castShadow = false;
+        node.receiveShadow = false;
+      }
+    });
+    cloudRoot.add(cloud);
+    return {
+      cloud,
+      speed: entry.speed,
+      minX: -24,
+      maxX: 24,
+    };
+  });
+
+  return (delta) => {
+    for (const entry of cloudEntries) {
+      entry.cloud.position.x += entry.speed * delta;
+      if (entry.cloud.position.x > entry.maxX) {
+        entry.cloud.position.x = entry.minX;
+      }
+    }
+  };
+}
+
 // ─── Scene init ───────────────────────────────────────────────────────────────
 export function initScene() {
   const DIORAMA_CAMERA_POSITION = new THREE.Vector3(0.2, 9.8, 15.4);
@@ -137,11 +226,11 @@ export function initScene() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.04;
-  renderer.setClearColor(0xe6efe8);
+  renderer.setClearColor(0xdceeff);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0xe6efe8);
+  scene.background = new THREE.Color(0xdceeff);
   scene.fog = null;
   const camera = new THREE.PerspectiveCamera(26, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.copy(DIORAMA_CAMERA_POSITION);
@@ -174,10 +263,11 @@ export function initScene() {
   scene.add(dirLight);
 
   createToyGround(scene);
+  const updateSky = createSkyCloudLayer(scene);
 
   const clock = new THREE.Clock();
 
-  return { renderer, scene, camera, clock };
+  return { renderer, scene, camera, clock, updateSky };
 }
 
 // ─── Village helpers (private) ────────────────────────────────────────────────
