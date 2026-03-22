@@ -139,11 +139,16 @@ function createCloudVariant(parts, material) {
   return group;
 }
 
-function createSkyCloudLayer(scene) {
+function createSkyCloudLayer(scene, camera) {
+  const cloudHeightRange = { min: 6.0, max: 10.0 };
+  const randomInRange = (min, max) => min + Math.random() * (max - min);
+
   const cloudMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfff8f0,
+    color: 0xffffff,
     roughness: 1.0,
     metalness: 0.0,
+    emissive: 0xf3f8ff,
+    emissiveIntensity: 0.12,
   });
 
   const variants = [
@@ -172,20 +177,23 @@ function createSkyCloudLayer(scene) {
   ];
 
   const cloudRoot = new THREE.Group();
-  scene.add(cloudRoot);
+  camera.add(cloudRoot);
 
   const cloudEntries = [
-    { variant: 0, position: [-13.5, 9.6, -12.5], scale: 1.2, speed: 0.045 },
-    { variant: 1, position: [-8.8, 11.2, -15.6], scale: 1.55, speed: 0.035 },
-    { variant: 2, position: [-3.2, 10.1, -13.8], scale: 1.15, speed: 0.04 },
-    { variant: 3, position: [2.5, 11.8, -16.4], scale: 1.45, speed: 0.03 },
-    { variant: 0, position: [7.6, 9.9, -13.1], scale: 1.05, speed: 0.05 },
-    { variant: 1, position: [12.8, 10.8, -15.2], scale: 1.35, speed: 0.032 },
-    { variant: 2, position: [17.2, 12.2, -14.4], scale: 1.25, speed: 0.028 },
-    { variant: 3, position: [22.4, 10.4, -16.8], scale: 1.15, speed: 0.038 },
-  ].map((entry) => {
+    { variant: 1, x: -24.5, z: -52.0, scale: 1.75, speed: 0.02 },
+    { variant: 0, x: -15.0, z: -44.0, scale: 1.15, speed: 0.026 },
+    { variant: 3, x: -5.8, z: -49.0, scale: 1.55, speed: 0.018 },
+    { variant: 2, x: 3.0, z: -41.0, scale: 0.92, speed: 0.024 },
+    { variant: 1, x: 12.5, z: -46.0, scale: 1.35, speed: 0.021 },
+    { variant: 0, x: 21.0, z: -53.0, scale: 1.65, speed: 0.017 },
+    { variant: 2, x: 29.5, z: -42.5, scale: 0.88, speed: 0.023 },
+    ].map((entry) => {
     const cloud = variants[entry.variant].clone(true);
-    cloud.position.set(...entry.position);
+    cloud.position.set(
+      entry.x,
+      randomInRange(cloudHeightRange.min, cloudHeightRange.max),
+      entry.z,
+    );
     cloud.scale.setScalar(entry.scale);
     cloud.traverse((node) => {
       if (node.isMesh) {
@@ -197,8 +205,8 @@ function createSkyCloudLayer(scene) {
     return {
       cloud,
       speed: entry.speed,
-      minX: -24,
-      maxX: 24,
+      minX: -34,
+      maxX: 34,
     };
   });
 
@@ -226,16 +234,17 @@ export function initScene() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.04;
-  renderer.setClearColor(0xdceeff);
+  renderer.setClearColor(0xc9e4ff);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0xdceeff);
+  scene.background = new THREE.Color(0xc9e4ff);
   scene.fog = null;
   const camera = new THREE.PerspectiveCamera(26, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.copy(DIORAMA_CAMERA_POSITION);
   camera.lookAt(DIORAMA_CAMERA_TARGET);
   camera.updateProjectionMatrix();
+  scene.add(camera);
 
   const hemiLight = new THREE.HemisphereLight(0xe9f2ff, 0xc8c29b, 0.65);
   scene.add(hemiLight);
@@ -263,7 +272,7 @@ export function initScene() {
   scene.add(dirLight);
 
   createToyGround(scene);
-  const updateSky = createSkyCloudLayer(scene);
+  const updateSky = createSkyCloudLayer(scene, camera);
 
   const clock = new THREE.Clock();
 
