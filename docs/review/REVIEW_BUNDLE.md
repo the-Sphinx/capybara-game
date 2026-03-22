@@ -1,81 +1,79 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Lighting + color softening pass
+- Task name: Ground boundary + horizon control
 - Date: 2026-03-22
-- Time: 16:10 +03
+- Time: 16:24 +03
 - Branch: scene-restructure
-- Commit hash: 4ff36ec
+- Commit hash: 2ac857d
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Transform the runtime scene into a warmer, softer, toy-like diorama by adjusting only the lighting rig, renderer tone/exposure, background color, and optional fog, while leaving camera, layout, props, and gameplay untouched.
+Replace the flatter platform feel with a more contained toy-island ground so the village reads like a bounded diorama with sky beyond it, without changing camera, lighting, layout, props, or gameplay.
 
 ## 3. What Changed
-- Replaced the active runtime light balance with the softer lighting values from the task spec.
-- Kept a single warm directional sun using the requested color, intensity, and position.
-- Raised hemisphere fill to soften shadowed areas and warm the ground bounce.
-- Kept ambient support subtle so the scene stays readable without washing out forms.
-- Shifted the background/clear color to a lighter pastel sky blue.
-- Added very light fog to soften depth without changing scene composition.
-- Slightly softened shadow rendering through higher shadow resolution and a larger blur radius.
+- Reworked the runtime ground into a more island-like bounded shape with a circular top surface and darker supporting body.
+- Added a subtle vertex-color falloff on the main ground disk so the island edges lighten toward the sky instead of ending abruptly.
+- Kept the top surface slightly lowered to soften the visible horizon line.
+- Retained the central plaza and soft decorative patches on top of the new island base.
+- Matched the renderer clear color to the sky background so no background seam shows at the edge.
+- Kept fog disabled.
 
 ## 4. Files Changed
 - capy-village/src/world.js
 
 ## 5. Architecture Impact
-This is a presentation-only runtime pass. It affects renderer setup and scene lighting in `initScene()` and does not alter camera framing, layout loading, player logic, materials, or asset transforms.
+This is a runtime presentation/ground-geometry pass only. It changes the base meshes created in `createToyGround()` and aligns the clear color with the sky background. Camera, lighting values, player logic, layout loading, and asset transforms remain unchanged.
 
 ## 6. Key Implementation Notes
-The task called for removing the previous runtime lighting feel and replacing it with a single simple warm-light rig. `world.js` now uses the exact requested baseline for the sun, hemisphere fill, ambient support, tone mapping, and sky color, with only a small shadow softness adjustment through `shadow.radius`.
+The task asked for a contained island world rather than an endless plane. The runtime already used bounded geometry, so this pass focused on changing that base from a stacked platform feel into a softer island read. The new main ground uses a `CircleGeometry` with vertex colors to create a center-to-edge fade from `0xd8d2a8` toward `0xded8b8`, which helps the edge blend visually into the sky.
 
-The optional fog clause in the task was used because it helps the ground and distant props read as part of a single cozy diorama. The fog matches the sky color and starts far enough away that it should soften contrast without obscuring the center layout.
+To keep a sense of physical miniature thickness, the top disk sits over a darker cylindrical body. The main disk is offset downward to `y = -0.05` as requested, which helps remove the harsher horizon read without affecting gameplay surfaces. The sky background remains `0xe6efe8`, and fog was intentionally left off to preserve depth.
 
 ## 7. Risks / Known Issues
-- The fog is intentionally subtle, but if future layout expansion pushes important assets farther out it may need retuning or removal.
-- The scene still relies on existing asset materials, so very saturated source textures may remain more vivid than the softened lighting alone.
-- Build output still reports large GLB chunk warnings, which are unrelated to this task.
+- The tree ring itself was not adjusted in code during this pass, so horizon blocking still depends on the current authored layout and fallback tree placement.
+- Because the island remains a simple geometric form, very edge-heavy future layouts may still expose more of the perimeter than desired.
+- Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
 - hybrid retrieval: unchanged
 - verification layer: preserved through publish/build checks
 - generic schema: unchanged
-- inspectability: improved because forms, shadows, and colors now read more softly without changing authored composition
+- inspectability: improved because the world reads as a contained miniature scene instead of continuing outward visually
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed no camera, layout, or gameplay code was changed as part of this pass.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/world.js`.
 
 ## 10. Example Output / Logs
 ```text
-Directional light:
-- color: 0xffefcf
-- intensity: 1.15
-- position: (6, 10, 5)
+Ground:
+- radius: 12
+- top disk y: -0.05
+- edge fade: enabled via vertex colors
+- lower body: enabled
 ```
 
 ```text
-Fill lights:
-- hemisphere: sky 0xe9f2ff, ground 0xc8c29b, intensity 0.85
-- ambient: 0xffffff @ 0.18
+Horizon:
+- background: 0xe6efe8
+- clear color: 0xe6efe8
+- fog: disabled
 ```
 
 ```text
-Renderer:
-- outputColorSpace: SRGBColorSpace
-- toneMapping: ACESFilmicToneMapping
-- toneMappingExposure: 1.08
-- background: 0xdfeaf6
-- fog: enabled, near 18, far 40
+Tree ring:
+- adjusted: no
+- relies on current layout/fallback tree placements
 ```
 
 ## 11. Recommended Reviewer Focus
-- Validate that the fog softens depth without making the far edge of the village feel hazy.
-- Confirm the current light warmth is soft enough for the buildings while still keeping the capy readable.
-- Review whether the tree greens now feel calmer under the new fill light balance.
+- Check whether the current authored tree placement is enough to hide most of the island perimeter from the fixed camera.
+- Review whether the edge fade is subtle enough to feel natural rather than painted.
+- Confirm the darker island body reads as handcrafted diorama thickness rather than a visible pedestal.
 
 ## 12. Suggested Next Step
-After the fixed debug camera framing is finalized, reintroduce camera follow behavior carefully against this softer lighting baseline so movement can be tuned without conflating it with presentation changes.
+Reintroduce the camera dead-zone + soft follow system against this bounded-island baseline so motion can be tuned with the final horizon framing in place.

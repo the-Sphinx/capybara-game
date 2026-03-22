@@ -2,6 +2,23 @@
 
 ## 2026-03-22
 
+### Ground Boundary And Horizon Control
+- Implemented `docs/tasks/capy_ground_boundary_pass.md`.
+- Reworked the runtime ground into a contained circular island with a lighter top surface and darker supporting body.
+- Added a subtle center-to-edge ground fade so the outer edge softens toward the sky instead of reading like a hard cutoff.
+- Lowered the main island surface slightly to reduce the visible horizon line.
+- Kept the central plaza and soft meadow patches on the new bounded island.
+- Matched the renderer clear color to the sky background and kept fog disabled.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/world.js`.
+
+### Known Risks
+- Tree placement was not expanded in this pass, so horizon blocking still depends on the current authored layout and fallback tree positions.
+- Very edge-heavy future layouts may still reveal more of the island perimeter than desired.
+
 ### Lighting And Color Softening Pass
 - Implemented `docs/tasks/capy_lighting_color_softening_pass.md`.
 - Updated the runtime lighting rig to a softer toy-diorama baseline using a warm directional sun, cooler sky fill, warmer ground bounce, and restrained ambient support.
