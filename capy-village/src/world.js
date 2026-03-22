@@ -85,41 +85,57 @@ export function getActiveInteractable(cx, cz) {
 }
 
 function createToyGround(scene) {
-  const baseRadius = BOUND + 7.5;
+  const groundRadius = 12;
 
-  const baseRing = new THREE.Mesh(
-    new THREE.CylinderGeometry(baseRadius + 0.55, baseRadius + 0.95, 0.5, 48),
+  const islandBody = new THREE.Mesh(
+    new THREE.CylinderGeometry(groundRadius + 0.35, groundRadius + 0.75, 0.5, 64),
     new THREE.MeshStandardMaterial({
-      color: 0x88a074,
-      roughness: 0.95,
+      color: 0xbcae86,
+      roughness: 1.0,
       metalness: 0.0,
     }),
   );
-  baseRing.position.y = -0.26;
-  baseRing.receiveShadow = true;
-  scene.add(baseRing);
+  islandBody.position.y = -0.3;
+  islandBody.receiveShadow = true;
+  scene.add(islandBody);
 
-  const topBase = new THREE.Mesh(
-    new THREE.CylinderGeometry(baseRadius, baseRadius + 0.2, 0.24, 48),
+  const groundGeo = new THREE.CircleGeometry(groundRadius, 64);
+  const colors = [];
+  const centerColor = new THREE.Color(0xd8d2a8);
+  const edgeColor = new THREE.Color(0xded8b8);
+  const positionAttr = groundGeo.getAttribute('position');
+  for (let i = 0; i < positionAttr.count; i += 1) {
+    const x = positionAttr.getX(i);
+    const y = positionAttr.getY(i);
+    const dist = Math.min(Math.sqrt(x * x + y * y) / groundRadius, 1);
+    const color = centerColor.clone().lerp(edgeColor, Math.pow(dist, 1.6));
+    colors.push(color.r, color.g, color.b);
+  }
+  groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+  const ground = new THREE.Mesh(
+    groundGeo,
     new THREE.MeshStandardMaterial({
-      color: 0xbfd8a6,
-      roughness: 0.9,
+      vertexColors: true,
+      roughness: 1.0,
       metalness: 0.0,
     }),
   );
-  topBase.position.y = -0.12;
-  topBase.receiveShadow = true;
-  scene.add(topBase);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.05;
+  ground.receiveShadow = true;
+  scene.add(ground);
 
   const innerMeadow = new THREE.Mesh(
-    new THREE.CylinderGeometry(baseRadius - 2.1, baseRadius - 2.5, 0.05, 48),
+    new THREE.CircleGeometry(groundRadius - 2.05, 48),
     new THREE.MeshStandardMaterial({
-      color: 0xcddfaf,
-      roughness: 0.92,
+      color: 0xcfd9a7,
+      roughness: 0.96,
       metalness: 0.0,
     }),
   );
-  innerMeadow.position.y = 0.005;
+  innerMeadow.rotation.x = -Math.PI / 2;
+  innerMeadow.position.y = -0.015;
   innerMeadow.receiveShadow = true;
   scene.add(innerMeadow);
 
@@ -187,7 +203,7 @@ export function initScene() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.04;
-  renderer.setClearColor(0xdfeaf6);
+  renderer.setClearColor(0xe6efe8);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
