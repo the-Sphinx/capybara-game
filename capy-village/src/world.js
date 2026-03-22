@@ -186,25 +186,25 @@ export function initScene() {
   renderer.physicallyCorrectLights = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = 1.04;
   renderer.setClearColor(0xdfeaf6);
   document.body.appendChild(renderer.domElement);
 
   const scene  = new THREE.Scene();
-  scene.background = new THREE.Color(0xdfeaf6);
-  scene.fog = new THREE.Fog(0xdfeaf6, 18, 40);
+  scene.background = new THREE.Color(0xe6efe8);
+  scene.fog = null;
   const camera = new THREE.PerspectiveCamera(26, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.copy(DIORAMA_CAMERA_POSITION);
   camera.lookAt(DIORAMA_CAMERA_TARGET);
   camera.updateProjectionMatrix();
 
-  const hemiLight = new THREE.HemisphereLight(0xe9f2ff, 0xc8c29b, 0.85);
+  const hemiLight = new THREE.HemisphereLight(0xe9f2ff, 0xc8c29b, 0.65);
   scene.add(hemiLight);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.18);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffefcf, 1.15);
+  const dirLight = new THREE.DirectionalLight(0xffefcf, 1.25);
   dirLight.position.set(6, 10, 5);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width  = 2048;
