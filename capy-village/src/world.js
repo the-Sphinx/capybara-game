@@ -86,107 +86,29 @@ export function getActiveInteractable(cx, cz) {
 
 function createToyGround(scene) {
   const groundRadius = 12;
-
-  const islandBody = new THREE.Mesh(
-    new THREE.CylinderGeometry(groundRadius + 0.35, groundRadius + 0.75, 0.5, 64),
+  const island = new THREE.Mesh(
+    new THREE.CylinderGeometry(groundRadius, groundRadius + 0.45, 0.46, 64),
     new THREE.MeshStandardMaterial({
-      color: 0xbcae86,
+      color: 0xe2dcc2,
       roughness: 1.0,
       metalness: 0.0,
     }),
   );
-  islandBody.position.y = -0.3;
-  islandBody.receiveShadow = true;
-  scene.add(islandBody);
+  island.position.y = -0.23;
+  island.receiveShadow = true;
+  scene.add(island);
 
-  const groundGeo = new THREE.CircleGeometry(groundRadius, 64);
-  const colors = [];
-  const centerColor = new THREE.Color(0xd8d2a8);
-  const edgeColor = new THREE.Color(0xded8b8);
-  const positionAttr = groundGeo.getAttribute('position');
-  for (let i = 0; i < positionAttr.count; i += 1) {
-    const x = positionAttr.getX(i);
-    const y = positionAttr.getY(i);
-    const dist = Math.min(Math.sqrt(x * x + y * y) / groundRadius, 1);
-    const color = centerColor.clone().lerp(edgeColor, Math.pow(dist, 1.6));
-    colors.push(color.r, color.g, color.b);
-  }
-  groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-  const ground = new THREE.Mesh(
-    groundGeo,
-    new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      roughness: 1.0,
-      metalness: 0.0,
-    }),
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -0.05;
-  ground.receiveShadow = true;
-  scene.add(ground);
-
-  const innerMeadow = new THREE.Mesh(
-    new THREE.CircleGeometry(groundRadius - 2.05, 48),
-    new THREE.MeshStandardMaterial({
-      color: 0xcfd9a7,
-      roughness: 0.96,
-      metalness: 0.0,
-    }),
-  );
-  innerMeadow.rotation.x = -Math.PI / 2;
-  innerMeadow.position.y = -0.015;
-  innerMeadow.receiveShadow = true;
-  scene.add(innerMeadow);
-
-  const softPatchMaterial = new THREE.MeshStandardMaterial({
-    color: 0xb2c98f,
-    roughness: 0.95,
-    metalness: 0.0,
-  });
-
-  const patches = [
-    { x: -4.4, z: -2.6, rx: 1.4, rz: 1.0, s: 1.0 },
-    { x: 3.8, z: -4.1, rx: -0.7, rz: 0.8, s: 0.9 },
-    { x: 5.1, z: 2.2, rx: 0.9, rz: -1.2, s: 1.15 },
-    { x: -1.9, z: 4.6, rx: -1.0, rz: 1.7, s: 0.85 },
-  ];
-
-  for (const patch of patches) {
-    const mesh = new THREE.Mesh(
-      new THREE.CircleGeometry(1.9 * patch.s, 32),
-      softPatchMaterial,
-    );
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.position.set(patch.x, 0.012, patch.z);
-    mesh.scale.set(1 + patch.rx * 0.08, 1, 1 + patch.rz * 0.08);
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-  }
-
-  const plazaBase = new THREE.Mesh(
-    new THREE.CylinderGeometry(3.35, 3.58, 0.16, 40),
-    new THREE.MeshStandardMaterial({
-      color: 0xc2b292,
-      roughness: 0.94,
-      metalness: 0.0,
-    }),
-  );
-  plazaBase.position.y = -0.03;
-  plazaBase.receiveShadow = true;
-  scene.add(plazaBase);
-
-  const plazaTop = new THREE.Mesh(
-    new THREE.CylinderGeometry(3.02, 3.14, 0.08, 40),
+  const plaza = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.08, 3.18, 0.1, 40),
     new THREE.MeshStandardMaterial({
       color: 0xe8d8b5,
-      roughness: 0.9,
+      roughness: 0.92,
       metalness: 0.0,
     }),
   );
-  plazaTop.position.y = 0.03;
-  plazaTop.receiveShadow = true;
-  scene.add(plazaTop);
+  plaza.position.y = 0.01;
+  plaza.receiveShadow = true;
+  scene.add(plaza);
 }
 
 // ─── Scene init ───────────────────────────────────────────────────────────────
