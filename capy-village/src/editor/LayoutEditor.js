@@ -16,6 +16,32 @@ const DEFAULT_CAMERA_POSITION = new THREE.Vector3(10, 8, 10);
 const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0.75, 0);
 const PLAYER_PREVIEW_ID = 'player_preview';
 
+function addEditorPlazaBase(scene) {
+  const plazaBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.35, 3.58, 0.16, 40),
+    new THREE.MeshStandardMaterial({
+      color: 0xc2b292,
+      roughness: 0.94,
+      metalness: 0.0,
+    }),
+  );
+  plazaBase.position.y = -0.03;
+  plazaBase.receiveShadow = true;
+  scene.add(plazaBase);
+
+  const plazaTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.02, 3.14, 0.08, 40),
+    new THREE.MeshStandardMaterial({
+      color: 0xe8d8b5,
+      roughness: 0.9,
+      metalness: 0.0,
+    }),
+  );
+  plazaTop.position.y = 0.03;
+  plazaTop.receiveShadow = true;
+  scene.add(plazaTop);
+}
+
 function cloneAssetScene(scene) {
   let hasSkinnedMesh = false;
   scene.traverse((node) => {
@@ -164,6 +190,7 @@ export class LayoutEditor {
     ground.name = 'EditorGround';
     this.ground = ground;
     this.scene.add(ground);
+    addEditorPlazaBase(this.scene);
 
     this.gridHelper = new THREE.GridHelper(60, 120, 0x426241, 0x7fa070);
     this.gridHelper.position.y = 0.01;

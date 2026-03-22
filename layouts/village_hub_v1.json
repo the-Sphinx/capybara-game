@@ -17,9 +17,9 @@
       "id": "obj_001",
       "assetId": "hut_1",
       "position": [
-        -7,
+        -6.9626,
         0,
-        0
+        -0.0802
       ],
       "rotation": [
         0,
@@ -38,7 +38,7 @@
       "position": [
         0,
         0,
-        -7
+        -6.5
       ],
       "rotation": [
         0,
@@ -65,18 +65,18 @@
         0
       ],
       "scale": [
-        1.5,
-        1.5,
-        1.5
+        1.7,
+        1.7,
+        1.7
       ]
     },
     {
       "id": "obj_004",
       "assetId": "tree_1",
       "position": [
-        -5.5,
+        -5,
         0,
-        -4
+        -4.5
       ],
       "rotation": [
         0,
@@ -93,9 +93,9 @@
       "id": "obj_005",
       "assetId": "tree_2",
       "position": [
-        -3.5,
+        -3,
         0,
-        -6
+        -8.5
       ],
       "rotation": [
         0,
@@ -112,9 +112,9 @@
       "id": "obj_006",
       "assetId": "tree_1",
       "position": [
-        -5.5,
+        -5.4723,
         0,
-        3.5
+        3.75
       ],
       "rotation": [
         0,
@@ -133,7 +133,7 @@
       "position": [
         -6,
         0,
-        -2
+        -2.5
       ],
       "rotation": [
         0,
@@ -150,7 +150,7 @@
       "id": "obj_009",
       "assetId": "cubes_1",
       "position": [
-        -6.5,
+        -5.5,
         0,
         2
       ],
@@ -160,18 +160,18 @@
         0
       ],
       "scale": [
-        1,
-        1,
-        1
+        1.2,
+        1.2,
+        1.2
       ]
     },
     {
       "id": "obj_010",
       "assetId": "cubes_1",
       "position": [
-        4,
+        3,
         0,
-        -5.5
+        -4.5
       ],
       "rotation": [
         0,
@@ -207,9 +207,9 @@
       "id": "obj_012",
       "assetId": "tree_2",
       "position": [
-        7,
+        6.2998,
         0,
-        0.5
+        1.4974
       ],
       "rotation": [
         0,
@@ -226,9 +226,9 @@
       "id": "obj_013",
       "assetId": "tree_1",
       "position": [
-        5.5,
+        7,
         0,
-        2.5
+        -0.5
       ],
       "rotation": [
         0,
@@ -245,9 +245,9 @@
       "id": "obj_014",
       "assetId": "tree_1",
       "position": [
-        3,
+        4.5,
         0,
-        -8
+        -8.5
       ],
       "rotation": [
         0,
@@ -255,18 +255,18 @@
         0
       ],
       "scale": [
-        2.7,
-        2.7,
-        2.7
+        3.3,
+        3.3,
+        3.3
       ]
     },
     {
       "id": "obj_015",
       "assetId": "tree_2",
       "position": [
-        5.5,
+        5,
         0,
-        -7.5
+        -6.5
       ],
       "rotation": [
         0,
@@ -283,9 +283,9 @@
       "id": "obj_016",
       "assetId": "tree_2",
       "position": [
-        -6,
+        -4.3249,
         0,
-        -6.5
+        -8.5699
       ],
       "rotation": [
         0,
@@ -302,7 +302,7 @@
       "id": "obj_017",
       "assetId": "tree_1",
       "position": [
-        -7.5,
+        -6.5,
         0,
         -4
       ],
@@ -315,6 +315,994 @@
         1.7,
         1.7,
         1.7
+      ]
+    },
+    {
+      "id": "obj_018",
+      "assetId": "tree_3",
+      "position": [
+        3,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "obj_019",
+      "assetId": "tree_4",
+      "position": [
+        -4,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.4,
+        1.4,
+        1.4
+      ]
+    },
+    {
+      "id": "obj_020",
+      "assetId": "tree_4",
+      "position": [
+        -7,
+        0,
+        -2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "obj_021",
+      "assetId": "tree_3",
+      "position": [
+        -3.5,
+        0,
+        -5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    {
+      "id": "obj_022",
+      "assetId": "tree_3",
+      "position": [
+        6.5,
+        0,
+        -6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.5
+      ]
+    },
+    {
+      "id": "obj_023",
+      "assetId": "stem_1",
+      "position": [
+        -2.5,
+        0,
+        -5.5
+      ],
+      "rotation": [
+        0,
+        66,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    {
+      "id": "obj_024",
+      "assetId": "stem_2",
+      "position": [
+        4.5,
+        0,
+        -4.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "obj_025",
+      "assetId": "milk",
+      "position": [
+        4.5,
+        0,
+        4.5
+      ],
+      "rotation": [
+        0,
+        220,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "id": "obj_026",
+      "assetId": "pumpkin",
+      "position": [
+        6.2359,
+        0,
+        3.4138
+      ],
+      "rotation": [
+        0,
+        240,
+        0
+      ],
+      "scale": [
+        2.9,
+        2.9,
+        2.9
+      ]
+    },
+    {
+      "id": "obj_027",
+      "assetId": "stones_1",
+      "position": [
+        -3.3761,
+        0,
+        5.5279
+      ],
+      "rotation": [
+        0,
+        31,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "obj_028",
+      "assetId": "stones_2",
+      "position": [
+        0.5599,
+        0,
+        6.235
+      ],
+      "rotation": [
+        0,
+        135,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "obj_029",
+      "assetId": "stones_3",
+      "position": [
+        3.1999,
+        0,
+        5.9849
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "obj_030",
+      "assetId": "stones_4",
+      "position": [
+        -2.9979,
+        0,
+        2.2928
+      ],
+      "rotation": [
+        0,
+        16,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_034",
+      "assetId": "tree_1",
+      "position": [
+        8.5,
+        0,
+        0.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.7,
+        2.7,
+        2.7
+      ]
+    },
+    {
+      "id": "obj_035",
+      "assetId": "tree_2",
+      "position": [
+        9.3019,
+        0,
+        -1.3766
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.2,
+        2.2,
+        2.2
+      ]
+    },
+    {
+      "id": "obj_036",
+      "assetId": "tree_2",
+      "position": [
+        -5.5,
+        0,
+        -7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3.3,
+        3.3,
+        3.3
+      ]
+    },
+    {
+      "id": "obj_037",
+      "assetId": "tree_4",
+      "position": [
+        9.2226,
+        0,
+        1.7998
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "obj_039",
+      "assetId": "tree_3",
+      "position": [
+        -7.5907,
+        0,
+        -6.5354
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.7,
+        2,
+        1.7
+      ]
+    },
+    {
+      "id": "obj_040",
+      "assetId": "stones_4",
+      "position": [
+        -2.5,
+        0,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_041",
+      "assetId": "stones_4",
+      "position": [
+        -2.9041,
+        0,
+        -2.5935
+      ],
+      "rotation": [
+        0,
+        -427,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_042",
+      "assetId": "stones_4",
+      "position": [
+        -3.6331,
+        0,
+        2.973
+      ],
+      "rotation": [
+        0,
+        26,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_043",
+      "assetId": "stones_4",
+      "position": [
+        -1.4153,
+        0,
+        3.6203
+      ],
+      "rotation": [
+        0,
+        54,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_044",
+      "assetId": "stones_4",
+      "position": [
+        -3.9615,
+        0,
+        -2.9143
+      ],
+      "rotation": [
+        0,
+        -29,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_045",
+      "assetId": "stones_4",
+      "position": [
+        -3.9847,
+        0,
+        -1.1054
+      ],
+      "rotation": [
+        0,
+        -187,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_046",
+      "assetId": "stones_4",
+      "position": [
+        -4.044,
+        0,
+        1.2238
+      ],
+      "rotation": [
+        0,
+        -187,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_049",
+      "assetId": "stones_4",
+      "position": [
+        -4.4814,
+        0,
+        -0.2933
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_050",
+      "assetId": "stones_4",
+      "position": [
+        -0.0445,
+        0,
+        -4.8261
+      ],
+      "rotation": [
+        0,
+        -74,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_051",
+      "assetId": "stones_4",
+      "position": [
+        0.642,
+        0,
+        -4.1413
+      ],
+      "rotation": [
+        0,
+        -74,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_052",
+      "assetId": "stones_4",
+      "position": [
+        -2.2564,
+        0,
+        -3.5068
+      ],
+      "rotation": [
+        0,
+        -120,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_053",
+      "assetId": "stones_4",
+      "position": [
+        -1.1645,
+        0,
+        -4.1779
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_054",
+      "assetId": "stones_4",
+      "position": [
+        1.5644,
+        0,
+        -3.6288
+      ],
+      "rotation": [
+        0,
+        87,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_055",
+      "assetId": "stones_4",
+      "position": [
+        1.3147,
+        0,
+        3.579
+      ],
+      "rotation": [
+        0,
+        87,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_056",
+      "assetId": "stones_4",
+      "position": [
+        1.5893,
+        0,
+        4.318
+      ],
+      "rotation": [
+        0,
+        82,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_057",
+      "assetId": "stones_4",
+      "position": [
+        2.7448,
+        0,
+        2.9506
+      ],
+      "rotation": [
+        0,
+        61,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_058",
+      "assetId": "stones_4",
+      "position": [
+        3.2161,
+        0,
+        1.8751
+      ],
+      "rotation": [
+        0,
+        123,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_059",
+      "assetId": "stones_4",
+      "position": [
+        3.749,
+        0,
+        -2.3177
+      ],
+      "rotation": [
+        0,
+        100,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_060",
+      "assetId": "stones_4",
+      "position": [
+        4.183,
+        0,
+        0.0022
+      ],
+      "rotation": [
+        0,
+        62,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_061",
+      "assetId": "stones_4",
+      "position": [
+        4.0871,
+        0,
+        0.7677
+      ],
+      "rotation": [
+        0,
+        50,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_062",
+      "assetId": "stones_4",
+      "position": [
+        4.5217,
+        0,
+        2.3583
+      ],
+      "rotation": [
+        0,
+        -11,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_063",
+      "assetId": "stones_4",
+      "position": [
+        4.9503,
+        0,
+        -1.1327
+      ],
+      "rotation": [
+        0,
+        54,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_064",
+      "assetId": "stones_4",
+      "position": [
+        3.9065,
+        0,
+        -1.0825
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_065",
+      "assetId": "stones_4",
+      "position": [
+        5.0408,
+        0,
+        -2.267
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_066",
+      "assetId": "stones_4",
+      "position": [
+        2.8236,
+        0,
+        -3.0052
+      ],
+      "rotation": [
+        0,
+        33,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_067",
+      "assetId": "stones_4",
+      "position": [
+        -0.1039,
+        0,
+        4.4547
+      ],
+      "rotation": [
+        0,
+        86,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "id": "obj_068",
+      "assetId": "tree_3",
+      "position": [
+        5.1263,
+        0,
+        5.8608
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.7,
+        2,
+        1.7
+      ]
+    },
+    {
+      "id": "obj_069",
+      "assetId": "tree_3",
+      "position": [
+        2.5,
+        0,
+        -9.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.1,
+        2.1,
+        2.1
+      ]
+    },
+    {
+      "id": "obj_070",
+      "assetId": "tree_1",
+      "position": [
+        7,
+        0,
+        -9
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        3,
+        2.2,
+        3
+      ]
+    },
+    {
+      "id": "obj_071",
+      "assetId": "tree_4",
+      "position": [
+        -7.8188,
+        0,
+        -3.6067
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2,
+        2.3,
+        2
+      ]
+    },
+    {
+      "id": "obj_072",
+      "assetId": "stones_1",
+      "position": [
+        6.1077,
+        0,
+        0.1591
+      ],
+      "rotation": [
+        0,
+        144,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "obj_076",
+      "assetId": "stones_1",
+      "position": [
+        -6.6989,
+        0,
+        1.6983
+      ],
+      "rotation": [
+        0,
+        -139,
+        0
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    },
+    {
+      "id": "obj_081",
+      "assetId": "stones_3",
+      "position": [
+        -3.5,
+        0,
+        -7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "obj_082",
+      "assetId": "stones_4",
+      "position": [
+        -5.7417,
+        0,
+        0.0998
+      ],
+      "rotation": [
+        0,
+        106,
+        0
+      ],
+      "scale": [
+        0.1,
+        0.1,
+        0.1
       ]
     }
   ]
