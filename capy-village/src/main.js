@@ -128,17 +128,21 @@ async function bootstrap() {
 
     updateOcclusion(camera);
 
+    const deadZone = { x: 3.5, z: 3.0 };
+    const followLerp = 0.025;
+    const lookFollowFactor = 0.35;
+    const maxCameraShift = { x: 2.8, z: 2.4 };
+
     if (!cameraFollowReady) {
-      cameraAnchor.set(capy.position.x, capy.position.z);
+      // Start from the designed village center, not from the capy position.
+      cameraAnchor.set(0, 0);
+
       cameraPlanarOffset.set(
-        camera.position.x - capy.position.x,
-        camera.position.z - capy.position.z,
+        camera.position.x - cameraAnchor.x,
+        camera.position.z - cameraAnchor.y,
       );
-      baseLookTarget.set(
-        camera.position.x - cameraPlanarOffset.x,
-        1.6,
-        camera.position.z - cameraPlanarOffset.y,
-      );
+
+      baseLookTarget.set(0, 1.6, 0);
       cameraFollowReady = true;
     }
 
@@ -150,15 +154,47 @@ async function bootstrap() {
     if (Math.abs(dx) > deadZone.x) {
       desiredAnchor.x += dx - Math.sign(dx) * deadZone.x;
     }
-
     if (Math.abs(dz) > deadZone.z) {
       desiredAnchor.y += dz - Math.sign(dz) * deadZone.z;
     }
 
-    cameraAnchor.lerp(desiredAnchor, 0.035);
+    // Keep the camera from drifting too far off the diorama.
+    desiredAnchor.x = THREE.MathUtils.clamp(
+      desiredAnchor.x,
+      -maxCameraShift.x,
+      maxCameraShift.x
+    );
+    desiredAnchor.y = THREE.MathUtils.clamp(
+      desiredAnchor.y,
+      -maxCameraShift.z,
+      maxCameraShift.z
+    );
+
+    cameraAnchor.lerp(desiredAnchor, followLerp);
+
     camera.position.x = cameraAnchor.x + cameraPlanarOffset.x;
     camera.position.z = cameraAnchor.y + cameraPlanarOffset.y;
-    camera.lookAt(cameraAnchor.x, baseLookTarget.y, cameraAnchor.y);
+
+    // // Important: only partially shift the look target.
+    // // This preserves the diorama composition instead of re-centering the capy.
+    // const lookX = THREE.MathUtils.lerp(baseLookTarget.x, cameraAnchor.x, lookFollowFactor);
+    // const lookZ = THREE.MathUtils.lerp(baseLookTarget.z, cameraAnchor.y, lookFollowFactor);
+    // Slight bias to keep composition centered around statue
+    const compositionBias = 0.15;
+
+    const lookX = THREE.MathUtils.lerp(
+      baseLookTarget.x,
+      cameraAnchor.x * (1.0 - compositionBias),
+      lookFollowFactor
+    );
+
+    const lookZ = THREE.MathUtils.lerp(
+      baseLookTarget.z,
+      cameraAnchor.y * (1.0 - compositionBias),
+      lookFollowFactor
+    );
+
+    camera.lookAt(lookX, baseLookTarget.y, lookZ);
   }
 
   if (mixer) mixer.update(delta);
