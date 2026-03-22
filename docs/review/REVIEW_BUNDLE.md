@@ -1,40 +1,39 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Camera visibility safeguard + soft village bounds
+- Task name: Sky + cute cloud layer
 - Date: 2026-03-22
-- Time: 16:49 +03
+- Time: 16:57 +03
 - Branch: scene-restructure
-- Commit hash: 566faef
+- Commit hash: 07529d8
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Keep the capy visible without breaking the hybrid diorama composition by strengthening camera response only near the edges and adding soft movement bounds so the player stays within the designed village footprint.
+Add a soft stylized sky and a lightweight animated cloud layer that supports the toy-diorama atmosphere without distracting from gameplay or changing the lighting model.
 
 ## 3. What Changed
-- Kept the current hybrid camera base instead of replacing it.
-- Added a second, stronger edge-response zone on top of the existing safe-zone follow behavior.
-- Selected follow strength dynamically:
-  - soft follow inside the edge zone
-  - stronger follow near the frame edge
-- Added soft movement bounds to keep the capy inside the designed village area.
-- Kept the composition-preserving partial look-target bias toward the village center/statue.
+- Replaced the background/clear color with a softer pastel sky blue.
+- Added four reusable low-poly cloud variants built from overlapping sphere puffs.
+- Added eight cloud instances positioned high and behind the village tree line.
+- Reused a single material for all clouds and disabled cloud shadows entirely.
+- Added a tiny per-frame cloud updater so clouds drift slowly and wrap across the scene.
 
 ## 4. Files Changed
+- capy-village/src/world.js
 - capy-village/src/main.js
 
 ## 5. Architecture Impact
-This affects runtime camera response and player movement clamping only. The camera follow state remains in `main.js`, now with two response zones and explicit movement bounds. No camera FOV, base angle, lighting, layout, or material systems changed.
+This is a lightweight runtime atmosphere pass. `world.js` now creates a reusable cloud layer and returns an `updateSky` function from `initScene()`, while `main.js` calls that updater once per frame. No gameplay, lighting intensities, camera FOV, layout, or material systems were altered beyond the sky background color.
 
 ## 6. Key Implementation Notes
-The existing hybrid camera already had a composition-preserving anchor and partial look-target follow. This pass keeps that structure and layers in an outer edge zone using the task’s suggested values. When the capy is outside the safe zone but still inside the edge zone, the camera uses the gentler `0.025` follow strength. When the capy pushes beyond the edge zone, follow strength increases to `0.07` so the player is less likely to drift off-frame.
+The task explicitly called for stylized, cheap clouds rather than textures or skyboxes, so each cloud variant is a small group of 2 to 4 low-poly sphere meshes using one shared `MeshStandardMaterial` tinted `0xfff8f0`. Variants cover the requested shapes: puff, medium horizontal, tall stacked, and wide stretched.
 
-The player movement path was also clamped into a soft authored village footprint using `minX: -7.5`, `maxX: 7.5`, `minZ: -6.5`, and `maxZ: 7.0`. This keeps movement free within the village but prevents wandering into empty off-stage space that would undermine the diorama framing.
+Clouds are placed roughly in the `y = 9.6` to `12.2` range and behind the village at negative `z`, so they add depth without intersecting gameplay objects. Movement is intentionally very slow, with speeds around `0.028` to `0.05` world units per second, and wrapping resets them from `x > 24` back to `x = -24`.
 
 ## 7. Risks / Known Issues
-- This pass does not include a direct viewport-space visibility test, so the safeguard is still heuristic via follow zones and movement bounds.
-- The current max camera shift remains capped, so if the layout footprint grows significantly the bounds and camera cap may want retuning together.
+- Because the cloud layer is purely world-space and not camera-anchored, a much larger future camera shift range may expose empty sky spacing that wants more instances.
+- The current cloud wrap is simple and can produce long reuse cycles, which is fine for calm background motion but not for a busier sky style.
 - Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
@@ -42,38 +41,39 @@ The player movement path was also clamped into a soft authored village footprint
 - hybrid retrieval: unchanged
 - verification layer: preserved through build checks
 - generic schema: unchanged
-- inspectability: improved because the player stays within the staged village while the statue-centered composition remains mostly intact
+- inspectability: improved because the scene now has more atmospheric depth while keeping the central village composition calm
 
 ## 9. Testing Performed
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
-- Verified the camera still uses the current composition-biased look logic instead of fully centering on the capy at all times.
+- Confirmed the task-constrained runtime changes are isolated to the sky/background setup and the frame update hook.
+- Verified clouds do not cast or receive shadows.
 
 ## 10. Example Output / Logs
 ```text
-Follow zones:
-- deadZone: x=3.5, z=3.0
-- edgeZone: x=5.0, z=4.2
+Sky:
+- background: 0xdceeff
+- clear color: 0xdceeff
 ```
 
 ```text
-Follow strengths:
-- soft: 0.025
-- strong: 0.07
+Cloud variants:
+- puff
+- medium horizontal
+- tall stacked
+- wide stretched
 ```
 
 ```text
-Movement bounds:
-- minX: -7.5
-- maxX: 7.5
-- minZ: -6.5
-- maxZ: 7.0
+Cloud runtime:
+- instances: 8
+- speed range: 0.028 to 0.05
+- wrap: x > 24 -> x = -24
 ```
 
 ## 11. Recommended Reviewer Focus
-- Check whether the stronger edge response is enough to keep the capy visible without making the camera feel nervous.
-- Verify the movement bounds feel invisible rather than restrictive.
-- Review whether the current max camera shift and movement bounds still fit comfortably if the authored village expands.
+- Check whether the cloud spacing feels balanced from the current camera framing.
+- Verify the cloud motion is subtle enough to stay in the background.
+- Review whether the sky blue still works with the current warm ground/lighting palette.
 
 ## 12. Suggested Next Step
-If visibility still occasionally feels tight, add a lightweight viewport-aware safeguard before considering any stronger recentering behavior.
+If the atmosphere feels good, the next likely polish step is a small performance pass around repeated decorative props such as stones and trees.

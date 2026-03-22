@@ -2,6 +2,22 @@
 
 ## 2026-03-22
 
+### Sky And Cute Clouds
+- Implemented `docs/tasks/capy_sky_clouds.md`.
+- Updated the runtime sky background to a softer pastel blue.
+- Added four reusable stylized cloud variants made from overlapping low-poly sphere puffs.
+- Added eight cloud instances placed high and behind the village tree line.
+- Added very slow horizontal cloud drift with simple wraparound.
+- Kept clouds lightweight with one shared material and no shadows.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/world.js` and the sky update hook in `capy-village/src/main.js`.
+
+### Known Risks
+- If future camera shift range grows, the cloud layer may want a few more instances to avoid sparse edges.
+- The current wrap behavior is intentionally simple and may repeat visibly over very long play sessions.
+
 ### Camera Visibility Safeguard And Soft Bounds
 - Implemented `docs/tasks/capy_camera_visibility_safeguard_and_bounds.md`.
 - Kept the current hybrid diorama camera base and composition-preserving look-target bias.
