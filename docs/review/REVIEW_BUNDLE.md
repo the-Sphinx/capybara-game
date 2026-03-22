@@ -1,77 +1,75 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Ground boundary cleanup
+- Task name: Camera follow dead-zone system
 - Date: 2026-03-22
-- Time: 16:33 +03
+- Time: 16:40 +03
 - Branch: scene-restructure
-- Commit hash: 05af8ea
+- Commit hash: 3c4aa1b
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Clean up the outer ground boundary so the beige edge reads as one intentional toy-island base instead of layered, stretched, or dirty-looking overlapping ground systems.
+Reintroduce camera follow so the gameplay camera responds to the capy smoothly without breaking the current diorama composition, using a soft dead-zone instead of a rigid player lock or a fully static view.
 
 ## 3. What Changed
-- Removed the overlapping large ground layers from the previous island pass.
-- Simplified the runtime ground system down to one main island mesh plus one central plaza mesh.
-- Replaced the mixed outer beige treatment with a single clean island material.
-- Kept the overall island footprint contained and unchanged in spirit rather than redesigning the scene.
-- Left camera, lighting, layout placement, and gameplay untouched.
+- Added a dead-zone follow system in the main runtime loop.
+- Kept the current fixed diorama framing as the baseline and derived follow motion from that existing camera offset.
+- Camera now stays still during small player movement and only starts moving when the capy exits the dead zone.
+- Applied smoothing through anchor interpolation so the camera nudges softly instead of snapping.
+- Left world lighting, ground, layout loading, and player movement logic unchanged.
 
 ## 4. Files Changed
-- capy-village/src/world.js
+- capy-village/src/main.js
 
 ## 5. Architecture Impact
-This is a runtime ground-mesh cleanup only. It affects `createToyGround()` and removes redundant overlapping floor geometry. No gameplay, camera, asset, layout, or lighting systems changed.
+This change affects runtime camera behavior only. The camera follow state now lives in `bootstrap()`/`animate()` inside `main.js`, using a persistent anchor plus offset model. No asset, layout, editor, lighting, or collision architecture changed.
 
 ## 6. Key Implementation Notes
-Inspection of `world.js` showed there was no old infinite `PlaneGeometry`, but there were still several overlapping large circular layers acting like multiple ground systems: the island body, a separate top disk, an inner meadow disk, several large patch disks, and a two-part plaza. That overlap was the likely cause of the dirty/mismatched outer beige read.
+The task wanted the camera to keep the current composition while following only when needed. To do that, the implementation captures the current camera-to-capy offset once the capy is available, then maintains a `cameraAnchor` centered on the player's current focus point. Movement inside the dead zone does nothing; movement beyond it shifts the desired anchor only by the overflow amount.
 
-The cleanup pass collapses that into a single clean island cylinder using `0xe2dcc2` as the base material color and one simplified central plaza mesh. I also temporarily added debug logging during the pass to confirm the active ground meshes, then removed it once the cleanup was verified.
+That desired anchor is then smoothed with `lerp(..., 0.05)`, and the actual camera position is rebuilt from the preserved offset. This keeps the established diorama angle/height while making the scene breathe with player movement. The dead-zone values used are `x: 1.5` and `z: 1.5`.
 
 ## 7. Risks / Known Issues
-- Some of the earlier soft meadow color variation is intentionally gone, so the result is cleaner but more minimal.
-- Tree density at the boundary was not changed, so horizon hiding still depends on the current authored layout and existing tree placements.
+- This pass does not add bounds clamping yet, so in very edge-heavy future layouts the camera may drift farther than ideal.
+- The camera always looks at the smoothed anchor, so if a future task wants stronger composition bias toward the village center, a blended target may be better.
 - Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
 - hybrid retrieval: unchanged
-- verification layer: preserved through build/publish checks and temporary debug confirmation
+- verification layer: preserved through build checks
 - generic schema: unchanged
-- inspectability: improved because the outer island edge now reads as one intentional surface instead of layered floor artifacts
+- inspectability: improved because the player can move without leaving the curated diorama framing abruptly
 
 ## 9. Testing Performed
-- Searched the runtime scene code for old plane/ground creation and confirmed no separate infinite plane remained.
-- Temporarily added debug logging to verify only the intended ground meshes remained active, then removed that log afterward.
-- Ran `npm run publish-assets` successfully.
 - Ran `npm run build` successfully in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
+- Verified the implementation keeps the current camera offset as the follow baseline instead of replacing the framing.
 
 ## 10. Example Output / Logs
 ```text
-Old floor/plane found:
-- no infinite PlaneGeometry floor found
-- duplicate issue came from overlapping circular/cylindrical ground layers
+Dead zone:
+- x: 1.5
+- z: 1.5
 ```
 
 ```text
-Final island:
-- radius: 12
-- material color: 0xe2dcc2
-- extra edge trees added: no
+Smoothing:
+- anchor lerp factor: 0.05
+- follow style: offset-preserving dead-zone follow
 ```
 
 ```text
-Active ground system after cleanup:
-- one main island mesh
-- one central plaza mesh
+Camera behavior:
+- small movement inside dead zone: no camera movement
+- larger movement outside dead zone: smooth follow
 ```
 
 ## 11. Recommended Reviewer Focus
-- Verify the cleaner single-material island no longer shows the dirty outer beige ring from the fixed camera.
-- Confirm the simplified island still feels soft enough without the removed meadow/patch layers.
-- Check whether any edge gaps now want a future tree placement tweak, rather than another ground layer.
+- Check whether the current `0.05` smoothing feels responsive enough without becoming floaty.
+- Verify the player remains comfortably framed near the village edges.
+- Review whether a future clamp should be added once the authored layout footprint stabilizes.
 
 ## 12. Suggested Next Step
-If any boundary gaps remain visually noticeable, address them with a few selective edge trees rather than reintroducing extra floor meshes.
+Add gentle camera bounds clamping and only if needed a slightly center-biased look target, while keeping the same dead-zone structure.

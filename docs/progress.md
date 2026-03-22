@@ -2,6 +2,21 @@
 
 ## 2026-03-22
 
+### Camera Follow Dead-Zone
+- Implemented `docs/tasks/capy_camera_follow_deadzone_task.md`.
+- Reintroduced runtime camera follow using a soft dead-zone system instead of the temporary fully static debug camera.
+- Preserved the current diorama framing by deriving follow from the existing camera-to-capy offset.
+- Used a dead zone of `1.5` on both `x` and `z`.
+- Smoothed camera motion by interpolating a follow anchor with factor `0.05`.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
+
+### Known Risks
+- Camera bounds clamping is still not present in this pass.
+- If the layout footprint expands further, the follow target may want a slight center bias in a future tuning pass.
+
 ### Ground Boundary Cleanup
 - Implemented `docs/tasks/capy_ground_boundary_cleanup_task.md`.
 - Removed the overlapping large circular ground layers that were still making the island edge feel dirty and mismatched.
