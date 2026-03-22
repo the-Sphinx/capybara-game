@@ -89,7 +89,7 @@ function createToyGround(scene) {
   const island = new THREE.Mesh(
     new THREE.CylinderGeometry(groundRadius, groundRadius + 0.45, 0.46, 64),
     new THREE.MeshStandardMaterial({
-      color: 0xe2dcc2,
+      color: 0xd1d2a8,
       roughness: 1.0,
       metalness: 0.0,
     }),
@@ -97,6 +97,18 @@ function createToyGround(scene) {
   island.position.y = -0.23;
   island.receiveShadow = true;
   scene.add(island);
+
+  const plazaRing = new THREE.Mesh(
+    new THREE.CylinderGeometry(3.35, 3.58, 0.12, 40),
+    new THREE.MeshStandardMaterial({
+      color: 0xc2b292,
+      roughness: 0.94,
+      metalness: 0.0,
+    }),
+  );
+  plazaRing.position.y = -0.01;
+  plazaRing.receiveShadow = true;
+  scene.add(plazaRing);
 
   const plaza = new THREE.Mesh(
     new THREE.CylinderGeometry(3.08, 3.18, 0.1, 40),
