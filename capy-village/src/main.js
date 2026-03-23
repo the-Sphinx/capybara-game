@@ -147,6 +147,7 @@ async function bootstrap() {
       promptEl.classList.toggle('ui-prompt--visible', !!gameState.activeTarget);
     } else {
       gameState.activeTarget = null;
+      promptEl.classList.remove('ui-prompt--visible');
     }
 
     updateInteractableFeedback(gameState.activeTarget, clock.elapsedTime);

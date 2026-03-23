@@ -13,20 +13,48 @@ const WORLD_ROLE_CONFIG = Object.freeze({
     id: 'minigame_hub',
     label: 'Wisdom Place',
     prompt: 'Press [E] to Explore Knowledge',
-    radius: 3.1,
+    interactionBuffer: 0.9,
   },
   hat_stand: {
     id: 'capy-store',
     label: 'Boutique',
     prompt: 'Press [E] to Browse Hats',
-    radius: 2.5,
+    interactionBuffer: 0.85,
   },
   melon_stand_2: {
     id: 'watermelon_catch',
     label: 'Watermelon Catch',
     prompt: 'Press [E] to Play Watermelon Catch',
-    radius: 2.7,
+    interactionBuffer: 0.95,
     gameId: 'watermelon_catch',
+  },
+});
+const FOOTPRINT_CONFIG = Object.freeze({
+  hut_1: {
+    type: 'circle',
+    radius: 1.72,
+  },
+  mushroom_house: {
+    type: 'circle',
+    radius: 2.08,
+  },
+  book_statue: {
+    type: 'circle',
+    radius: 1.18,
+  },
+  pumpkin: {
+    type: 'circle',
+    radius: 1.62,
+  },
+  hat_stand: {
+    type: 'rect',
+    width: 1.7,
+    depth: 1.1,
+  },
+  melon_stand_2: {
+    type: 'rect',
+    width: 2.7,
+    depth: 1.95,
   },
 });
 function withBaseUrl(assetPath) {
@@ -188,12 +216,35 @@ function getColliderForObject(root, assetId) {
     return null;
   }
 
+  const footprint = FOOTPRINT_CONFIG[assetId];
+  if (footprint) {
+    if (footprint.type === 'circle') {
+      return {
+        type: 'circle',
+        x: center.x + (footprint.offsetX ?? 0),
+        z: center.z + (footprint.offsetZ ?? 0),
+        radius: footprint.radius,
+      };
+    }
+
+    return {
+      type: 'rect',
+      x: center.x + (footprint.offsetX ?? 0),
+      z: center.z + (footprint.offsetZ ?? 0),
+      width: footprint.width,
+      depth: footprint.depth,
+      rotation: root.rotation.y + (footprint.rotationOffset ?? 0),
+    };
+  }
+
   if (size.x > 0.01 && size.z > 0.01) {
     return {
+      type: 'rect',
       x: center.x,
       z: center.z,
-      hw: size.x / 2 + 0.15,
-      hd: size.z / 2 + 0.15,
+      width: size.x + 0.3,
+      depth: size.z + 0.3,
+      rotation: root.rotation.y,
     };
   }
   return null;
@@ -341,6 +392,7 @@ export async function loadPublishedVillage(scene) {
         const instance = clonePublishedScene(template, assetId);
         applyObjectTransform(instance, object);
         villageGroup.add(instance);
+        const collider = getColliderForObject(instance, assetId);
 
         const worldRole = WORLD_ROLE_CONFIG[assetId];
         if (worldRole) {
@@ -348,10 +400,12 @@ export async function loadPublishedVillage(scene) {
             ...worldRole,
             object: instance,
             feedbackObject: instance,
+            radius: collider?.type === 'circle'
+              ? collider.radius + (worldRole.interactionBuffer ?? 0.8)
+              : Math.max(collider?.width ?? 0, collider?.depth ?? 0) / 2 + (worldRole.interactionBuffer ?? 0.8),
           });
         }
 
-        const collider = getColliderForObject(instance, assetId);
         if (collider) {
           colliders.push(collider);
         }

@@ -4,16 +4,47 @@ import { gameState, BOUND } from './state.js';
 
 // ─── Collision ────────────────────────────────────────────────────────────────
 const colliders = [];
+const PLAYER_COLLISION_RADIUS = 0.35;
 
-export function addCollider(x, z, hw, hd) {
-  colliders.push({ x, z, hw, hd });
+export function addCollider(xOrCollider, z, hw, hd) {
+  if (typeof xOrCollider === 'object' && xOrCollider !== null) {
+    colliders.push(xOrCollider);
+    return;
+  }
+
+  colliders.push({
+    type: 'rect',
+    x: xOrCollider,
+    z,
+    width: hw * 2,
+    depth: hd * 2,
+    rotation: 0,
+  });
 }
 
 export function collides(nx, nz) {
-  const r = 0.35;
   for (const c of colliders) {
-    if (nx + r > c.x - c.hw && nx - r < c.x + c.hw &&
-        nz + r > c.z - c.hd && nz - r < c.z + c.hd) {
+    if (c.type === 'circle') {
+      const dx = nx - c.x;
+      const dz = nz - c.z;
+      const radius = c.radius + PLAYER_COLLISION_RADIUS;
+      if (dx * dx + dz * dz < radius * radius) {
+        return true;
+      }
+      continue;
+    }
+
+    const rotation = c.rotation ?? 0;
+    const cos = Math.cos(-rotation);
+    const sin = Math.sin(-rotation);
+    const dx = nx - c.x;
+    const dz = nz - c.z;
+    const localX = dx * cos - dz * sin;
+    const localZ = dx * sin + dz * cos;
+    const halfWidth = c.width / 2 + PLAYER_COLLISION_RADIUS;
+    const halfDepth = c.depth / 2 + PLAYER_COLLISION_RADIUS;
+
+    if (Math.abs(localX) < halfWidth && Math.abs(localZ) < halfDepth) {
       return true;
     }
   }
@@ -69,6 +100,7 @@ const interactables = [
 let interactablesEnabled = true;
 const runtimeInteractables = [];
 const interactableWorldPos = new THREE.Vector3();
+let lastActiveRuntimeInteractable = null;
 
 export function setInteractablesEnabled(enabled) {
   interactablesEnabled = enabled;
@@ -76,6 +108,7 @@ export function setInteractablesEnabled(enabled) {
 
 export function setRuntimeInteractables(entries) {
   runtimeInteractables.length = 0;
+  lastActiveRuntimeInteractable = null;
   for (const entry of entries ?? []) {
     if (!entry?.object) {
       continue;
@@ -85,13 +118,23 @@ export function setRuntimeInteractables(entries) {
       radius: 2.8,
       ...entry,
       feedbackObject: entry.feedbackObject ?? entry.object,
-      baseScale: (entry.feedbackObject ?? entry.object).scale.clone(),
+      interactionBuffer: entry.interactionBuffer ?? 0,
     });
   }
 }
 
 export function getActiveInteractable(cx, cz) {
   if (runtimeInteractables.length > 0) {
+    if (lastActiveRuntimeInteractable) {
+      lastActiveRuntimeInteractable.object.getWorldPosition(interactableWorldPos);
+      const dx = cx - interactableWorldPos.x;
+      const dz = cz - interactableWorldPos.z;
+      const stickyRadius = (lastActiveRuntimeInteractable.radius ?? 2.8) + 0.35;
+      if (dx * dx + dz * dz <= stickyRadius * stickyRadius) {
+        return lastActiveRuntimeInteractable;
+      }
+    }
+
     let closest = null;
     let closestDistanceSq = Infinity;
 
@@ -108,6 +151,7 @@ export function getActiveInteractable(cx, cz) {
       }
     }
 
+    lastActiveRuntimeInteractable = closest;
     return closest;
   }
 
@@ -128,18 +172,37 @@ export function updateInteractableFeedback(activeInteractable, elapsedTime) {
   }
 
   for (const entry of runtimeInteractables) {
-    const target = entry.feedbackObject;
-    const pulseScale = entry === activeInteractable
-      ? 1.02 + Math.sin(elapsedTime * 4.2) * 0.02
-      : 1.0;
+    const targetIntensity = entry === activeInteractable
+      ? 0.16 + Math.sin(elapsedTime * 4.2) * 0.035
+      : 0;
 
-    target.scale.lerp(
-      target.userData._interactionTargetScale
-        ?? entry.baseScale.clone().multiplyScalar(pulseScale),
-      entry === activeInteractable ? 0.18 : 0.22,
-    );
+    const feedbackRoot = entry.feedbackObject ?? entry.object;
+    feedbackRoot.traverse((node) => {
+      if (!node.isMesh) {
+        return;
+      }
 
-    target.userData._interactionTargetScale = entry.baseScale.clone().multiplyScalar(pulseScale);
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      for (const material of materials) {
+        if (!material || !('emissiveIntensity' in material)) {
+          continue;
+        }
+
+        if (material.userData._baseEmissiveIntensity === undefined) {
+          material.userData._baseEmissiveIntensity = material.emissiveIntensity ?? 0;
+          material.userData._baseEmissive = material.emissive?.clone?.() ?? new THREE.Color(0x000000);
+        }
+
+        if (material.emissive) {
+          material.emissive.copy(material.userData._baseEmissive);
+        }
+        material.emissiveIntensity = THREE.MathUtils.lerp(
+          material.emissiveIntensity ?? 0,
+          material.userData._baseEmissiveIntensity + targetIntensity,
+          entry === activeInteractable ? 0.16 : 0.22,
+        );
+      }
+    });
   }
 }
 
