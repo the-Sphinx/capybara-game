@@ -2,6 +2,26 @@
 
 ## 2026-03-23
 
+### Collision Refinement And Interaction Polish
+- Implemented `docs/tasks/capy_collision_interaction_polish.md`.
+- Removed authored-world proximity scaling feedback from the interaction system.
+- Replaced the scale pulse with a subtle emissive highlight on the active runtime interactable.
+- Added circle and rotated-rectangle collider support to `collides()`.
+- Switched current authored building collisions to tighter per-asset footprints for `hut_1`, `mushroom_house`, `book_statue`, `pumpkin`, `hat_stand`, and `melon_stand_2`.
+- Expanded interaction radii from collider size plus a buffer so prompts appear more comfortably near building edges.
+- Added lightweight selection hysteresis so nearby authored interactables do not switch as abruptly.
+- Hid the prompt while modal UI is open.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the active interaction feedback path no longer modifies `object.scale`.
+- Confirmed authored role interactables now derive their interaction radius from collider size plus a buffer.
+
+### Known Risks
+- Collider footprints are hand-tuned for the current authored building set and future hero buildings will still need explicit entries for best approach feel.
+- Live browser verification was limited because the Playwright CLI session was flaky about its socket/session state during this pass.
+
 ### World Roles And Interaction Mapping
 - Implemented `docs/tasks/capy_world_roles_task.md`.
 - Connected the authored runtime-layout objects `book_statue`, `hat_stand`, and `melon_stand_2` to the existing interaction system.

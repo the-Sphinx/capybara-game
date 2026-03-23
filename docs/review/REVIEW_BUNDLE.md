@@ -1,89 +1,96 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: World roles and interaction mapping
+- Task name: Interaction polish and collision refinement
 - Date: 2026-03-23
 - Time: 13:39 +03
 - Branch: scene-restructure
-- Commit hash: 7cfa612
+- Commit hash: ca8c9cc
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Turn the authored village into a readable playable world by mapping the central book fountain, hat stand, and watermelon stand onto the existing interaction system without redesigning the camera, adding heavy UI, or changing the core runtime architecture.
+Improve authored-village interaction feel without changing the core runtime architecture by removing scale-based feedback, making building collisions more natural, and making landmark interactions easier to trigger near building edges.
 
 ## 3. What Changed
-- Added authored-world role mapping for `book_statue`, `hat_stand`, and `melon_stand_2`.
-- Registered runtime-layout interactables directly from published layout instances instead of relying only on the old prototype zone list.
-- Reused the existing bottom-center prompt and `E` interaction flow for all three destinations.
-- Routed the central statue to the game hub, the hat stand to the closet/boutique flow, and the watermelon stand directly to `watermelon_catch`.
-- Added a very subtle scale pulse on the active authored interactable to improve readability without outlines or heavy UI.
-- Added lightweight string aliases in `openModal(...)` so `store`, `hub`, and `watermelon_catch` can resolve cleanly if used by future interaction helpers.
+- Removed the authored-world scale pulse interaction feedback.
+- Replaced active-object feedback with a subtle emissive highlight.
+- Added support for circle and rotated-rectangle colliders in the runtime collision evaluator.
+- Switched authored building collisions from broad AABB-only blockers to tighter per-asset footprints for the current village landmarks.
+- Expanded runtime interaction reach so interactables become available slightly before the player reaches the collider edge.
+- Added lightweight selection hysteresis so nearby interactables do not flicker as aggressively when the player stands near overlap boundaries.
+- Hid the bottom prompt cleanly while modals are open.
 
 ## 4. Files Changed
 - capy-village/src/world.js
 - capy-village/src/runtimeLayout.js
 - capy-village/src/main.js
-- capy-village/src/ui.js
-- layouts/village_hub_v1.json
-- assets/game_ready/models/buildings/hat_stand.glb
-- assets/game_ready/models/buildings/melon_stand_2.glb
 
 ## 5. Architecture Impact
-This keeps the existing interaction architecture intact. The old prototype interactables and fallback zone-based path still exist, but the published authored village now injects its own interactables into that same `activeTarget -> prompt -> openModal/startGame` pipeline. No camera, movement-bounds, or UI architecture was redesigned.
+This is a polish pass on top of the current systems. Movement logic, camera behavior, published layout loading, and the existing prompt/`E` interaction flow all remain intact. The runtime now has a richer collider representation and a softer active-feedback path, but no new architecture or UI layer was introduced.
 
 ## 6. Key Implementation Notes
-Runtime object-role mapping now lives in `capy-village/src/runtimeLayout.js`:
+Collision handling in `capy-village/src/world.js` now supports:
 
 ```text
-book_statue   -> id=minigame_hub     -> "Press [E] to Explore Knowledge"
-hat_stand     -> id=capy-store       -> "Press [E] to Browse Hats"
-melon_stand_2 -> gameId=watermelon_catch -> "Press [E] to Play Watermelon Catch"
+circle:
+- center x/z
+- radius
+
+rect:
+- center x/z
+- width/depth
+- rotation
 ```
 
-`capy-village/src/world.js` now supports two interaction sources:
-- prototype hardcoded zones
-- runtime-layout object-based interactables with nearest-distance selection
+Authored runtime footprints in `capy-village/src/runtimeLayout.js` now use targeted shapes for the current scene:
 
-Active authored interactables get a small pulse in the `1.0 -> ~1.04` range. Only one interactable is selected at a time, and prompt text still uses the existing prompt element.
+```text
+hut_1            -> circle
+mushroom_house   -> circle
+book_statue      -> circle
+pumpkin          -> circle
+hat_stand        -> rotated rect
+melon_stand_2    -> rotated rect
+```
+
+Active authored interactables now use a soft emissive intensity boost instead of changing `object.scale`. Interaction radii are derived from collider size plus a buffer so prompts appear comfortably before the player hits the blocker edge.
 
 ## 7. Risks / Known Issues
-- The live authored-role mapping currently keys off `assetId`, so if multiple copies of `hat_stand` or `melon_stand_2` are added later, they will all become interactable unless a future task adds per-object role metadata.
-- The subtle pulse is intentionally minimal and may want one more visual tune after longer playtesting.
-- Build output still reports large GLB chunk warnings unrelated to this task.
+- The per-asset collider footprints are intentionally hand-tuned for the current village set; newly added buildings still fall back to a rotated rectangle derived from bounds until they get an explicit footprint.
+- Selection hysteresis is intentionally light, so very tightly clustered future interactables may still want one more tuning pass.
+- The Playwright CLI session used for live verification was flaky about its socket/session state, so browser verification for this task was weaker than the publish/build verification.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
-- hybrid retrieval: improved because authored layout objects now carry gameplay meaning in runtime mode
+- hybrid retrieval: improved because authored runtime landmarks now feel more naturally approachable
 - verification layer: preserved through publish/build checks
 - generic schema: unchanged
-- inspectability: improved because core village landmarks now expose clear interaction roles
+- inspectability: improved because prompts should appear more reliably at intended landmarks without visual wobble
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully from repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed the current authored layout contains `book_statue`, `hat_stand`, and `melon_stand_2`.
-- Reviewed the runtime path to verify that published layout instances now register interactables before the capy is loaded.
-- Checked the live browser bootstrap path enough to confirm the published scene opens, with the only console error being the pre-existing missing favicon.
+- Confirmed the interaction feedback code no longer modifies `object.scale`.
+- Reviewed the runtime authored-role path to ensure interaction radius now derives from collider size plus a buffer.
+- Confirmed the prompt is cleared when a modal is open.
 
 ## 10. Example Output / Logs
 ```text
-Published authored role assets:
-- hat_stand.glb
-- melon_stand_2.glb
+Feedback change:
+- removed scale pulse
+- added subtle emissive highlight
 ```
 
 ```text
-Prompts:
-- Press [E] to Explore Knowledge
-- Press [E] to Browse Hats
-- Press [E] to Play Watermelon Catch
+Collision change:
+- broad authored AABB blockers replaced with circle/rotated-rect footprints for current key buildings
 ```
 
 ## 11. Recommended Reviewer Focus
-- Walk diagonally between the statue, hat stand, and watermelon stand to verify the nearest-target selection feels natural.
-- Check that opening and closing the hub/closet/game entry does not leave the prompt or pulse stuck on-screen.
-- Verify the stand colliders still allow the capy to get close enough for interaction comfortably.
+- Walk around the mushroom house, hut, and melon stand diagonally to confirm the capy can approach naturally without early invisible walls.
+- Check that the prompt becomes available slightly before the player reaches the collision edge of the hat stand and melon stand.
+- Verify the emissive feedback reads softly and does not look like a hard glow under the current lighting rig.
 
 ## 12. Suggested Next Step
-If world roles expand further, the next clean upgrade would be attaching interaction metadata to authored layout objects directly rather than inferring roles from `assetId`.
+If more authored buildings are added soon, the next best follow-up is to keep expanding the explicit footprint table rather than relying on bounds-derived fallback colliders for hero assets.
