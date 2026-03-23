@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { addCollider, setRuntimeInteractables } from './world.js';
+import { computeFootprintCollider } from './footprints.js';
 
 const RUNTIME_ASSET_DEBUG = import.meta.env.DEV;
 const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
@@ -27,34 +28,6 @@ const WORLD_ROLE_CONFIG = Object.freeze({
     prompt: 'Press [E] to Play Watermelon Catch',
     interactionBuffer: 0.95,
     gameId: 'watermelon_catch',
-  },
-});
-const FOOTPRINT_CONFIG = Object.freeze({
-  hut_1: {
-    type: 'circle',
-    radius: 1.72,
-  },
-  mushroom_house: {
-    type: 'circle',
-    radius: 2.08,
-  },
-  book_statue: {
-    type: 'circle',
-    radius: 1.18,
-  },
-  pumpkin: {
-    type: 'circle',
-    radius: 1.62,
-  },
-  hat_stand: {
-    type: 'rect',
-    width: 1.7,
-    depth: 1.1,
-  },
-  melon_stand_2: {
-    type: 'rect',
-    width: 2.7,
-    depth: 1.95,
   },
 });
 function withBaseUrl(assetPath) {
@@ -211,43 +184,10 @@ function isNonBlockingDecor(assetId, size) {
 function getColliderForObject(root, assetId) {
   const bbox = new THREE.Box3().setFromObject(root);
   const size = bbox.getSize(new THREE.Vector3());
-  const center = bbox.getCenter(new THREE.Vector3());
   if (isNonBlockingDecor(assetId, size)) {
     return null;
   }
-
-  const footprint = FOOTPRINT_CONFIG[assetId];
-  if (footprint) {
-    if (footprint.type === 'circle') {
-      return {
-        type: 'circle',
-        x: center.x + (footprint.offsetX ?? 0),
-        z: center.z + (footprint.offsetZ ?? 0),
-        radius: footprint.radius,
-      };
-    }
-
-    return {
-      type: 'rect',
-      x: center.x + (footprint.offsetX ?? 0),
-      z: center.z + (footprint.offsetZ ?? 0),
-      width: footprint.width,
-      depth: footprint.depth,
-      rotation: root.rotation.y + (footprint.rotationOffset ?? 0),
-    };
-  }
-
-  if (size.x > 0.01 && size.z > 0.01) {
-    return {
-      type: 'rect',
-      x: center.x,
-      z: center.z,
-      width: size.x + 0.3,
-      depth: size.z + 0.3,
-      rotation: root.rotation.y,
-    };
-  }
-  return null;
+  return computeFootprintCollider(root, assetId, root.userData.footprint ?? null);
 }
 
 function getSceneSize(root) {
@@ -391,6 +331,7 @@ export async function loadPublishedVillage(scene) {
       for (const object of objects) {
         const instance = clonePublishedScene(template, assetId);
         applyObjectTransform(instance, object);
+        instance.userData.footprint = object.footprint ?? null;
         villageGroup.add(instance);
         const collider = getColliderForObject(instance, assetId);
 

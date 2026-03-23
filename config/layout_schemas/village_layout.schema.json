@@ -43,6 +43,9 @@
           },
           "scale": {
             "$ref": "#/$defs/vector3"
+          },
+          "footprint": {
+            "$ref": "#/$defs/footprint"
           }
         },
         "additionalProperties": false
@@ -58,6 +61,60 @@
       },
       "minItems": 3,
       "maxItems": 3
+    },
+    "footprint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "radius"],
+          "properties": {
+            "type": {
+              "const": "circle"
+            },
+            "radius": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "offsetX": {
+              "type": "number"
+            },
+            "offsetZ": {
+              "type": "number"
+            },
+            "rotationOffset": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["type", "width", "depth"],
+          "properties": {
+            "type": {
+              "const": "rect"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "depth": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "offsetX": {
+              "type": "number"
+            },
+            "offsetZ": {
+              "type": "number"
+            },
+            "rotationOffset": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

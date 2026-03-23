@@ -28,6 +28,7 @@ export class LayoutEditorUI {
             <button type="button" data-action="save-layout">Save Layout</button>
             <button type="button" data-action="toggle-snap" data-state="on">Snap: On</button>
             <button type="button" data-action="toggle-grid" data-state="on">Grid: On</button>
+            <button type="button" data-action="toggle-footprints" data-state="off">Footprints: Off</button>
             <button type="button" data-action="reset-view">Reset View</button>
           </div>
         </header>
@@ -51,24 +52,66 @@ export class LayoutEditorUI {
               <h2>Selected Object</h2>
               <span data-role="selected-label">No selection</span>
             </div>
-            <div class="layout-editor__property-grid">
-              ${this.renderReadonlyField('Type', 'selected-type')}
-              ${this.renderReadonlyField('Asset Name', 'asset-name')}
-              ${this.renderTripletInputs('Position', 'position')}
-              ${this.renderTripletInputs('Rotation', 'rotation')}
-              <div class="layout-editor__scale-wrap" data-role="scale-wrap">
-                ${this.renderScaleInputs()}
+            <div class="layout-editor__properties-main" data-role="properties-main">
+              <div class="layout-editor__property-grid">
+                ${this.renderReadonlyField('Type', 'selected-type')}
+                ${this.renderReadonlyField('Asset Name', 'asset-name')}
+                ${this.renderTripletInputs('Position', 'position')}
+                ${this.renderTripletInputs('Rotation', 'rotation')}
+                <div class="layout-editor__scale-wrap" data-role="scale-wrap">
+                  ${this.renderScaleInputs()}
+                </div>
+              </div>
+              <div class="layout-editor__property-actions">
+                <button type="button" data-action="duplicate-selected">Duplicate Selected</button>
+                <button type="button" data-action="delete-selected">Delete Selected</button>
+                <button type="button" data-action="reset-rotation">Reset Rotation</button>
+                <button type="button" data-action="reset-scale">Reset Scale</button>
+                <button type="button" data-action="move-to-ground">Move To Ground</button>
+                <button type="button" data-action="open-footprint-editor">Update Footprint</button>
+              </div>
+              <div class="layout-editor__help">
+                <p>Drag on the ground plane to move.</p>
               </div>
             </div>
-            <div class="layout-editor__property-actions">
-              <button type="button" data-action="duplicate-selected">Duplicate Selected</button>
-              <button type="button" data-action="delete-selected">Delete Selected</button>
-              <button type="button" data-action="reset-rotation">Reset Rotation</button>
-              <button type="button" data-action="reset-scale">Reset Scale</button>
-              <button type="button" data-action="move-to-ground">Move To Ground</button>
-            </div>
-            <div class="layout-editor__help">
-              <p>Drag on the ground plane to move.</p>
+            <div class="layout-editor__footprint-panel" data-role="footprint-panel" hidden>
+              <div class="layout-editor__footprint-header">
+                <button type="button" class="layout-editor__back-button" data-action="close-footprint-editor">← Back</button>
+                <span>Footprint Settings</span>
+              </div>
+              <div class="layout-editor__property-grid">
+                <label class="layout-editor__field">
+                  <span>Shape</span>
+                  <select data-group="footprint" data-field="type">
+                    <option value="circle">Circle</option>
+                    <option value="rect">Rect</option>
+                  </select>
+                </label>
+                <label class="layout-editor__field" data-role="footprint-radius-row">
+                  <span>Radius</span>
+                  <input type="number" step="0.05" min="0.05" data-group="footprint" data-field="radius" />
+                </label>
+                <label class="layout-editor__field" data-role="footprint-width-row">
+                  <span>Width</span>
+                  <input type="number" step="0.05" min="0.05" data-group="footprint" data-field="width" />
+                </label>
+                <label class="layout-editor__field" data-role="footprint-depth-row">
+                  <span>Depth</span>
+                  <input type="number" step="0.05" min="0.05" data-group="footprint" data-field="depth" />
+                </label>
+                <label class="layout-editor__field">
+                  <span>Offset X</span>
+                  <input type="number" step="0.05" data-group="footprint" data-field="offsetX" />
+                </label>
+                <label class="layout-editor__field">
+                  <span>Offset Z</span>
+                  <input type="number" step="0.05" data-group="footprint" data-field="offsetZ" />
+                </label>
+                <label class="layout-editor__field">
+                  <span>Rotation Offset (deg)</span>
+                  <input type="number" step="1" data-group="footprint" data-field="rotationOffset" />
+                </label>
+              </div>
             </div>
           </aside>
         </div>
@@ -83,9 +126,15 @@ export class LayoutEditorUI {
     this.elements.selectedType = host.querySelector('[data-role="selected-type"]');
     this.elements.assetName = host.querySelector('[data-role="asset-name"]');
     this.elements.scaleWrap = host.querySelector('[data-role="scale-wrap"]');
+    this.elements.propertiesMain = host.querySelector('[data-role="properties-main"]');
+    this.elements.footprintPanel = host.querySelector('[data-role="footprint-panel"]');
+    this.elements.footprintRadiusRow = host.querySelector('[data-role="footprint-radius-row"]');
+    this.elements.footprintWidthRow = host.querySelector('[data-role="footprint-width-row"]');
+    this.elements.footprintDepthRow = host.querySelector('[data-role="footprint-depth-row"]');
 
     this.bindActions(host);
     this.bindInputs(host);
+    this.setPropertyPanelMode('main');
   }
 
   renderReadonlyField(label, role) {
@@ -162,8 +211,17 @@ export class LayoutEditorUI {
       this.onFieldChange('layoutName', this.elements.layoutName.value);
     });
 
-    host.querySelectorAll('input[data-group]').forEach((input) => {
-      input.addEventListener('input', () => {
+    host.querySelectorAll('[data-group]').forEach((input) => {
+      const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
+      input.addEventListener(eventName, () => {
+        if (input.dataset.group === 'footprint') {
+          this.onFieldChange('footprint', {
+            field: input.dataset.field,
+            value: input.dataset.field === 'type' ? input.value : Number(input.value),
+          });
+          return;
+        }
+
         this.onFieldChange(input.dataset.group, {
           axis: input.dataset.axis,
           value: Number(input.value),
@@ -222,6 +280,7 @@ export class LayoutEditorUI {
     this.setActionEnabled('duplicate-selected', hasSelection && details.canDuplicate);
     this.setActionEnabled('delete-selected', hasSelection && details.canDelete);
     this.setActionEnabled('reset-scale', hasSelection && details.scaleEditable);
+    this.setActionEnabled('open-footprint-editor', hasSelection && details.canEditFootprint);
   }
 
   setToggleState(action, enabled) {
@@ -238,6 +297,10 @@ export class LayoutEditorUI {
       button.textContent = `Grid: ${enabled ? 'On' : 'Off'}`;
     }
 
+    if (action === 'toggle-footprints') {
+      button.textContent = `Footprints: ${enabled ? 'On' : 'Off'}`;
+    }
+
     button.dataset.state = enabled ? 'on' : 'off';
   }
 
@@ -248,5 +311,41 @@ export class LayoutEditorUI {
     }
 
     button.disabled = !enabled;
+  }
+
+  setPropertyPanelMode(mode) {
+    const footprintMode = mode === 'footprint';
+    this.elements.propertiesMain.hidden = footprintMode;
+    this.elements.footprintPanel.hidden = !footprintMode;
+  }
+
+  updateFootprintEditor(details) {
+    const typeInput = this.host.querySelector('[data-group="footprint"][data-field="type"]');
+    const radiusInput = this.host.querySelector('[data-group="footprint"][data-field="radius"]');
+    const widthInput = this.host.querySelector('[data-group="footprint"][data-field="width"]');
+    const depthInput = this.host.querySelector('[data-group="footprint"][data-field="depth"]');
+    const offsetXInput = this.host.querySelector('[data-group="footprint"][data-field="offsetX"]');
+    const offsetZInput = this.host.querySelector('[data-group="footprint"][data-field="offsetZ"]');
+    const rotationOffsetInput = this.host.querySelector('[data-group="footprint"][data-field="rotationOffset"]');
+
+    const editable = !!details?.footprintEditable;
+    const footprint = details?.footprint ?? null;
+
+    for (const element of [typeInput, radiusInput, widthInput, depthInput, offsetXInput, offsetZInput, rotationOffsetInput]) {
+      element.disabled = !editable;
+    }
+
+    typeInput.value = footprint?.type ?? 'circle';
+    radiusInput.value = footprint?.radius ?? '';
+    widthInput.value = footprint?.width ?? '';
+    depthInput.value = footprint?.depth ?? '';
+    offsetXInput.value = footprint?.offsetX ?? 0;
+    offsetZInput.value = footprint?.offsetZ ?? 0;
+    rotationOffsetInput.value = footprint?.rotationOffset ?? 0;
+
+    const isCircle = typeInput.value === 'circle';
+    this.elements.footprintRadiusRow.hidden = !isCircle;
+    this.elements.footprintWidthRow.hidden = isCircle;
+    this.elements.footprintDepthRow.hidden = isCircle;
   }
 }

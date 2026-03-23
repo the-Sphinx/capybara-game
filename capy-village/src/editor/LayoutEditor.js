@@ -9,6 +9,7 @@ import { AssetPalette } from './AssetPalette.js';
 import { getAssetRegistry } from './assetRegistry.js';
 import { LayoutEditorUI } from './LayoutEditorUI.js';
 import { DEFAULT_PLAYER_TRANSFORM, LayoutSerializer } from './LayoutSerializer.js';
+import { computeFootprintCollider, getDefaultFootprint, normalizeFootprint } from '../footprints.js';
 import { SelectionController } from './SelectionController.js';
 import { TransformController } from './TransformController.js';
 
@@ -94,6 +95,22 @@ function clonePlayerTransform(player) {
   };
 }
 
+function formatFootprintForPanel(footprint) {
+  if (!footprint) {
+    return null;
+  }
+
+  return {
+    type: footprint.type,
+    radius: footprint.radius?.toFixed(2) ?? '',
+    width: footprint.width?.toFixed(2) ?? '',
+    depth: footprint.depth?.toFixed(2) ?? '',
+    offsetX: (footprint.offsetX ?? 0).toFixed(2),
+    offsetZ: (footprint.offsetZ ?? 0).toFixed(2),
+    rotationOffset: Math.round(THREE.MathUtils.radToDeg(footprint.rotationOffset ?? 0)).toString(),
+  };
+}
+
 export class LayoutEditor {
   constructor(host) {
     this.host = host;
@@ -109,6 +126,8 @@ export class LayoutEditor {
     this.layoutName = initialLayout.layoutName || 'village_hub_v1';
     this.playerPreviewCache = null;
     this.playerPreview = null;
+    this.footprintsVisible = false;
+    this.propertyPanelMode = 'main';
   }
 
   async init() {
@@ -202,6 +221,9 @@ export class LayoutEditor {
     this.scene.add(this.sceneObjectsGroup);
 
     this.selectionController = new SelectionController(this.scene);
+    this.footprintOverlayGroup = new THREE.Group();
+    this.footprintOverlayGroup.visible = this.footprintsVisible;
+    this.scene.add(this.footprintOverlayGroup);
     this.raycaster = new THREE.Raycaster();
     this.renderer.domElement.addEventListener('pointerdown', this.handleViewportPointerDown);
 
@@ -332,6 +354,26 @@ export class LayoutEditor {
         this.updateSelectionPanel(this.selectionController.getSelected());
         this.ui.setStatus(`Scale lock ${this.scaleLockEnabled ? 'enabled' : 'disabled'}.`);
         break;
+      case 'toggle-footprints':
+        this.footprintsVisible = !this.footprintsVisible;
+        this.ui.setToggleState('toggle-footprints', this.footprintsVisible);
+        this.refreshFootprintOverlays();
+        this.ui.setStatus(`Footprint overlays ${this.footprintsVisible ? 'shown' : 'hidden'}.`);
+        break;
+      case 'open-footprint-editor':
+        if (!this.selectionController.getSelected() || this.isPlayerRoot(this.selectionController.getSelected())) {
+          this.ui.setStatus('Select a world object first.', 'warning');
+          return;
+        }
+        this.propertyPanelMode = 'footprint';
+        this.ui.setPropertyPanelMode('footprint');
+        this.updateSelectionPanel(this.selectionController.getSelected());
+        break;
+      case 'close-footprint-editor':
+        this.propertyPanelMode = 'main';
+        this.ui.setPropertyPanelMode('main');
+        this.updateSelectionPanel(this.selectionController.getSelected());
+        break;
       default:
         break;
     }
@@ -362,6 +404,44 @@ export class LayoutEditor {
       } else {
         selected.scale[value.axis] = value.value;
       }
+    }
+
+    if (field === 'footprint' && !this.isPlayerRoot(selected)) {
+      const entry = this.layoutObjects.get(selected.userData.editorObjectId);
+      if (!entry) {
+        return;
+      }
+
+      const base = entry.footprint ?? getDefaultFootprint(entry.assetId) ?? {
+        type: 'circle',
+        radius: 1,
+        offsetX: 0,
+        offsetZ: 0,
+        rotationOffset: 0,
+      };
+
+      const next = { ...base };
+      if (value.field === 'type') {
+        if (value.value === 'circle') {
+          next.type = 'circle';
+          next.radius = Number.isFinite(next.radius) ? next.radius : 1;
+          delete next.width;
+          delete next.depth;
+        } else {
+          next.type = 'rect';
+          next.width = Number.isFinite(next.width) ? next.width : 1;
+          next.depth = Number.isFinite(next.depth) ? next.depth : 1;
+          delete next.radius;
+        }
+      } else if (value.field === 'rotationOffset') {
+        next.rotationOffset = toRadians(value.value);
+      } else {
+        next[value.field] = value.value;
+      }
+
+      entry.footprint = normalizeFootprint(next) ?? entry.footprint;
+      selected.userData.footprint = entry.footprint;
+      this.refreshFootprintOverlays();
     }
 
     this.onObjectTransformed(selected);
@@ -448,7 +528,9 @@ export class LayoutEditor {
         id: objectId,
         assetId,
         root: instanceRoot,
+        footprint: normalizeFootprint(transform?.footprint) ?? getDefaultFootprint(assetId),
       });
+      instanceRoot.userData.footprint = this.layoutObjects.get(objectId).footprint;
       this.selectObject(instanceRoot);
       this.onObjectTransformed(instanceRoot);
       this.ui.setStatus(`Spawned ${assetId} as ${objectId}.`);
@@ -501,6 +583,12 @@ export class LayoutEditor {
       scaleEditable: !isPlayer,
       canDuplicate: !isPlayer,
       canDelete: !isPlayer,
+      canEditFootprint: !isPlayer,
+      footprintEditable: !isPlayer,
+      footprint: isPlayer ? null : formatFootprintForPanel(
+        this.layoutObjects.get(root.userData.editorObjectId)?.footprint
+        ?? getDefaultFootprint(root.userData.assetId),
+      ),
     };
   }
 
@@ -511,11 +599,20 @@ export class LayoutEditor {
 
   updateSelectionPanel(root) {
     if (!root) {
+      this.propertyPanelMode = 'main';
+      this.ui.setPropertyPanelMode('main');
       this.ui.updateSelection(null);
+      this.ui.updateFootprintEditor(null);
       return;
     }
 
-    this.ui.updateSelection(this.getSelectionDetails(root));
+    const details = this.getSelectionDetails(root);
+    if (this.isPlayerRoot(root) && this.propertyPanelMode === 'footprint') {
+      this.propertyPanelMode = 'main';
+    }
+    this.ui.setPropertyPanelMode(this.propertyPanelMode);
+    this.ui.updateSelection(details);
+    this.ui.updateFootprintEditor(details);
   }
 
   onObjectTransformed(root) {
@@ -524,6 +621,7 @@ export class LayoutEditor {
     }
 
     this.selectionController.update();
+    this.refreshFootprintOverlays();
     this.updateSelectionPanel(root);
   }
 
@@ -560,6 +658,7 @@ export class LayoutEditor {
       position: [selected.position.x + 0.75, selected.position.y, selected.position.z + 0.75],
       rotation: [toDegrees(selected.rotation.x), toDegrees(selected.rotation.y), toDegrees(selected.rotation.z)],
       scale: [selected.scale.x, selected.scale.y, selected.scale.z],
+      footprint: this.layoutObjects.get(selected.userData.editorObjectId)?.footprint,
     });
 
     if (duplicate) {
@@ -582,6 +681,7 @@ export class LayoutEditor {
     const objectId = selected.userData.editorObjectId;
     this.layoutObjects.delete(objectId);
     this.sceneObjectsGroup.remove(selected);
+    this.refreshFootprintOverlays();
     this.selectObject(null);
     this.ui.setStatus(`Deleted ${objectId}.`);
   }
@@ -624,6 +724,7 @@ export class LayoutEditor {
         position: [entry.root.position.x, entry.root.position.y, entry.root.position.z],
         rotation: [toDegrees(entry.root.rotation.x), toDegrees(entry.root.rotation.y), toDegrees(entry.root.rotation.z)],
         scale: [entry.root.scale.x, entry.root.scale.y, entry.root.scale.z],
+        footprint: entry.footprint,
       })),
     );
 
@@ -706,6 +807,7 @@ export class LayoutEditor {
       this.sceneObjectsGroup.remove(entry.root);
     }
     this.layoutObjects.clear();
+    this.refreshFootprintOverlays();
     this.selectObject(null);
   }
 
@@ -723,5 +825,91 @@ export class LayoutEditor {
   resetCameraView() {
     this.camera.position.copy(DEFAULT_CAMERA_POSITION);
     this.camera.lookAt(DEFAULT_CAMERA_TARGET);
+  }
+
+  refreshFootprintOverlays() {
+    if (!this.footprintOverlayGroup) {
+      return;
+    }
+
+    this.footprintOverlayGroup.visible = this.footprintsVisible;
+    this.footprintOverlayGroup.clear();
+
+    if (!this.footprintsVisible) {
+      return;
+    }
+
+    const selected = this.selectionController?.getSelected() ?? null;
+    for (const entry of this.layoutObjects.values()) {
+      const collider = computeFootprintCollider(entry.root, entry.assetId, entry.footprint);
+      if (!collider) {
+        continue;
+      }
+      this.footprintOverlayGroup.add(this.createFootprintOverlay(collider, selected === entry.root));
+    }
+  }
+
+  createFootprintOverlay(collider, selected = false) {
+    const group = new THREE.Group();
+    const fillColor = selected ? 0xaee4ff : 0xbfefff;
+    const borderColor = selected ? 0x134f8d : 0x2c6ca8;
+    const fillMaterial = new THREE.MeshBasicMaterial({
+      color: fillColor,
+      transparent: true,
+      opacity: selected ? 0.34 : 0.24,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: borderColor,
+      transparent: true,
+      opacity: 0.95,
+    });
+
+    if (collider.type === 'circle') {
+      const fill = new THREE.Mesh(new THREE.CircleGeometry(collider.radius, 48), fillMaterial);
+      fill.rotation.x = -Math.PI / 2;
+      fill.position.set(collider.x, 0.035, collider.z);
+      fill.renderOrder = 20;
+      group.add(fill);
+
+      const points = [];
+      for (let i = 0; i < 48; i += 1) {
+        const angle = (i / 48) * Math.PI * 2;
+        points.push(new THREE.Vector3(
+          collider.x + Math.cos(angle) * collider.radius,
+          0.055,
+          collider.z + Math.sin(angle) * collider.radius,
+        ));
+      }
+      const border = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), lineMaterial);
+      border.renderOrder = 21;
+      group.add(border);
+      return group;
+    }
+
+    const fill = new THREE.Mesh(new THREE.PlaneGeometry(collider.width, collider.depth), fillMaterial);
+    fill.rotation.x = -Math.PI / 2;
+    fill.position.set(collider.x, 0.035, collider.z);
+    fill.rotation.y = collider.rotation;
+    fill.renderOrder = 20;
+    group.add(fill);
+
+    const hw = collider.width / 2;
+    const hd = collider.depth / 2;
+    const corners = [
+      new THREE.Vector3(-hw, 0.055, -hd),
+      new THREE.Vector3(hw, 0.055, -hd),
+      new THREE.Vector3(hw, 0.055, hd),
+      new THREE.Vector3(-hw, 0.055, hd),
+    ];
+    const borderGeometry = new THREE.BufferGeometry().setFromPoints(corners);
+    const border = new THREE.LineLoop(borderGeometry, lineMaterial);
+    border.position.set(collider.x, 0, collider.z);
+    border.rotation.y = collider.rotation;
+    border.renderOrder = 21;
+    group.add(border);
+
+    return group;
   }
 }

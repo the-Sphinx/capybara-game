@@ -31,7 +31,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -85,7 +86,8 @@ input {
 
 .layout-editor__layout-meta input,
 .layout-editor__field input,
-.layout-editor__triplet input {
+.layout-editor__triplet input,
+.layout-editor__field select {
   border: 1px solid rgba(37, 86, 92, 0.22);
   border-radius: 14px;
   padding: 9px 12px;
@@ -137,6 +139,32 @@ input {
   box-shadow: none;
   cursor: not-allowed;
   opacity: 0.72;
+}
+
+.layout-editor__properties-main,
+.layout-editor__footprint-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.layout-editor__footprint-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(35, 66, 69, 0.72);
+  font-weight: 800;
+}
+
+.layout-editor__back-button {
+  border: 1px solid rgba(37, 86, 92, 0.18);
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--editor-ink);
+  box-shadow: none;
 }
 
 .layout-editor__body {
