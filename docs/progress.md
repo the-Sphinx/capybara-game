@@ -1,5 +1,25 @@
 # Progress
 
+## 2026-03-23
+
+### Camera Fine-Tuning
+- Implemented `docs/tasks/capy_camera_fine_tuning_task.md`.
+- Tightened the camera dead zone from `3.5 / 3.0` to `2.8 / 2.4`.
+- Tightened the edge zone from `5.0 / 4.2` to `4.3 / 3.6`.
+- Increased `followLerpSoft` from `0.025` to `0.04`.
+- Increased `followLerpStrong` from `0.07` to `0.09`.
+- Kept `lookFollowFactor = 0.35`.
+- Kept `compositionBias = 0.15`.
+- Removed the duplicate inner `compositionBias` declaration from `animate()`.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
+
+### Known Risks
+- This is still a subjective feel pass, so another small tuning round may still be desirable after more live movement testing.
+- The current `maxCameraShift` cap remains unchanged and may still be the next limit if the camera feels too composition-anchored near the outer bounds.
+
 ## 2026-03-22
 
 ### Performance Optimization Pass
