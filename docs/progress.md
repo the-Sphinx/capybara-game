@@ -17,6 +17,7 @@
 - Verified `npm run build` succeeds in `capy-village`.
 - Confirmed the active interaction feedback path no longer modifies `object.scale`.
 - Confirmed authored role interactables now derive their interaction radius from collider size plus a buffer.
+- Fixed the authored runtime collider-registration regression so the new footprint colliders are actually added to the scene at runtime.
 
 ### Known Risks
 - Collider footprints are hand-tuned for the current authored building set and future hero buildings will still need explicit entries for best approach feel.

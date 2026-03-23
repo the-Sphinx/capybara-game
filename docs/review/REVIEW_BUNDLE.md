@@ -20,6 +20,7 @@ Improve authored-village interaction feel without changing the core runtime arch
 - Expanded runtime interaction reach so interactables become available slightly before the player reaches the collider edge.
 - Added lightweight selection hysteresis so nearby interactables do not flicker as aggressively when the player stands near overlap boundaries.
 - Hid the bottom prompt cleanly while modals are open.
+- Fixed a regression in the published-layout collider registration path so authored footprint colliders are actually added to the world at runtime.
 
 ## 4. Files Changed
 - capy-village/src/world.js
@@ -60,6 +61,7 @@ Active authored interactables now use a soft emissive intensity boost instead of
 - The per-asset collider footprints are intentionally hand-tuned for the current village set; newly added buildings still fall back to a rotated rectangle derived from bounds until they get an explicit footprint.
 - Selection hysteresis is intentionally light, so very tightly clustered future interactables may still want one more tuning pass.
 - The Playwright CLI session used for live verification was flaky about its socket/session state, so browser verification for this task was weaker than the publish/build verification.
+- This task originally shipped with a collider-registration bug in the authored runtime path; that bug is now fixed by passing full collider objects into `addCollider(...)`.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
@@ -74,6 +76,7 @@ Active authored interactables now use a soft emissive intensity boost instead of
 - Confirmed the interaction feedback code no longer modifies `object.scale`.
 - Reviewed the runtime authored-role path to ensure interaction radius now derives from collider size plus a buffer.
 - Confirmed the prompt is cleared when a modal is open.
+- Verified the authored runtime path now registers colliders via `addCollider(collider)` instead of the stale AABB argument signature.
 
 ## 10. Example Output / Logs
 ```text

@@ -415,7 +415,7 @@ export async function loadPublishedVillage(scene) {
     scene.add(villageGroup);
     setRuntimeInteractables(runtimeInteractables);
     for (const collider of colliders) {
-      addCollider(collider.x, collider.z, collider.hw, collider.hd);
+      addCollider(collider);
     }
 
     return {
