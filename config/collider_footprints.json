@@ -1,46 +1,121 @@
 {
-  "hut_1": {
-    "type": "circle",
-    "radius": 1.72,
-    "offsetX": 0,
-    "offsetZ": 0,
-    "rotationOffset": 0
-  },
-  "mushroom_house": {
-    "type": "circle",
-    "radius": 2.08,
-    "offsetX": 0,
-    "offsetZ": 0,
-    "rotationOffset": 0
-  },
   "book_statue": {
     "type": "circle",
-    "radius": 1.18,
     "offsetX": 0,
     "offsetZ": 0,
-    "rotationOffset": 0
+    "rotationOffset": 0,
+    "radius": 1.4
   },
-  "pumpkin": {
-    "type": "circle",
-    "radius": 1.62,
+  "cubes_1": {
+    "type": "rect",
     "offsetX": 0,
     "offsetZ": 0,
-    "rotationOffset": 0
+    "rotationOffset": -0.15707963267948966,
+    "width": 0.65,
+    "depth": 0.7
   },
   "hat_stand": {
     "type": "rect",
-    "width": 1.7,
-    "depth": 1.1,
     "offsetX": 0,
     "offsetZ": 0,
-    "rotationOffset": 0
+    "rotationOffset": 0.05235987755982989,
+    "width": 1.7,
+    "depth": 0.95
+  },
+  "hut_1": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 0.45
   },
   "melon_stand_2": {
     "type": "rect",
-    "width": 2.7,
-    "depth": 1.95,
     "offsetX": 0,
     "offsetZ": 0,
-    "rotationOffset": 0
+    "rotationOffset": -0.10471975511965978,
+    "width": 0.8,
+    "depth": 0.5
+  },
+  "mushroom_house": {
+    "type": "rect",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "width": 1.3,
+    "depth": 0.65
+  },
+  "pumpkin": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 0.7
+  },
+  "stem_1": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 1.2
+  },
+  "stem_2": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 1.4
+  },
+  "stones_1": {
+    "type": "rect",
+    "offsetX": 0.1,
+    "offsetZ": 0.1,
+    "rotationOffset": -1.0297442586766545,
+    "width": 2.95,
+    "depth": 1.5
+  },
+  "stones_2": {
+    "type": "rect",
+    "offsetX": -0.2,
+    "offsetZ": -0.3,
+    "rotationOffset": 0.6806784082777885,
+    "width": 3.2,
+    "depth": 1.55
+  },
+  "stones_3": {
+    "type": "rect",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": -0.4886921905584123,
+    "width": 1.55,
+    "depth": 1.35
+  },
+  "tree_1": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 0.35
+  },
+  "tree_2": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 0.35
+  },
+  "tree_3": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 0.4
+  },
+  "tree_4": {
+    "type": "circle",
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0,
+    "radius": 0.4
   }
 }

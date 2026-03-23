@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { addCollider, setRuntimeInteractables } from './world.js';
-import { computeFootprintCollider } from './footprints.js';
+import { computeFootprintCollider, getSharedFootprint } from './footprints.js';
 
 const RUNTIME_ASSET_DEBUG = import.meta.env.DEV;
 const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
@@ -173,6 +173,10 @@ function applyObjectTransform(root, object) {
 }
 
 function isNonBlockingDecor(assetId, size) {
+  if (getSharedFootprint(assetId)) {
+    return false;
+  }
+
   const nonBlockingPrefixes = ['stones_', 'stem_', 'milk', 'pumpkin', 'cubes_'];
   if (nonBlockingPrefixes.some((prefix) => assetId.startsWith(prefix))) {
     return true;

@@ -61,7 +61,7 @@ select {
 
 .layout-editor__topbar {
   display: grid;
-  grid-template-columns: minmax(240px, 1.15fr) minmax(220px, 260px) minmax(0, 1.7fr);
+  grid-template-columns: minmax(240px, 0.7fr) minmax(150px, 150px) minmax(0, 1.7fr);
   gap: 16px;
   padding: 16px 20px;
   align-items: start;
@@ -94,7 +94,7 @@ select {
 .layout-editor__field select {
   border: 1px solid rgba(37, 86, 92, 0.22);
   border-radius: 14px;
-  padding: 9px 12px;
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.85);
   min-width: 0;
   width: 100%;
@@ -305,7 +305,7 @@ select {
 .layout-editor__field,
 .layout-editor__triplet {
   display: grid;
-  gap: 8px;
+  gap: 1px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -377,7 +377,6 @@ select {
 
 .layout-editor__triplet input {
   font-size: 16px;
-  padding: 11px 12px;
 }
 
 .layout-editor__field input[readonly] {

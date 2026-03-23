@@ -369,11 +369,13 @@ export class LayoutEditor {
         this.propertyPanelMode = 'footprint';
         this.ui.setPropertyPanelMode('footprint');
         this.updateSelectionPanel(this.selectionController.getSelected());
+        this.refreshFootprintOverlays();
         break;
       case 'close-footprint-editor':
         this.propertyPanelMode = 'main';
         this.ui.setPropertyPanelMode('main');
         this.updateSelectionPanel(this.selectionController.getSelected());
+        this.refreshFootprintOverlays();
         break;
       case 'save-footprints':
         this.saveFootprints();
@@ -883,9 +885,11 @@ export class LayoutEditor {
     });
 
     if (collider.type === 'circle') {
+      group.position.set(collider.x, 0, collider.z);
+
       const fill = new THREE.Mesh(new THREE.CircleGeometry(collider.radius, 48), fillMaterial);
       fill.rotation.x = -Math.PI / 2;
-      fill.position.set(collider.x, 0.035, collider.z);
+      fill.position.set(0, 0.035, 0);
       fill.renderOrder = 20;
       group.add(fill);
 
@@ -893,9 +897,9 @@ export class LayoutEditor {
       for (let i = 0; i < 48; i += 1) {
         const angle = (i / 48) * Math.PI * 2;
         points.push(new THREE.Vector3(
-          collider.x + Math.cos(angle) * collider.radius,
+          Math.cos(angle) * collider.radius,
           0.055,
-          collider.z + Math.sin(angle) * collider.radius,
+          Math.sin(angle) * collider.radius,
         ));
       }
       const border = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), lineMaterial);
@@ -904,10 +908,12 @@ export class LayoutEditor {
       return group;
     }
 
+    group.position.set(collider.x, 0, collider.z);
+    group.rotation.y = collider.rotation;
+
     const fill = new THREE.Mesh(new THREE.PlaneGeometry(collider.width, collider.depth), fillMaterial);
     fill.rotation.x = -Math.PI / 2;
-    fill.position.set(collider.x, 0.035, collider.z);
-    fill.rotation.y = collider.rotation;
+    fill.position.set(0, 0.035, 0);
     fill.renderOrder = 20;
     group.add(fill);
 
@@ -921,8 +927,6 @@ export class LayoutEditor {
     ];
     const borderGeometry = new THREE.BufferGeometry().setFromPoints(corners);
     const border = new THREE.LineLoop(borderGeometry, lineMaterial);
-    border.position.set(collider.x, 0, collider.z);
-    border.rotation.y = collider.rotation;
     border.renderOrder = 21;
     group.add(border);
 
