@@ -2,6 +2,19 @@
 
 ## 2026-03-23
 
+### Math Garden HUD Readability And Arcade Prompt Restore
+- Restored the Math Garden arcade center HUD content so collection modes again show their title and instruction prompt.
+- Fixed arcade collection mode rendering so prompts like `Catch even numbers!` and `Catch odd numbers!` are visible again.
+- Improved center HUD readability by strengthening the equation/instruction outline and shadow treatment.
+- Added a subtle pill background behind center-banner equations and instructions so they stand out better on the textured panel.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed Math Garden arcade prompt data already exists in `arcade.json` and now has an active render path again.
+
+### Known Risks
+- The stronger center HUD styling is shared with other games using the same banner classes, so the visual change is intentionally broader than Math Garden alone.
+
 ### Class-Based Footprint Transform Scaling
 - Implemented the shared-footprint transform fix so asset-class footprints now derive world-space colliders from each instance transform.
 - Treated shared footprint JSON values as canonical local-space footprint definitions.

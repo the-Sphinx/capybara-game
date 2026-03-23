@@ -199,7 +199,7 @@ export class MathGardenGame extends BaseGame {
       ? `<div class="wmc-hud-score">${goalLabel}: <span id="wmc-goal-val">0</span> / ${goalValue}</div>`
       : `<div class="wmc-hud-score">SCORE: <span id="wmc-score-val">0</span></div>`;
 
-    // Center panel (adventure only)
+    // Center panel
     let centerContent = '';
     if (isAdventure && cfg) {
       const opLabel = cfg.operation === 'addition'    ? 'Addition'
@@ -216,6 +216,15 @@ export class MathGardenGame extends BaseGame {
         <div class="wmc-hud-center-content">
           <div class="wmc-hud-level-line">${levelLine}</div>
           ${innerContent}
+        </div>
+      `;
+    } else {
+      const arcadeTitle = m.title ?? 'Math Garden';
+      const arcadePrompt = m.prompt ?? '';
+      centerContent = `
+        <div class="wmc-hud-center-content">
+          <div class="wmc-hud-level-line">${arcadeTitle}</div>
+          <div class="wmc-hud-instruction">${arcadePrompt}</div>
         </div>
       `;
     }

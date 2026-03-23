@@ -1,66 +1,55 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Class-based footprint transform scaling
+- Task name: Math Garden HUD readability and arcade prompt restore
 - Date: 2026-03-23
-- Time: 15:12 +03
+- Time: 17:05 +03
 - Branch: scene-restructure
 - Commit hash: pending
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Keep the shared class-based footprint model, but make each instance derive its actual collider from the asset-class footprint plus that instance’s transform so different scales and rotations no longer share the same world-sized footprint.
+Restore Math Garden arcade instructions in the HUD and improve the readability of math equations/instructions against the textured center banner.
 
 ## 3. What Changed
-- Reworked shared collider computation so asset-class footprints are treated as canonical local-space footprints.
-- Footprint offsets now scale with the instance and rotate with the instance yaw before being applied.
-- Rect footprints now scale by instance `scale.x` and `scale.z`.
-- Circle footprints now scale by the larger of instance `scale.x` and `scale.z` so collision stays conservative under non-uniform scale.
-- Runtime and editor now both use the same transformed shared-footprint math, so differently scaled instances of the same asset no longer share one fixed-size world footprint.
+- Added an arcade center HUD block for Math Garden so collection modes again show their title and instruction prompt.
+- Restored prompts like `Catch even numbers!` / `Catch odd numbers!` by rendering `m.prompt` in arcade mode, matching the behavior already used by Language Grove.
+- Strengthened the center HUD text styling so equations and instructions are more legible on the textured banner.
+- Added a subtle pill background and stronger outline/shadow treatment to the equation and instruction text.
 
 ## 4. Files Changed
-- capy-village/src/footprints.js
+- capy-village/src/games/mathGarden/MathGardenGame.js
+- capy-village/src/style.css
 
 ## 5. Architecture Impact
-This keeps the current shared JSON footprint model intact and only changes the world-space derivation step. The canonical footprint remains asset-class data, while the editor and runtime now derive per-instance collider size and offset placement from the object transform at use time.
+This is a contained HUD/rendering fix. It does not change game rules or progression data; it only restores the intended arcade prompt rendering path and improves cross-game center HUD readability styling.
 
 ## 6. Key Implementation Notes
-The new shared footprint layer in `capy-village/src/footprints.js` now provides:
+Math Garden now follows the same arcade-center HUD pattern already present in Language Grove:
 
 ```text
-- shared per-asset footprint lookup
-- footprint normalization
-- world-yaw extraction
-- instance-scaled local offset handling
-- collider computation from a scene root plus instance transform
+- arcade center title
+- arcade instruction prompt
+- separate floating equation banner for answer mode
 ```
 
-Canonical shared footprints are now interpreted in local space:
-- `offsetX` and `offsetZ` are scaled and then rotated with the instance
-- `width` and `depth` scale with the instance for rect footprints
-- `radius` scales with `max(scaleX, scaleZ)` for circle footprints
-
 ## 7. Risks / Known Issues
-- This pass was verified through publish/build and code-path inspection, but I intentionally did not open another browser session because of the recent Playwright/Chrome orphan-window issue.
-- Circle footprints remain circles under non-uniform scale rather than becoming ellipses; this is an intentional conservative simplification.
-- The current derivation assumes gameplay-relevant footprint yaw comes from world `Y` rotation only, which matches the current authored village assets.
-- Follow-up regression fix: footprint type switching now updates the editor form immediately, and deselecting now refreshes overlays so hidden footprint visuals do not linger when the global toggle is off.
+- This pass was verified through build and code-path inspection, but I intentionally did not start a new Playwright browser session because of the earlier orphan-window issue.
+- The HUD text styling is shared, so Language Grove and other center-banner content also get the slightly stronger readability treatment.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: improved because visual tuning now matches runtime collision logic directly
+- source grounding: improved because game HUD instructions now match configured mode prompts again
 - hybrid retrieval: unchanged
-- verification layer: improved through shared editor/runtime footprint computation with instance-aware scaling
-- generic schema: unchanged in this pass
-- inspectability: significantly improved because footprint shapes are now visible and editable in-editor
+- verification layer: improved because arcade prompt rendering now matches the existing game config data
+- generic schema: unchanged
+- inspectability: improved through clearer on-screen math instructions and equation readability
 
 ## 9. Testing Performed
-- Ran `npm run publish-assets` successfully from repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Reviewed the editor path to confirm footprint overlays use the updated instance-aware collider computation.
-- Reviewed the runtime path to confirm authored collider registration uses the same transformed shared-footprint computation.
-- Reviewed the shared collider math to confirm offsets rotate with yaw and dimensions scale with instance scale.
-- Verified the editor build still passes after fixing footprint type switching and deselection-driven overlay refresh.
+- Reviewed Math Garden start-path logic to confirm arcade collection modes now render center HUD prompt content.
+- Confirmed prompt strings such as `Catch even numbers!` and `Catch odd numbers!` are still present in `arcade.json` and now have a live render path again.
+- Verified the updated HUD styling compiles through the main app stylesheet build.
 
 ## 10. Example Output / Logs
 ```text
@@ -81,9 +70,9 @@ Editor footprint fields:
 ```
 
 ## 11. Recommended Reviewer Focus
-- Place two instances of the same asset at different scales and confirm their footprint overlays differ in world size.
-- Rotate an asset with non-zero `offsetX` or `offsetZ` and confirm the footprint center rotates around with the object.
-- Verify rotated rect footprints still block correctly in runtime after the yaw-based offset handling.
+- Start Math Garden in arcade collection mode and confirm the center HUD shows the mode title and prompt.
+- Check that answer-mode equations remain readable against the center banner background.
+- Compare the instruction readability with Language Grove to confirm the shared HUD styling still feels consistent.
 
 ## 12. Suggested Next Step
-If footprint tuning becomes a regular workflow, the next good follow-up would be adding a lightweight in-editor collider debug label so size and offset values can be read without opening the panel.
+If needed, the next good follow-up would be giving Math Garden answer mode its own slightly more colorful equation treatment so it reads even more distinctly from collection-mode instructions.
