@@ -140,7 +140,7 @@ function createCloudVariant(parts, material) {
 }
 
 function createSkyCloudLayer(scene, camera) {
-  const cloudHeightRange = { min: 6.0, max: 10.0 };
+  const cloudHeightRange = { min: 7.0, max: 10.0 };
   const randomInRange = (min, max) => min + Math.random() * (max - min);
 
   const cloudMaterial = new THREE.MeshStandardMaterial({
@@ -249,10 +249,10 @@ export function initScene() {
   const hemiLight = new THREE.HemisphereLight(0xe9f2ff, 0xc8c29b, 0.65);
   scene.add(hemiLight);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffefcf, 1.25);
+  const dirLight = new THREE.DirectionalLight(0xf7ca4b, 1.0);
   dirLight.position.set(6, 10, 5);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width  = 2048;
