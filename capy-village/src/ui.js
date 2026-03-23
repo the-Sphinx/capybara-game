@@ -16,6 +16,12 @@ modalEl.className = 'ui-modal';
 document.body.appendChild(modalEl);
 
 export function openModal(building) {
+  if (typeof building === 'string') {
+    if (building === 'store') { openCloset(); return; }
+    if (building === 'hub') { openHub(); return; }
+    if (building === 'watermelon_catch') { gameManager.startGame('watermelon_catch'); return; }
+  }
+
   if (building.id === 'capy-store') { openCloset(); return; }
   if (building.id === 'minigame_hub') { openHub(); return; }
   if (building.gameId) { gameManager.startGame(building.gameId); return; }

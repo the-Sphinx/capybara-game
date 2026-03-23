@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import './style.css';
 import { gameState, ACCESSORIES, EQUIPPED, SELECTED, MOVE_SPEED } from './state.js';
-import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable, setInteractablesEnabled } from './world.js';
+import { initScene, buildVillage, collides, updateOcclusion, getActiveInteractable, setInteractablesEnabled, updateInteractableFeedback } from './world.js';
 import { loadCapy, accessoryMounts, previewAccessoryMounts, previewState } from './capy.js';
 import { promptEl, openModal, closeModal, openCloset, closeCloset } from './ui.js';
 import { closeHub } from './ui/HubModal.js';
@@ -145,7 +145,11 @@ async function bootstrap() {
       promptEl.textContent = gameState.activeTarget
         ? (gameState.activeTarget.prompt ?? `Press [E] to enter ${gameState.activeTarget.label}`) : '';
       promptEl.classList.toggle('ui-prompt--visible', !!gameState.activeTarget);
+    } else {
+      gameState.activeTarget = null;
     }
+
+    updateInteractableFeedback(gameState.activeTarget, clock.elapsedTime);
 
     updateOcclusion(camera);
 

@@ -1,12 +1,33 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-import { addCollider } from './world.js';
+import { addCollider, setRuntimeInteractables } from './world.js';
 
 const RUNTIME_ASSET_DEBUG = import.meta.env.DEV;
 const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
   position: [0, 0, 2],
   rotation: [0, 180, 0],
+});
+const WORLD_ROLE_CONFIG = Object.freeze({
+  book_statue: {
+    id: 'minigame_hub',
+    label: 'Wisdom Place',
+    prompt: 'Press [E] to Explore Knowledge',
+    radius: 3.1,
+  },
+  hat_stand: {
+    id: 'capy-store',
+    label: 'Boutique',
+    prompt: 'Press [E] to Browse Hats',
+    radius: 2.5,
+  },
+  melon_stand_2: {
+    id: 'watermelon_catch',
+    label: 'Watermelon Catch',
+    prompt: 'Press [E] to Play Watermelon Catch',
+    radius: 2.7,
+    gameId: 'watermelon_catch',
+  },
 });
 function withBaseUrl(assetPath) {
   const normalized = assetPath.startsWith('/') ? assetPath.slice(1) : assetPath;
@@ -284,6 +305,7 @@ export async function loadPublishedVillage(scene) {
     const villageGroup = new THREE.Group();
     const colliders = [];
     const objectsByAssetId = new Map();
+    const runtimeInteractables = [];
 
     for (const object of layout.objects ?? []) {
       if (!objectsByAssetId.has(object.assetId)) {
@@ -319,6 +341,16 @@ export async function loadPublishedVillage(scene) {
         const instance = clonePublishedScene(template, assetId);
         applyObjectTransform(instance, object);
         villageGroup.add(instance);
+
+        const worldRole = WORLD_ROLE_CONFIG[assetId];
+        if (worldRole) {
+          runtimeInteractables.push({
+            ...worldRole,
+            object: instance,
+            feedbackObject: instance,
+          });
+        }
+
         const collider = getColliderForObject(instance, assetId);
         if (collider) {
           colliders.push(collider);
@@ -327,6 +359,7 @@ export async function loadPublishedVillage(scene) {
     }
 
     scene.add(villageGroup);
+    setRuntimeInteractables(runtimeInteractables);
     for (const collider of colliders) {
       addCollider(collider.x, collider.z, collider.hw, collider.hd);
     }
@@ -336,6 +369,7 @@ export async function loadPublishedVillage(scene) {
       player: layout.player ?? DEFAULT_PLAYER_TRANSFORM,
     };
   } catch (error) {
+    setRuntimeInteractables([]);
     console.warn('[Layout] Falling back to prototype village:', error);
     return {
       success: false,

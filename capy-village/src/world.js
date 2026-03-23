@@ -67,12 +67,50 @@ const interactables = [
 ];
 
 let interactablesEnabled = true;
+const runtimeInteractables = [];
+const interactableWorldPos = new THREE.Vector3();
 
 export function setInteractablesEnabled(enabled) {
   interactablesEnabled = enabled;
 }
 
+export function setRuntimeInteractables(entries) {
+  runtimeInteractables.length = 0;
+  for (const entry of entries ?? []) {
+    if (!entry?.object) {
+      continue;
+    }
+
+    runtimeInteractables.push({
+      radius: 2.8,
+      ...entry,
+      feedbackObject: entry.feedbackObject ?? entry.object,
+      baseScale: (entry.feedbackObject ?? entry.object).scale.clone(),
+    });
+  }
+}
+
 export function getActiveInteractable(cx, cz) {
+  if (runtimeInteractables.length > 0) {
+    let closest = null;
+    let closestDistanceSq = Infinity;
+
+    for (const entry of runtimeInteractables) {
+      entry.object.getWorldPosition(interactableWorldPos);
+      const dx = cx - interactableWorldPos.x;
+      const dz = cz - interactableWorldPos.z;
+      const distanceSq = dx * dx + dz * dz;
+      const radiusSq = (entry.radius ?? 2.8) ** 2;
+
+      if (distanceSq <= radiusSq && distanceSq < closestDistanceSq) {
+        closest = entry;
+        closestDistanceSq = distanceSq;
+      }
+    }
+
+    return closest;
+  }
+
   if (!interactablesEnabled) {
     return null;
   }
@@ -82,6 +120,27 @@ export function getActiveInteractable(cx, cz) {
     if (Math.abs(cx - z.x) < z.hw && Math.abs(cz - z.z) < z.hd) return b;
   }
   return null;
+}
+
+export function updateInteractableFeedback(activeInteractable, elapsedTime) {
+  if (runtimeInteractables.length === 0) {
+    return;
+  }
+
+  for (const entry of runtimeInteractables) {
+    const target = entry.feedbackObject;
+    const pulseScale = entry === activeInteractable
+      ? 1.02 + Math.sin(elapsedTime * 4.2) * 0.02
+      : 1.0;
+
+    target.scale.lerp(
+      target.userData._interactionTargetScale
+        ?? entry.baseScale.clone().multiplyScalar(pulseScale),
+      entry === activeInteractable ? 0.18 : 0.22,
+    );
+
+    target.userData._interactionTargetScale = entry.baseScale.clone().multiplyScalar(pulseScale);
+  }
 }
 
 function createToyGround(scene) {
