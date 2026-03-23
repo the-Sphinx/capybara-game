@@ -45,6 +45,7 @@ Canonical shared footprints are now interpreted in local space:
 - This pass was verified through publish/build and code-path inspection, but I intentionally did not open another browser session because of the recent Playwright/Chrome orphan-window issue.
 - Circle footprints remain circles under non-uniform scale rather than becoming ellipses; this is an intentional conservative simplification.
 - The current derivation assumes gameplay-relevant footprint yaw comes from world `Y` rotation only, which matches the current authored village assets.
+- Follow-up regression fix: footprint type switching now updates the editor form immediately, and deselecting now refreshes overlays so hidden footprint visuals do not linger when the global toggle is off.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: improved because visual tuning now matches runtime collision logic directly
@@ -59,6 +60,7 @@ Canonical shared footprints are now interpreted in local space:
 - Reviewed the editor path to confirm footprint overlays use the updated instance-aware collider computation.
 - Reviewed the runtime path to confirm authored collider registration uses the same transformed shared-footprint computation.
 - Reviewed the shared collider math to confirm offsets rotate with yaw and dimensions scale with instance scale.
+- Verified the editor build still passes after fixing footprint type switching and deselection-driven overlay refresh.
 
 ## 10. Example Output / Logs
 ```text

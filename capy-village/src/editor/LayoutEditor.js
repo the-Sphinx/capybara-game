@@ -390,24 +390,8 @@ export class LayoutEditor {
     }
 
     const selected = this.selectionController.getSelected();
-    if (!selected || !Number.isFinite(value.value)) {
+    if (!selected) {
       return;
-    }
-
-    if (field === 'position') {
-      selected.position[value.axis] = value.value;
-    }
-
-    if (field === 'rotation') {
-      selected.rotation[value.axis] = toRadians(value.value);
-    }
-
-    if (field === 'scale' && !this.isPlayerRoot(selected)) {
-      if (this.scaleLockEnabled) {
-        selected.scale.setScalar(value.value);
-      } else {
-        selected.scale[value.axis] = value.value;
-      }
     }
 
     if (field === 'footprint' && !this.isPlayerRoot(selected)) {
@@ -437,6 +421,8 @@ export class LayoutEditor {
           next.depth = Number.isFinite(next.depth) ? next.depth : 1;
           delete next.radius;
         }
+      } else if (!Number.isFinite(value.value)) {
+        return;
       } else if (value.field === 'rotationOffset') {
         next.rotationOffset = toRadians(value.value);
       } else {
@@ -447,7 +433,29 @@ export class LayoutEditor {
       if (normalized) {
         this.footprintRegistry[assetId] = normalized;
       }
-      this.refreshFootprintOverlays();
+
+      this.onObjectTransformed(selected);
+      return;
+    }
+
+    if (!Number.isFinite(value.value)) {
+      return;
+    }
+
+    if (field === 'position') {
+      selected.position[value.axis] = value.value;
+    }
+
+    if (field === 'rotation') {
+      selected.rotation[value.axis] = toRadians(value.value);
+    }
+
+    if (field === 'scale' && !this.isPlayerRoot(selected)) {
+      if (this.scaleLockEnabled) {
+        selected.scale.setScalar(value.value);
+      } else {
+        selected.scale[value.axis] = value.value;
+      }
     }
 
     this.onObjectTransformed(selected);
@@ -598,6 +606,7 @@ export class LayoutEditor {
   selectObject(root) {
     this.selectionController.setSelection(root);
     this.updateSelectionPanel(root);
+    this.refreshFootprintOverlays();
   }
 
   updateSelectionPanel(root) {

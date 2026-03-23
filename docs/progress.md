@@ -19,6 +19,13 @@
 - Circle footprints remain conservative circles under non-uniform scale rather than becoming ellipses.
 - This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
 
+### Footprint Editor Regression Fix
+- Fixed the footprint editor so switching `circle` / `rect` updates the visible field rows immediately.
+- Fixed selection changes so deselecting refreshes footprint overlays and removes forced footprint visuals when the global toggle is off.
+
+### Self-Check
+- Verified `npm run build` succeeds in `capy-village`.
+
 ### Shared Footprint Export And Class-Based Editing
 - Reworked footprint tuning to be class-based instead of instance-based.
 - Added a `Footprints: On/Off` toolbar toggle with `Off` as the default state.
