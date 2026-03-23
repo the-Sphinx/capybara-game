@@ -1,83 +1,89 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Camera fine-tuning
+- Task name: World roles and interaction mapping
 - Date: 2026-03-23
-- Time: 00:12 +03
+- Time: 13:39 +03
 - Branch: scene-restructure
-- Commit hash: 1103213
+- Commit hash: 7cfa612
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Tune the existing hybrid diorama camera so it reacts a bit sooner and feels less sluggish, while preserving the current dead-zone/edge-zone architecture, composition bias, capped shift, and player bounds.
+Turn the authored village into a readable playable world by mapping the central book fountain, hat stand, and watermelon stand onto the existing interaction system without redesigning the camera, adding heavy UI, or changing the core runtime architecture.
 
 ## 3. What Changed
-- Tightened the dead zone so the camera starts reacting earlier.
-- Tightened the edge zone so stronger follow engages sooner near the frame edge.
-- Increased both soft and strong follow lerp strengths.
-- Kept `lookFollowFactor` unchanged because it already sits in the task’s desired range.
-- Kept `compositionBias` unchanged because the framing balance was already aligned with the task intent.
-- Removed the duplicate inner `compositionBias` declaration so the tuning values now live in one place.
+- Added authored-world role mapping for `book_statue`, `hat_stand`, and `melon_stand_2`.
+- Registered runtime-layout interactables directly from published layout instances instead of relying only on the old prototype zone list.
+- Reused the existing bottom-center prompt and `E` interaction flow for all three destinations.
+- Routed the central statue to the game hub, the hat stand to the closet/boutique flow, and the watermelon stand directly to `watermelon_catch`.
+- Added a very subtle scale pulse on the active authored interactable to improve readability without outlines or heavy UI.
+- Added lightweight string aliases in `openModal(...)` so `store`, `hub`, and `watermelon_catch` can resolve cleanly if used by future interaction helpers.
 
 ## 4. Files Changed
+- capy-village/src/world.js
+- capy-village/src/runtimeLayout.js
 - capy-village/src/main.js
+- capy-village/src/ui.js
+- layouts/village_hub_v1.json
+- assets/game_ready/models/buildings/hat_stand.glb
+- assets/game_ready/models/buildings/melon_stand_2.glb
 
 ## 5. Architecture Impact
-This is a parameter-tuning-only runtime camera change. It does not alter the camera architecture, movement bounds design, look-target strategy, or any gameplay/layout/lighting system. The existing dead-zone, edge-zone, capped shift, and blended look target remain intact.
+This keeps the existing interaction architecture intact. The old prototype interactables and fallback zone-based path still exist, but the published authored village now injects its own interactables into that same `activeTarget -> prompt -> openModal/startGame` pipeline. No camera, movement-bounds, or UI architecture was redesigned.
 
 ## 6. Key Implementation Notes
-The requested “starting preset” maps directly onto the current code, so the change is intentionally small and local. The following values changed:
+Runtime object-role mapping now lives in `capy-village/src/runtimeLayout.js`:
 
 ```text
-deadZone:
-- x: 3.5 -> 2.8
-- z: 3.0 -> 2.4
-
-edgeZone:
-- x: 5.0 -> 4.3
-- z: 4.2 -> 3.6
-
-follow:
-- soft: 0.025 -> 0.04
-- strong: 0.07 -> 0.09
+book_statue   -> id=minigame_hub     -> "Press [E] to Explore Knowledge"
+hat_stand     -> id=capy-store       -> "Press [E] to Browse Hats"
+melon_stand_2 -> gameId=watermelon_catch -> "Press [E] to Play Watermelon Catch"
 ```
 
-`lookFollowFactor` remains `0.35`, which already fits the task’s recommended `0.32–0.38` range. `compositionBias` remains `0.15`, and the duplicate redeclaration inside `animate()` was removed to avoid accidental divergence during future tuning.
+`capy-village/src/world.js` now supports two interaction sources:
+- prototype hardcoded zones
+- runtime-layout object-based interactables with nearest-distance selection
+
+Active authored interactables get a small pulse in the `1.0 -> ~1.04` range. Only one interactable is selected at a time, and prompt text still uses the existing prompt element.
 
 ## 7. Risks / Known Issues
-- This is still a feel-based tuning pass, so the ideal values may want one more subjective iteration after more live play time.
-- The camera remains bounded by the current `maxCameraShift`, so very edge-heavy future layouts may still feel resistant before any cap changes are considered.
+- The live authored-role mapping currently keys off `assetId`, so if multiple copies of `hat_stand` or `melon_stand_2` are added later, they will all become interactable unless a future task adds per-object role metadata.
+- The subtle pulse is intentionally minimal and may want one more visual tune after longer playtesting.
 - Build output still reports large GLB chunk warnings unrelated to this task.
 
 ## 8. Alignment Check Against MASTER_BRIEF
 - source grounding: unchanged
-- hybrid retrieval: unchanged
-- verification layer: preserved through build checks
+- hybrid retrieval: improved because authored layout objects now carry gameplay meaning in runtime mode
+- verification layer: preserved through publish/build checks
 - generic schema: unchanged
-- inspectability: improved because the player should stay comfortably framed more often without losing the village-center diorama feel
+- inspectability: improved because core village landmarks now expose clear interaction roles
 
 ## 9. Testing Performed
+- Ran `npm run publish-assets` successfully from repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed the task-constrained runtime changes are isolated to `capy-village/src/main.js`.
+- Confirmed the current authored layout contains `book_statue`, `hat_stand`, and `melon_stand_2`.
+- Reviewed the runtime path to verify that published layout instances now register interactables before the capy is loaded.
+- Checked the live browser bootstrap path enough to confirm the published scene opens, with the only console error being the pre-existing missing favicon.
 
 ## 10. Example Output / Logs
 ```text
-Unchanged:
-- lookFollowFactor: 0.35
-- compositionBias: 0.15
-- maxCameraShift: x=2.8, z=2.4
+Published authored role assets:
+- hat_stand.glb
+- melon_stand_2.glb
 ```
 
 ```text
-Removed cleanup issue:
-- duplicate inner compositionBias declaration removed
+Prompts:
+- Press [E] to Explore Knowledge
+- Press [E] to Browse Hats
+- Press [E] to Play Watermelon Catch
 ```
 
 ## 11. Recommended Reviewer Focus
-- Check whether the stronger soft follow feels pleasantly responsive rather than too eager during diagonal movement.
-- Verify the camera still settles calmly after movement stops.
-- Review whether the unchanged `compositionBias` still preserves the right statue-centered framing now that the follow starts earlier.
+- Walk diagonally between the statue, hat stand, and watermelon stand to verify the nearest-target selection feels natural.
+- Check that opening and closing the hub/closet/game entry does not leave the prompt or pulse stuck on-screen.
+- Verify the stand colliders still allow the capy to get close enough for interaction comfortably.
 
 ## 12. Suggested Next Step
-If one more polish pass is needed, the next likely tuning point is a very small adjustment to `compositionBias` or `maxCameraShift`, not another dead-zone architecture change.
+If world roles expand further, the next clean upgrade would be attaching interaction metadata to authored layout objects directly rather than inferring roles from `assetId`.

@@ -2,6 +2,26 @@
 
 ## 2026-03-23
 
+### World Roles And Interaction Mapping
+- Implemented `docs/tasks/capy_world_roles_task.md`.
+- Connected the authored runtime-layout objects `book_statue`, `hat_stand`, and `melon_stand_2` to the existing interaction system.
+- Mapped the central book fountain to the hub flow with the prompt `Press [E] to Explore Knowledge`.
+- Mapped the hat stand to the closet/boutique flow with the prompt `Press [E] to Browse Hats`.
+- Mapped the watermelon stand to direct `watermelon_catch` launch with the prompt `Press [E] to Play Watermelon Catch`.
+- Kept the existing one-active-target prompt system and `E` interaction flow instead of introducing a parallel architecture.
+- Added a very subtle pulse feedback on the active authored interactable.
+- Added support in `openModal(...)` for lightweight string aliases such as `store`, `hub`, and `watermelon_catch`.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the current authored layout contains the three task landmarks: `book_statue`, `hat_stand`, and `melon_stand_2`.
+- Confirmed the runtime authored-layout path now registers interactables instead of only the old prototype zone list.
+
+### Known Risks
+- Role mapping is currently inferred by `assetId`, so duplicating role-bearing assets later would create multiple interactables unless a future task adds per-object metadata.
+- The pulse feedback is intentionally minimal and may want one more visual tuning pass after more live playtesting.
+
 ### Camera Fine-Tuning
 - Implemented `docs/tasks/capy_camera_fine_tuning_task.md`.
 - Tightened the camera dead zone from `3.5 / 3.0` to `2.8 / 2.4`.
