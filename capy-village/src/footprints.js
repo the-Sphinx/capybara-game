@@ -78,6 +78,23 @@ export function getSharedFootprint(assetId, registry = sharedFootprintConfig) {
   return normalizeFootprint(cloneFootprint(registry?.[assetId]));
 }
 
+function getWorldYaw(root) {
+  const quaternion = new THREE.Quaternion();
+  root.getWorldQuaternion(quaternion);
+  const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion);
+  return Math.atan2(forward.x, forward.z);
+}
+
+function getScaledLocalOffset(root, footprint) {
+  const worldScale = new THREE.Vector3();
+  root.getWorldScale(worldScale);
+  return new THREE.Vector3(
+    footprint.offsetX * Math.abs(worldScale.x),
+    0,
+    footprint.offsetZ * Math.abs(worldScale.z),
+  );
+}
+
 export function computeFootprintCollider(root, assetId, registry = sharedFootprintConfig) {
   const bbox = new THREE.Box3().setFromObject(root);
   const size = bbox.getSize(new THREE.Vector3());
@@ -85,25 +102,33 @@ export function computeFootprintCollider(root, assetId, registry = sharedFootpri
   const footprint = getSharedFootprint(assetId, registry);
 
   if (footprint) {
+    const worldScale = new THREE.Vector3();
+    root.getWorldScale(worldScale);
+    const yaw = getWorldYaw(root);
+    const rotatedOffset = getScaledLocalOffset(root, footprint).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+    const colliderX = center.x + rotatedOffset.x;
+    const colliderZ = center.z + rotatedOffset.z;
+
     if (footprint.type === 'circle') {
       return {
         type: 'circle',
-        x: center.x + footprint.offsetX,
-        z: center.z + footprint.offsetZ,
-        radius: footprint.radius,
+        x: colliderX,
+        z: colliderZ,
+        radius: footprint.radius * Math.max(Math.abs(worldScale.x), Math.abs(worldScale.z)),
       };
     }
 
     return {
       type: 'rect',
-      x: center.x + footprint.offsetX,
-      z: center.z + footprint.offsetZ,
-      width: footprint.width,
-      depth: footprint.depth,
-      rotation: root.rotation.y + footprint.rotationOffset,
+      x: colliderX,
+      z: colliderZ,
+      width: footprint.width * Math.abs(worldScale.x),
+      depth: footprint.depth * Math.abs(worldScale.z),
+      rotation: yaw + footprint.rotationOffset,
     };
   }
 
+  const fallbackYaw = getWorldYaw(root);
   if (size.x > 0.01 && size.z > 0.01) {
     return {
       type: 'rect',
@@ -111,7 +136,7 @@ export function computeFootprintCollider(root, assetId, registry = sharedFootpri
       z: center.z,
       width: size.x + 0.3,
       depth: size.z + 0.3,
-      rotation: root.rotation.y,
+      rotation: fallbackYaw,
     };
   }
 

@@ -2,6 +2,23 @@
 
 ## 2026-03-23
 
+### Class-Based Footprint Transform Scaling
+- Implemented the shared-footprint transform fix so asset-class footprints now derive world-space colliders from each instance transform.
+- Treated shared footprint JSON values as canonical local-space footprint definitions.
+- Updated footprint offsets to scale with the instance and rotate with the instance yaw before being applied.
+- Updated rect footprints so `width` and `depth` scale with the instance `x/z` scale.
+- Updated circle footprints so `radius` scales by the larger of `scaleX` and `scaleZ`.
+- Kept the current shared asset-class footprint model and left layout JSON free of any footprint data.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the shared collider computation is now used by both editor overlays and runtime authored colliders.
+
+### Known Risks
+- Circle footprints remain conservative circles under non-uniform scale rather than becoming ellipses.
+- This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
+
 ### Shared Footprint Export And Class-Based Editing
 - Reworked footprint tuning to be class-based instead of instance-based.
 - Added a `Footprints: On/Off` toolbar toggle with `Off` as the default state.
