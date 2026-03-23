@@ -9,7 +9,7 @@ import { AssetPalette } from './AssetPalette.js';
 import { getAssetRegistry } from './assetRegistry.js';
 import { LayoutEditorUI } from './LayoutEditorUI.js';
 import { DEFAULT_PLAYER_TRANSFORM, LayoutSerializer } from './LayoutSerializer.js';
-import { computeFootprintCollider, getDefaultFootprint, normalizeFootprint } from '../footprints.js';
+import { computeFootprintCollider, createFootprintRegistry, getSharedFootprint, normalizeFootprint, serializeFootprintRegistry } from '../footprints.js';
 import { SelectionController } from './SelectionController.js';
 import { TransformController } from './TransformController.js';
 
@@ -128,6 +128,7 @@ export class LayoutEditor {
     this.playerPreview = null;
     this.footprintsVisible = false;
     this.propertyPanelMode = 'main';
+    this.footprintRegistry = createFootprintRegistry();
   }
 
   async init() {
@@ -374,6 +375,9 @@ export class LayoutEditor {
         this.ui.setPropertyPanelMode('main');
         this.updateSelectionPanel(this.selectionController.getSelected());
         break;
+      case 'save-footprints':
+        this.saveFootprints();
+        break;
       default:
         break;
     }
@@ -407,12 +411,12 @@ export class LayoutEditor {
     }
 
     if (field === 'footprint' && !this.isPlayerRoot(selected)) {
-      const entry = this.layoutObjects.get(selected.userData.editorObjectId);
-      if (!entry) {
+      const assetId = selected.userData.assetId;
+      if (!assetId) {
         return;
       }
 
-      const base = entry.footprint ?? getDefaultFootprint(entry.assetId) ?? {
+      const base = getSharedFootprint(assetId, this.footprintRegistry) ?? {
         type: 'circle',
         radius: 1,
         offsetX: 0,
@@ -439,8 +443,10 @@ export class LayoutEditor {
         next[value.field] = value.value;
       }
 
-      entry.footprint = normalizeFootprint(next) ?? entry.footprint;
-      selected.userData.footprint = entry.footprint;
+      const normalized = normalizeFootprint(next);
+      if (normalized) {
+        this.footprintRegistry[assetId] = normalized;
+      }
       this.refreshFootprintOverlays();
     }
 
@@ -528,9 +534,7 @@ export class LayoutEditor {
         id: objectId,
         assetId,
         root: instanceRoot,
-        footprint: normalizeFootprint(transform?.footprint) ?? getDefaultFootprint(assetId),
       });
-      instanceRoot.userData.footprint = this.layoutObjects.get(objectId).footprint;
       this.selectObject(instanceRoot);
       this.onObjectTransformed(instanceRoot);
       this.ui.setStatus(`Spawned ${assetId} as ${objectId}.`);
@@ -586,8 +590,7 @@ export class LayoutEditor {
       canEditFootprint: !isPlayer,
       footprintEditable: !isPlayer,
       footprint: isPlayer ? null : formatFootprintForPanel(
-        this.layoutObjects.get(root.userData.editorObjectId)?.footprint
-        ?? getDefaultFootprint(root.userData.assetId),
+        getSharedFootprint(root.userData.assetId, this.footprintRegistry),
       ),
     };
   }
@@ -658,7 +661,6 @@ export class LayoutEditor {
       position: [selected.position.x + 0.75, selected.position.y, selected.position.z + 0.75],
       rotation: [toDegrees(selected.rotation.x), toDegrees(selected.rotation.y), toDegrees(selected.rotation.z)],
       scale: [selected.scale.x, selected.scale.y, selected.scale.z],
-      footprint: this.layoutObjects.get(selected.userData.editorObjectId)?.footprint,
     });
 
     if (duplicate) {
@@ -724,7 +726,6 @@ export class LayoutEditor {
         position: [entry.root.position.x, entry.root.position.y, entry.root.position.z],
         rotation: [toDegrees(entry.root.rotation.x), toDegrees(entry.root.rotation.y), toDegrees(entry.root.rotation.z)],
         scale: [entry.root.scale.x, entry.root.scale.y, entry.root.scale.z],
-        footprint: entry.footprint,
       })),
     );
 
@@ -806,7 +807,7 @@ export class LayoutEditor {
     for (const entry of this.layoutObjects.values()) {
       this.sceneObjectsGroup.remove(entry.root);
     }
-    this.layoutObjects.clear();
+      this.layoutObjects.clear();
     this.refreshFootprintOverlays();
     this.selectObject(null);
   }
@@ -832,16 +833,22 @@ export class LayoutEditor {
       return;
     }
 
-    this.footprintOverlayGroup.visible = this.footprintsVisible;
+    const selected = this.selectionController?.getSelected() ?? null;
+    const showSelectedOnly = this.propertyPanelMode === 'footprint' && !!selected && !this.isPlayerRoot(selected);
+    this.footprintOverlayGroup.visible = this.footprintsVisible || showSelectedOnly;
     this.footprintOverlayGroup.clear();
 
-    if (!this.footprintsVisible) {
+    if (!this.footprintsVisible && !showSelectedOnly) {
       return;
     }
 
-    const selected = this.selectionController?.getSelected() ?? null;
+    const selectedAssetId = selected?.userData?.assetId ?? null;
     for (const entry of this.layoutObjects.values()) {
-      const collider = computeFootprintCollider(entry.root, entry.assetId, entry.footprint);
+      if (showSelectedOnly && entry.assetId !== selectedAssetId) {
+        continue;
+      }
+
+      const collider = computeFootprintCollider(entry.root, entry.assetId, this.footprintRegistry);
       if (!collider) {
         continue;
       }
@@ -911,5 +918,17 @@ export class LayoutEditor {
     group.add(border);
 
     return group;
+  }
+
+  saveFootprints() {
+    const serialized = serializeFootprintRegistry(this.footprintRegistry);
+    const blob = new Blob([`${JSON.stringify(serialized, null, 2)}\n`], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'collider_footprints.json';
+    link.click();
+    URL.revokeObjectURL(url);
+    this.ui.setStatus('Saved collider_footprints.json');
   }
 }

@@ -2,24 +2,28 @@
 
 ## 2026-03-23
 
-### Editor Footprint Visualization And Editing
-- Implemented editor-side footprint visibility and editing controls.
+### Shared Footprint Export And Class-Based Editing
+- Reworked footprint tuning to be class-based instead of instance-based.
 - Added a `Footprints: On/Off` toolbar toggle with `Off` as the default state.
+- Added a `Save Footprints` toolbar action that downloads the shared footprint registry as `collider_footprints.json`.
 - Added semi-transparent footprint overlays with darker blue borders in the editor viewport.
 - Added an `Update Footprint` action for selected world objects and a dedicated right-panel footprint editor with a local back button.
 - Added editable footprint fields for `type`, `radius`, `width`, `depth`, `offsetX`, `offsetZ`, and `rotationOffset`.
-- Moved shared footprint defaults and collider computation into `capy-village/src/footprints.js`.
-- Extended layout save/load/schema support so objects can optionally persist a `footprint` block in layout JSON.
-- Updated the runtime layout path to use the shared footprint helper and apply saved per-object footprint overrides when present.
+- Added the shared asset-class footprint source file at `config/collider_footprints.json`.
+- Reworked `capy-village/src/footprints.js` so editor and runtime both use the same JSON-backed shared footprint registry.
+- Removed footprint data from layout save/load/schema so layout JSON stays focused on object placement transforms only.
+- Updated the runtime layout path to use only the shared asset-class footprint registry for authored collisions.
 
 ### Self-Check
 - Verified `npm run publish-assets` succeeds.
 - Verified `npm run build` succeeds in `capy-village`.
 - Confirmed the editor and runtime now share the same footprint computation path.
-- Confirmed serialized layout objects can now include optional `footprint` data.
+- Confirmed serialized layout objects no longer include footprint data.
+- Confirmed the editor can export the current shared footprint registry as `collider_footprints.json`.
 
 ### Known Risks
 - This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
+- Saving shared footprints is an explicit export/download flow; the exported JSON still needs to replace the checked-in repo file manually.
 - The new shared footprint module currently produces a separate build chunk, which is acceptable for now but may be revisited later if bundle shaping matters.
 
 ### Collision Refinement And Interaction Polish

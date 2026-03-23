@@ -12,47 +12,6 @@ function normalizeTransformArray(values) {
   return values.map((value) => roundNumber(value));
 }
 
-function normalizeOptionalNumber(value) {
-  return Number.isFinite(value) ? roundNumber(value) : 0;
-}
-
-function normalizeFootprint(footprint) {
-  if (!footprint || typeof footprint !== 'object') {
-    return null;
-  }
-
-  if (footprint.type === 'circle') {
-    if (!Number.isFinite(footprint.radius) || footprint.radius <= 0) {
-      return null;
-    }
-
-    return {
-      type: 'circle',
-      radius: roundNumber(footprint.radius),
-      offsetX: normalizeOptionalNumber(footprint.offsetX),
-      offsetZ: normalizeOptionalNumber(footprint.offsetZ),
-      rotationOffset: normalizeOptionalNumber(footprint.rotationOffset),
-    };
-  }
-
-  if (footprint.type === 'rect') {
-    if (!Number.isFinite(footprint.width) || footprint.width <= 0 || !Number.isFinite(footprint.depth) || footprint.depth <= 0) {
-      return null;
-    }
-
-    return {
-      type: 'rect',
-      width: roundNumber(footprint.width),
-      depth: roundNumber(footprint.depth),
-      offsetX: normalizeOptionalNumber(footprint.offsetX),
-      offsetZ: normalizeOptionalNumber(footprint.offsetZ),
-      rotationOffset: normalizeOptionalNumber(footprint.rotationOffset),
-    };
-  }
-
-  return null;
-}
-
 export const DEFAULT_PLAYER_TRANSFORM = Object.freeze({
   position: [0, 0, 2],
   rotation: [0, 180, 0],
@@ -83,7 +42,6 @@ export class LayoutSerializer {
         position: normalizeTransformArray(object.position),
         rotation: normalizeTransformArray(object.rotation),
         scale: normalizeTransformArray(object.scale),
-        ...(normalizeFootprint(object.footprint) ? { footprint: normalizeFootprint(object.footprint) } : {}),
       })),
     };
   }
@@ -136,12 +94,6 @@ export class LayoutSerializer {
 
       if (!isVectorTriplet(object.scale)) {
         return { valid: false, error: `Layout object "${object.id}" has an invalid "scale".` };
-      }
-
-      if (object.footprint !== undefined) {
-        if (!normalizeFootprint(object.footprint)) {
-          return { valid: false, error: `Layout object "${object.id}" has an invalid "footprint".` };
-        }
       }
     }
 

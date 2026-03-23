@@ -1,60 +1,12 @@
 import * as THREE from 'three';
-
-export const DEFAULT_FOOTPRINT_CONFIG = Object.freeze({
-  hut_1: Object.freeze({
-    type: 'circle',
-    radius: 1.72,
-    offsetX: 0,
-    offsetZ: 0,
-    rotationOffset: 0,
-  }),
-  mushroom_house: Object.freeze({
-    type: 'circle',
-    radius: 2.08,
-    offsetX: 0,
-    offsetZ: 0,
-    rotationOffset: 0,
-  }),
-  book_statue: Object.freeze({
-    type: 'circle',
-    radius: 1.18,
-    offsetX: 0,
-    offsetZ: 0,
-    rotationOffset: 0,
-  }),
-  pumpkin: Object.freeze({
-    type: 'circle',
-    radius: 1.62,
-    offsetX: 0,
-    offsetZ: 0,
-    rotationOffset: 0,
-  }),
-  hat_stand: Object.freeze({
-    type: 'rect',
-    width: 1.7,
-    depth: 1.1,
-    offsetX: 0,
-    offsetZ: 0,
-    rotationOffset: 0,
-  }),
-  melon_stand_2: Object.freeze({
-    type: 'rect',
-    width: 2.7,
-    depth: 1.95,
-    offsetX: 0,
-    offsetZ: 0,
-    rotationOffset: 0,
-  }),
-});
+import sharedFootprintConfig from '../../config/collider_footprints.json';
 
 function cloneFootprint(footprint) {
   if (!footprint) {
     return null;
   }
 
-  return {
-    ...footprint,
-  };
+  return { ...footprint };
 }
 
 function finiteOrDefault(value, fallback = 0) {
@@ -100,19 +52,37 @@ export function normalizeFootprint(raw) {
   };
 }
 
-export function getDefaultFootprint(assetId) {
-  return normalizeFootprint(cloneFootprint(DEFAULT_FOOTPRINT_CONFIG[assetId]));
+export function createFootprintRegistry(source = sharedFootprintConfig) {
+  const registry = {};
+  for (const [assetId, footprint] of Object.entries(source ?? {})) {
+    const normalized = normalizeFootprint(cloneFootprint(footprint));
+    if (normalized) {
+      registry[assetId] = normalized;
+    }
+  }
+  return registry;
 }
 
-export function resolveFootprint(assetId, footprintOverride = null) {
-  return normalizeFootprint(footprintOverride) ?? getDefaultFootprint(assetId);
+export function serializeFootprintRegistry(registry) {
+  const sorted = {};
+  for (const assetId of Object.keys(registry).sort()) {
+    const footprint = normalizeFootprint(registry[assetId]);
+    if (footprint) {
+      sorted[assetId] = footprint;
+    }
+  }
+  return sorted;
 }
 
-export function computeFootprintCollider(root, assetId, footprintOverride = null) {
+export function getSharedFootprint(assetId, registry = sharedFootprintConfig) {
+  return normalizeFootprint(cloneFootprint(registry?.[assetId]));
+}
+
+export function computeFootprintCollider(root, assetId, registry = sharedFootprintConfig) {
   const bbox = new THREE.Box3().setFromObject(root);
   const size = bbox.getSize(new THREE.Vector3());
   const center = bbox.getCenter(new THREE.Vector3());
-  const footprint = resolveFootprint(assetId, footprintOverride);
+  const footprint = getSharedFootprint(assetId, registry);
 
   if (footprint) {
     if (footprint.type === 'circle') {

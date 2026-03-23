@@ -26,6 +26,7 @@ export class LayoutEditorUI {
             <button type="button" data-action="new-layout">New Layout</button>
             <button type="button" data-action="load-layout">Load Layout</button>
             <button type="button" data-action="save-layout">Save Layout</button>
+            <button type="button" data-action="save-footprints">Save Footprints</button>
             <button type="button" data-action="toggle-snap" data-state="on">Snap: On</button>
             <button type="button" data-action="toggle-grid" data-state="on">Grid: On</button>
             <button type="button" data-action="toggle-footprints" data-state="off">Footprints: Off</button>

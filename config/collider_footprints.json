@@ -1,0 +1,46 @@
+{
+  "hut_1": {
+    "type": "circle",
+    "radius": 1.72,
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0
+  },
+  "mushroom_house": {
+    "type": "circle",
+    "radius": 2.08,
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0
+  },
+  "book_statue": {
+    "type": "circle",
+    "radius": 1.18,
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0
+  },
+  "pumpkin": {
+    "type": "circle",
+    "radius": 1.62,
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0
+  },
+  "hat_stand": {
+    "type": "rect",
+    "width": 1.7,
+    "depth": 1.1,
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0
+  },
+  "melon_stand_2": {
+    "type": "rect",
+    "width": 2.7,
+    "depth": 1.95,
+    "offsetX": 0,
+    "offsetZ": 0,
+    "rotationOffset": 0
+  }
+}

@@ -187,7 +187,7 @@ function getColliderForObject(root, assetId) {
   if (isNonBlockingDecor(assetId, size)) {
     return null;
   }
-  return computeFootprintCollider(root, assetId, root.userData.footprint ?? null);
+  return computeFootprintCollider(root, assetId);
 }
 
 function getSceneSize(root) {
@@ -331,7 +331,6 @@ export async function loadPublishedVillage(scene) {
       for (const object of objects) {
         const instance = clonePublishedScene(template, assetId);
         applyObjectTransform(instance, object);
-        instance.userData.footprint = object.footprint ?? null;
         villageGroup.add(instance);
         const collider = getColliderForObject(instance, assetId);
 
