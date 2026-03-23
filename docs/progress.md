@@ -2,6 +2,26 @@
 
 ## 2026-03-23
 
+### Editor Footprint Visualization And Editing
+- Implemented editor-side footprint visibility and editing controls.
+- Added a `Footprints: On/Off` toolbar toggle with `Off` as the default state.
+- Added semi-transparent footprint overlays with darker blue borders in the editor viewport.
+- Added an `Update Footprint` action for selected world objects and a dedicated right-panel footprint editor with a local back button.
+- Added editable footprint fields for `type`, `radius`, `width`, `depth`, `offsetX`, `offsetZ`, and `rotationOffset`.
+- Moved shared footprint defaults and collider computation into `capy-village/src/footprints.js`.
+- Extended layout save/load/schema support so objects can optionally persist a `footprint` block in layout JSON.
+- Updated the runtime layout path to use the shared footprint helper and apply saved per-object footprint overrides when present.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the editor and runtime now share the same footprint computation path.
+- Confirmed serialized layout objects can now include optional `footprint` data.
+
+### Known Risks
+- This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
+- The new shared footprint module currently produces a separate build chunk, which is acceptable for now but may be revisited later if bundle shaping matters.
+
 ### Collision Refinement And Interaction Polish
 - Implemented `docs/tasks/capy_collision_interaction_polish.md`.
 - Removed authored-world proximity scaling feedback from the interaction system.

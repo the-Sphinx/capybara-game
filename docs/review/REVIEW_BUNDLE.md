@@ -1,99 +1,127 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Interaction polish and collision refinement
+- Task name: Editor footprint visualization and editing
 - Date: 2026-03-23
-- Time: 13:39 +03
+- Time: 14:16 +03
 - Branch: scene-restructure
-- Commit hash: ca8c9cc
+- Commit hash: 1094fcb
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Improve authored-village interaction feel without changing the core runtime architecture by removing scale-based feedback, making building collisions more natural, and making landmark interactions easier to trigger near building edges.
+Make collider footprints visible and editable in the layout editor so footprint tuning is no longer guesswork, while keeping runtime and editor aligned on the same footprint definitions and saved data shape.
 
 ## 3. What Changed
-- Removed the authored-world scale pulse interaction feedback.
-- Replaced active-object feedback with a subtle emissive highlight.
-- Added support for circle and rotated-rectangle colliders in the runtime collision evaluator.
-- Switched authored building collisions from broad AABB-only blockers to tighter per-asset footprints for the current village landmarks.
-- Expanded runtime interaction reach so interactables become available slightly before the player reaches the collider edge.
-- Added lightweight selection hysteresis so nearby interactables do not flicker as aggressively when the player stands near overlap boundaries.
-- Hid the bottom prompt cleanly while modals are open.
-- Fixed a regression in the published-layout collider registration path so authored footprint colliders are actually added to the world at runtime.
+- Added a top-toolbar `Footprints: On/Off` toggle to the layout editor, defaulting to off.
+- Added semi-transparent footprint overlays with darker blue borders for authored world objects.
+- Added an `Update Footprint` button in the right panel for non-player selections.
+- Added a dedicated footprint editor sub-panel with a local back button and editable fields for:
+- shape type (`circle` / `rect`)
+- `radius`
+- `width`
+- `depth`
+- `offsetX`
+- `offsetZ`
+- `rotationOffset`
+- Moved footprint logic into a shared module so the runtime and editor use the same footprint defaults and collider computation path.
+- Extended layout serialization/schema so objects can optionally persist a `footprint` block in saved layout JSON.
 
 ## 4. Files Changed
-- capy-village/src/world.js
+- capy-village/src/footprints.js
 - capy-village/src/runtimeLayout.js
-- capy-village/src/main.js
+- capy-village/src/editor/LayoutEditor.js
+- capy-village/src/editor/LayoutEditorUI.js
+- capy-village/src/editor/LayoutSerializer.js
+- capy-village/src/editor/editor.css
+- config/layout_schemas/village_layout.schema.json
 
 ## 5. Architecture Impact
-This is a polish pass on top of the current systems. Movement logic, camera behavior, published layout loading, and the existing prompt/`E` interaction flow all remain intact. The runtime now has a richer collider representation and a softer active-feedback path, but no new architecture or UI layer was introduced.
+This keeps the current editor/runtime architecture intact but centralizes footprint definitions into a shared module. The editor now previews and edits the same footprint data the runtime uses, and saved layouts can optionally override asset-default footprints per object.
 
 ## 6. Key Implementation Notes
-Collision handling in `capy-village/src/world.js` now supports:
+The new shared footprint layer in `capy-village/src/footprints.js` provides:
 
 ```text
-circle:
-- center x/z
-- radius
-
-rect:
-- center x/z
-- width/depth
-- rotation
+- default per-asset footprints
+- footprint normalization
+- footprint resolution (override -> default -> bounds fallback)
+- collider computation from a scene root
 ```
 
-Authored runtime footprints in `capy-village/src/runtimeLayout.js` now use targeted shapes for the current scene:
+The editor now supports two property-panel modes:
+- main transform/object mode
+- footprint editing mode
 
-```text
-hut_1            -> circle
-mushroom_house   -> circle
-book_statue      -> circle
-pumpkin          -> circle
-hat_stand        -> rotated rect
-melon_stand_2    -> rotated rect
+When footprint overlays are enabled:
+- circle footprints render as filled discs plus a line loop
+- rect footprints render as filled rotated planes plus a border loop
+
+Saved layout objects can now include:
+
+```json
+"footprint": {
+  "type": "circle",
+  "radius": 1.72,
+  "offsetX": 0,
+  "offsetZ": 0,
+  "rotationOffset": 0
+}
 ```
 
-Active authored interactables now use a soft emissive intensity boost instead of changing `object.scale`. Interaction radii are derived from collider size plus a buffer so prompts appear comfortably before the player hits the blocker edge.
+or
+
+```json
+"footprint": {
+  "type": "rect",
+  "width": 1.7,
+  "depth": 1.1,
+  "offsetX": 0,
+  "offsetZ": 0,
+  "rotationOffset": 0
+}
+```
 
 ## 7. Risks / Known Issues
-- The per-asset collider footprints are intentionally hand-tuned for the current village set; newly added buildings still fall back to a rotated rectangle derived from bounds until they get an explicit footprint.
-- Selection hysteresis is intentionally light, so very tightly clustered future interactables may still want one more tuning pass.
-- The Playwright CLI session used for live verification was flaky about its socket/session state, so browser verification for this task was weaker than the publish/build verification.
-- This task originally shipped with a collider-registration bug in the authored runtime path; that bug is now fixed by passing full collider objects into `addCollider(...)`.
+- This pass was verified through publish/build and code-path inspection, but I intentionally did not open another browser session because of the recent Playwright/Chrome orphan-window issue.
+- The footprint editor currently operates on world objects only; player preview remains excluded by design.
+- Adding the shared footprint module introduced a separate build chunk; this is acceptable for now but could be revisited if bundle shaping becomes a priority.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: unchanged
-- hybrid retrieval: improved because authored runtime landmarks now feel more naturally approachable
-- verification layer: preserved through publish/build checks
-- generic schema: unchanged
-- inspectability: improved because prompts should appear more reliably at intended landmarks without visual wobble
+- source grounding: improved because visual tuning now matches runtime collision logic directly
+- hybrid retrieval: unchanged
+- verification layer: improved through shared editor/runtime footprint computation
+- generic schema: extended with optional `footprint` object support
+- inspectability: significantly improved because footprint shapes are now visible and editable in-editor
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully from repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Confirmed the interaction feedback code no longer modifies `object.scale`.
-- Reviewed the runtime authored-role path to ensure interaction radius now derives from collider size plus a buffer.
-- Confirmed the prompt is cleared when a modal is open.
-- Verified the authored runtime path now registers colliders via `addCollider(collider)` instead of the stale AABB argument signature.
+- Reviewed the editor save/load path to confirm footprint data now persists in serialized layout JSON.
+- Reviewed the runtime path to confirm saved object footprints override shared defaults when present.
 
 ## 10. Example Output / Logs
 ```text
-Feedback change:
-- removed scale pulse
-- added subtle emissive highlight
+Toolbar toggle:
+- Footprints: Off
+- Footprints: On
 ```
 
 ```text
-Collision change:
-- broad authored AABB blockers replaced with circle/rotated-rect footprints for current key buildings
+Editor footprint fields:
+- type
+- radius
+- width
+- depth
+- offsetX
+- offsetZ
+- rotationOffset
 ```
 
 ## 11. Recommended Reviewer Focus
-- Walk around the mushroom house, hut, and melon stand diagonally to confirm the capy can approach naturally without early invisible walls.
-- Check that the prompt becomes available slightly before the player reaches the collision edge of the hat stand and melon stand.
-- Verify the emissive feedback reads softly and does not look like a hard glow under the current lighting rig.
+- Turn on footprint overlays and confirm the shapes line up visually with `hut_1`, `mushroom_house`, `hat_stand`, and `melon_stand_2`.
+- Change a footprint in the editor, save the layout JSON, reload it, and confirm the shape persists.
+- Verify `rotationOffset` feels intuitive for stands and other rotated rect objects.
 
 ## 12. Suggested Next Step
-If more authored buildings are added soon, the next best follow-up is to keep expanding the explicit footprint table rather than relying on bounds-derived fallback colliders for hero assets.
+If footprint tuning becomes a regular workflow, the next good follow-up would be adding a small inline legend or selected-object-only color emphasis so dense scenes are even easier to read.
