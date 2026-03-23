@@ -85,10 +85,10 @@ async function bootstrap() {
   // ─── Animate ────────────────────────────────────────────────────────────────
   const moveDir = new THREE.Vector3();
   const _wp = new THREE.Vector3();
-  const deadZone = { x: 3.5, z: 3.0 };
-  const edgeZone = { x: 5.0, z: 4.2 };
-  const followLerpSoft = 0.025;
-  const followLerpStrong = 0.07;
+  const deadZone = { x: 2.8, z: 2.4 };
+  const edgeZone = { x: 4.3, z: 3.6 };
+  const followLerpSoft = 0.04;
+  const followLerpStrong = 0.09;
   const lookFollowFactor = 0.35;
   const compositionBias = 0.15;
   const maxCameraShift = { x: 2.8, z: 2.4 };
@@ -195,13 +195,6 @@ async function bootstrap() {
 
     camera.position.x = cameraAnchor.x + cameraPlanarOffset.x;
     camera.position.z = cameraAnchor.y + cameraPlanarOffset.y;
-
-    // // Important: only partially shift the look target.
-    // // This preserves the diorama composition instead of re-centering the capy.
-    // const lookX = THREE.MathUtils.lerp(baseLookTarget.x, cameraAnchor.x, lookFollowFactor);
-    // const lookZ = THREE.MathUtils.lerp(baseLookTarget.z, cameraAnchor.y, lookFollowFactor);
-    // Slight bias to keep composition centered around statue
-    const compositionBias = 0.15;
 
     const lookX = THREE.MathUtils.lerp(
       baseLookTarget.x,
