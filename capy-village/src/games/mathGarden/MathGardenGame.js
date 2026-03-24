@@ -2,6 +2,7 @@ import { BaseGame } from '../BaseGame.js';
 import { soundManager } from '../../audio/SoundManager.js';
 import { saveManager } from '../../SaveManager.js';
 import arcadeConfig from './arcade.json';
+import { computeAdventureRewards, renderRewardBreakdownHtml } from '../rewardUtils.js';
 
 function resolveIsCorrect(spec) {
   if (!spec) return () => true;
@@ -122,6 +123,7 @@ export class MathGardenGame extends BaseGame {
     this._goalEl      = null;
     this._timerEl     = null;
     this._equationEl  = null;
+    this._goalCompleteShown = false;
   }
 
   // ── Goal helpers ─────────────────────────────────────────────────────────────
@@ -156,6 +158,42 @@ export class MathGardenGame extends BaseGame {
       }
       this._goalEl.textContent = val;
     }
+  }
+
+  _getRewardStats() {
+    return {
+      score: this._score,
+      catchCount: this._catchCount,
+      correct: this._correct,
+      maxCombo: this._maxCombo,
+    };
+  }
+
+  _maybeShowGoalComplete() {
+    if (this._isArcade || this._goalCompleteShown || !this._levelConfig?.goal) {
+      return;
+    }
+
+    const rewardSummary = computeAdventureRewards(this._levelConfig, this._getRewardStats());
+    if (!rewardSummary.cleared) {
+      return;
+    }
+
+    this._goalCompleteShown = true;
+    const root = this._container?.querySelector('.wmc-root');
+    if (!root) {
+      return;
+    }
+
+    root.querySelector('.game-goal-toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = 'game-goal-toast';
+    toast.textContent = 'Goal Complete! Keep going for bonus coins!';
+    root.appendChild(toast);
+    window.setTimeout(() => {
+      toast.classList.add('game-goal-toast--fade');
+      toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }, 1400);
   }
 
   // ── Level start banner ───────────────────────────────────────────────────────
@@ -465,19 +503,9 @@ export class MathGardenGame extends BaseGame {
       this._combo++;
       this._maxCombo = Math.max(this._maxCombo, this._combo);
       this._refreshGoalDisplay();
+      this._maybeShowGoalComplete();
       this._showFeedback(e, `+${pts} ✓`, 'correct');
       soundManager.play('correct');
-
-      // Check adventure early-finish
-      const cfg = this._levelConfig;
-      if (!this._isArcade && cfg?.goal?.type === 'correctAnswers') {
-        if (this._correct >= cfg.goal.value) {
-          this._tiles.forEach(t => { if (t !== tile) t.el.remove(); });
-          this._tiles = [];
-          this._endGame();
-          return;
-        }
-      }
 
       this._tiles.forEach(t => { if (t !== tile) t.el.remove(); });
       this._tiles = [];
@@ -558,18 +586,9 @@ export class MathGardenGame extends BaseGame {
       this._combo++;
       this._maxCombo = Math.max(this._maxCombo, this._combo);
       this._refreshGoalDisplay();
+      this._maybeShowGoalComplete();
       this._showFeedback(e, `+${pts}`, 'correct');
       soundManager.play('correct');
-
-      // Check adventure early-finish
-      if (!this._isArcade && cfg?.goal?.type === 'catchCount') {
-        if (this._catchCount >= cfg.goal.value) {
-          this._items.forEach(it2 => it2.el.remove());
-          this._items = [];
-          this._endGame();
-          return;
-        }
-      }
     } else {
       this._wrongClicks++;
       this._combo = 0;
@@ -635,30 +654,19 @@ export class MathGardenGame extends BaseGame {
     const cfg = this._levelConfig;
     const m   = this._activeMode;
     let won         = true;
-    let coinsEarned = Math.floor(this._score / 2);  // arcade default
+    let coinsEarned = this._score;
     let goalLabel   = '';
     let goalActual  = 0;
     let goalMax     = 0;
+    let rewardSummary = null;
 
     if (!this._isArcade && cfg) {
-      const goal = cfg.goal;
-      switch (goal.type) {
-        case 'correctAnswers':
-          won        = this._correct >= goal.value;
-          goalLabel  = 'Correct';
-          goalActual = this._correct;
-          goalMax    = goal.value;
-          break;
-        case 'catchCount':
-          won        = this._catchCount >= goal.value;
-          goalLabel  = 'Caught';
-          goalActual = this._catchCount;
-          goalMax    = goal.value;
-          break;
-        default:
-          won = this._score > 0;
-      }
-      coinsEarned = won ? (cfg.clearReward ?? 0) : 0;
+      rewardSummary = computeAdventureRewards(cfg, this._getRewardStats());
+      won = rewardSummary.cleared;
+      coinsEarned = rewardSummary.coinsEarned;
+      goalLabel = rewardSummary.metricLabel;
+      goalActual = rewardSummary.metricValue;
+      goalMax = rewardSummary.goalValue;
       if (won) saveManager.completeLevel(cfg.category, cfg.levelNum);
     } else {
       saveManager.recordArcadeScore('mathGarden', m.id, this._score);
@@ -690,7 +698,7 @@ export class MathGardenGame extends BaseGame {
               <div class="mg-result-row"><span>Wrong clicks</span><strong>${this._wrongClicks}</strong></div>
               <div class="mg-result-row"><span>Max Combo</span><strong>${this._maxCombo}×</strong></div>
             </div>
-            ${coinsEarned > 0 ? `<div class="mg-result-reward">Level Reward: ${coinsEarned} 🍉</div>` : ''}
+            ${rewardSummary ? renderRewardBreakdownHtml(rewardSummary) : ''}
             <div class="mg-result-wallet">Wallet Total: ${futureTotal} 🍉</div>
             <div class="mg-result-btns">
               <button class="mg-back-btn" id="mg-back-btn">← Back</button>
@@ -704,7 +712,7 @@ export class MathGardenGame extends BaseGame {
       root.innerHTML = `
         <div class="mg-result-screen">
           <div class="mg-result-card">
-            <h1 class="mg-result-title">🌱 Time's Up!</h1>
+            <h1 class="mg-result-title">ARCADE COMPLETE!</h1>
             <div class="mg-result-rows">
               <div class="mg-result-row"><span>Score</span><strong>${this._score}</strong></div>
               ${statRow}

@@ -1,6 +1,7 @@
 import { gameState } from '../state.js';
 import { saveManager } from '../SaveManager.js';
 import { gameManager } from '../games/GameManager.js';
+import { ARCADE_REWARD_HINT, formatBonusPreview, getBonusTiers, getUnlockRequirementText } from '../games/rewardUtils.js';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -216,6 +217,7 @@ function renderArcadePanel(overlay) {
       <h2 class="hub-title">${cat.icon} ${cat.label} — 🎮 Arcade</h2>
       <p class="hub-arcade-desc">${cat.description}</p>
       ${bestScoresHtml}
+      <p class="hub-arcade-note">${ARCADE_REWARD_HINT}</p>
       <p class="hub-arcade-note">No goals, no fail state — just play and earn coins.</p>
       <button class="hub-play-btn hub-arcade-start" id="hub-arcade-start">▶ Start Arcade</button>
     </div>
@@ -267,7 +269,7 @@ function renderLevelMap(overlay, levels) {
     if (selected)       cls += ' hub-level-node--selected';
 
     const label = completed ? '✓' : !unlocked ? '🔒' : lvl.levelNum;
-    return `<div class="${cls}" data-levelnum="${lvl.levelNum}" ${!unlocked ? 'aria-disabled="true"' : ''}>${label}</div>`;
+    return `<div class="${cls}" data-levelnum="${lvl.levelNum}" data-locked="${unlocked ? 'false' : 'true'}">${label}</div>`;
   }).join('');
 
   overlay.innerHTML = `
@@ -288,7 +290,7 @@ function renderLevelMap(overlay, levels) {
   });
   overlay.querySelector('#hub-close').addEventListener('click', closeHub);
 
-  overlay.querySelectorAll('.hub-level-node:not([aria-disabled])').forEach(node => {
+  overlay.querySelectorAll('.hub-level-node').forEach(node => {
     node.addEventListener('click', () => {
       const levelNum = parseInt(node.dataset.levelnum);
       _selectedLevel = levels.find(l => l.levelNum === levelNum);
@@ -320,14 +322,25 @@ function goalText(lvl) {
 
 function levelInfoHtml(lvl, cat) {
   const completed = saveManager.isLevelCompleted(cat.id, lvl.levelNum);
+  const unlocked = saveManager.isLevelUnlocked(cat.id, lvl.levelNum);
+  const levelWithCategory = { ...lvl, category: cat.id };
+  const bonusText = formatBonusPreview(levelWithCategory);
+  const hasBonuses = getBonusTiers(levelWithCategory).length > 0;
   return `
     <h3 class="hub-lvl-title">Level ${lvl.levelNum}: ${lvl.label}</h3>
     <div class="hub-lvl-details">
       <span>⏱ ${lvl.timeLimit}s</span>
       <span>🎯 ${goalText(lvl)}</span>
+      <span>🏆 Clear Reward: ${lvl.clearReward ?? 0} coins</span>
       ${completed ? '<span class="hub-lvl-done">✓ Completed</span>' : ''}
     </div>
-    <button class="hub-play-btn" id="hub-play-btn">▶ Play Level ${lvl.levelNum}</button>
+    <div class="hub-lvl-reward-block">
+      <div><strong>Bonus:</strong> ${bonusText}</div>
+      ${!unlocked ? `<div class="hub-lvl-unlock">Unlock: ${getUnlockRequirementText(lvl.levelNum)}</div>` : ''}
+      ${unlocked ? `<div class="hub-lvl-unlock">Status: Ready to play</div>` : ''}
+    </div>
+    <button class="hub-play-btn" id="hub-play-btn" ${!unlocked ? 'disabled' : ''}>${unlocked ? `▶ Play Level ${lvl.levelNum}` : `🔒 Locked`}</button>
+    ${!hasBonuses ? '<div class="hub-lvl-bonus-note">Bonus tiers are not configured for this level yet.</div>' : ''}
   `;
 }
 
@@ -336,6 +349,9 @@ function attachPlayButton(overlay, cat, isAdventure, levels) {
   if (!btn) return;
   btn.addEventListener('click', () => {
     if (!_selectedLevel) return;
+    if (isAdventure && !saveManager.isLevelUnlocked(cat.id, _selectedLevel.levelNum)) {
+      return;
+    }
     const levelConfig = {
       ..._selectedLevel,
       mode:     isAdventure ? 'adventure' : 'arcade',

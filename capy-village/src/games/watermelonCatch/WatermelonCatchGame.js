@@ -2,6 +2,7 @@ import { BaseGame }    from '../BaseGame.js';
 import { soundManager } from '../../audio/SoundManager.js';
 import { saveManager }  from '../../SaveManager.js';
 import arcadeConfig     from './arcade.json';
+import { computeAdventureRewards, renderRewardBreakdownHtml } from '../rewardUtils.js';
 
 const BASE_URL = import.meta.env.BASE_URL + 'games/watermelon/';
 
@@ -72,6 +73,7 @@ export class WatermelonCatchGame extends BaseGame {
     this._bannerActive  = false;
     this._handlers      = {};
     this._lastSeconds   = false;
+    this._goalCompleteShown = false;
   }
 
   // ── Goal helpers ─────────────────────────────────────────────────────────────
@@ -107,6 +109,41 @@ export class WatermelonCatchGame extends BaseGame {
       }
       this._goalEl.textContent = val;
     }
+  }
+
+  _getRewardStats() {
+    return {
+      score: this._score,
+      catchCount: this._catchCount,
+      maxCombo: this._maxCombo,
+    };
+  }
+
+  _maybeShowGoalComplete() {
+    if (this._isArcade || this._goalCompleteShown || !this._levelConfig?.goal) {
+      return;
+    }
+
+    const rewardSummary = computeAdventureRewards(this._levelConfig, this._getRewardStats());
+    if (!rewardSummary.cleared) {
+      return;
+    }
+
+    this._goalCompleteShown = true;
+    const root = this._container?.querySelector('.wmc-root');
+    if (!root) {
+      return;
+    }
+
+    root.querySelector('.game-goal-toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = 'game-goal-toast';
+    toast.textContent = 'Goal Complete! Keep going for bonus coins!';
+    root.appendChild(toast);
+    window.setTimeout(() => {
+      toast.classList.add('game-goal-toast--fade');
+      toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }, 1400);
   }
 
   // ── Level start banner ───────────────────────────────────────────────────────
@@ -345,6 +382,7 @@ export class WatermelonCatchGame extends BaseGame {
       this._showFloatFeedback(mouseEvent, `+${bonus}s ⏳`, 'correct');
       soundManager.play('correct');
       this._refreshGoalDisplay();
+      this._maybeShowGoalComplete();
       return;
     }
 
@@ -375,6 +413,7 @@ export class WatermelonCatchGame extends BaseGame {
       const isCountGoal = !this._isArcade && this._levelConfig?.goal?.type === 'catchCount';
       this._showFloatFeedback(mouseEvent, isCountGoal ? '+1' : `+${pts}`, 'correct');
       soundManager.play('bite');
+      this._maybeShowGoalComplete();
     } else {
       this._wrongClicks++;
       this._combo = 0;
@@ -438,36 +477,19 @@ export class WatermelonCatchGame extends BaseGame {
     const catId       = cfg?.category ?? 'watermelonCatch';
 
     let won         = true;
-    let coinsEarned = this._score;  // arcade default
+    let coinsEarned = this._score;
     let goalLabel   = '';
     let goalActual  = 0;
     let goalMax     = 0;
+    let rewardSummary = null;
 
     if (isAdventure) {
-      const goal = cfg.goal;
-      switch (goal.type) {
-        case 'score':
-          won        = this._score >= goal.value;
-          goalLabel  = 'Score';
-          goalActual = this._score;
-          goalMax    = goal.value;
-          break;
-        case 'catchCount':
-          won        = this._catchCount >= goal.value;
-          goalLabel  = 'Caught';
-          goalActual = this._catchCount;
-          goalMax    = goal.value;
-          break;
-        case 'combo':
-          won        = this._maxCombo >= goal.value;
-          goalLabel  = 'Best Combo';
-          goalActual = this._maxCombo;
-          goalMax    = goal.value;
-          break;
-        default:
-          won = this._score > 0;
-      }
-      coinsEarned = won ? (cfg.clearReward ?? 0) : 0;
+      rewardSummary = computeAdventureRewards(cfg, this._getRewardStats());
+      won = rewardSummary.cleared;
+      coinsEarned = rewardSummary.coinsEarned;
+      goalLabel = rewardSummary.metricLabel;
+      goalActual = rewardSummary.metricValue;
+      goalMax = rewardSummary.goalValue;
       if (won) saveManager.completeLevel(cfg.category, cfg.levelNum);
     } else {
       saveManager.recordArcadeScore(catId, m.id, this._score);
@@ -492,7 +514,7 @@ export class WatermelonCatchGame extends BaseGame {
               <div class="wmc-result-row"><span>Missed</span><strong>${this._missed}</strong></div>
               <div class="wmc-result-row"><span>Max Combo</span><strong>${this._maxCombo}×</strong></div>
             </div>
-            ${coinsEarned > 0 ? `<div class="wmc-result-reward">Level Reward: ${coinsEarned} 🍉</div>` : ''}
+            ${rewardSummary ? renderRewardBreakdownHtml(rewardSummary) : ''}
             <div class="wmc-result-wallet">Wallet Total: ${futureTotal} 🍉</div>
             <div class="wmc-result-btns">
               <button class="wmc-back-btn" id="wmc-back-btn">← Back</button>
@@ -506,9 +528,9 @@ export class WatermelonCatchGame extends BaseGame {
         <div class="wmc-result-bg"></div>
         <div class="wmc-result-screen">
           <div class="wmc-result-card">
-            <h1 class="wmc-result-title">Run Complete</h1>
+            <h1 class="wmc-result-title">ARCADE COMPLETE!</h1>
             <div class="wmc-result-rows">
-              <div class="wmc-result-row"><span>Watermelons Collected</span><strong>${this._score}</strong></div>
+              <div class="wmc-result-row"><span>Score</span><strong>${this._score}</strong></div>
               <div class="wmc-result-row"><span>Caught</span><strong>${this._catchCount}</strong></div>
               <div class="wmc-result-row"><span>Missed</span><strong>${this._missed}</strong></div>
               <div class="wmc-result-row"><span>Max Combo</span><strong>${this._maxCombo}×</strong></div>
