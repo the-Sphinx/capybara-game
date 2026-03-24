@@ -183,7 +183,7 @@ export class WatermelonCatchGame extends BaseGame {
     // Left panel content
     const leftContent = isAdventure
       ? `<div class="wmc-hud-score">${goalLabel}: <span id="wmc-goal-val">0</span> / ${goalValue}</div>`
-      : `<div class="wmc-hud-score">Watermelons: <span id="wmc-score-val">0</span></div>`;
+      : `<div class="wmc-hud-score">Score: <span id="wmc-score-val">0</span></div>`;
 
     // Center panel content (adventure only)
     const centerContent = isAdventure
