@@ -426,16 +426,11 @@ function renderWorldSelect(overlay) {
 
   overlay.innerHTML = `
     <div class="hub-panel hub-panel--worldselect hub-panel--worldselect-fullscreen">
-      <button class="hub-back-btn" id="hub-back">← Back</button>
-      <button class="hub-close-btn" id="hub-close">✕</button>
-      <div class="hub-worldscreen-head">
-        <h2 class="hub-title">${cat.icon} ${cat.label}</h2>
-        <p class="hub-worldscreen-subtitle">Choose a patch to explore.</p>
-      </div>
-      ${_worldMessage ? `<div class="hub-world-message" id="hub-world-message">${_worldMessage}</div>` : ''}
       <div class="hub-world-map-shell hub-world-map-shell--fullscreen">
+        ${_worldMessage ? `<div class="hub-world-message hub-world-message--overlay" id="hub-world-message">${_worldMessage}</div>` : ''}
         <div class="hub-world-map hub-world-map--fullscreen" style="background-image:url('${BASE_URL + MATH_WORLD_SELECT_CONFIG.backgroundPath}')">
           ${worlds.map(worldOverlayHtml).join('')}
+          <button class="hub-world-back-btn" id="hub-back" type="button">← Back</button>
         </div>
       </div>
     </div>
@@ -447,7 +442,6 @@ function renderWorldSelect(overlay) {
     _worldMessage = '';
     renderModeSelect(overlay);
   });
-  overlay.querySelector('#hub-close').addEventListener('click', closeHub);
 
   overlay.querySelectorAll('.hub-world-hotspot').forEach((button) => {
     const applySelection = () => {

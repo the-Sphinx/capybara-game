@@ -15,6 +15,9 @@ Convert the existing Math Garden world-select screen into a fullscreen, image-fi
 ## 3. What Changed
 - Reworked the Math Garden world-select screen to use the background image as the dominant fullscreen UI surface.
 - Removed the right-side details panel from the world-select flow.
+- Removed the extra top title/chrome from the world-select screen so the artwork itself is the full-screen UI.
+- Removed the `X` button from the world screen and replaced navigation with a single overlaid `Back` button in the bottom-right corner.
+- Preserved the image’s native `3:2` aspect ratio so all sign overlays stay aligned to the authored coordinates.
 - Kept only minimal sign content on each wooden sign:
 - world title
 - 5 flower-based progress icons for unlocked worlds
@@ -74,23 +77,25 @@ inside the fullscreen view as a lightweight popup banner.
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully from the repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Reviewed the world-select renderer to confirm the right-side panel path is removed from the Math Garden world screen.
+- Reviewed the world-select renderer to confirm the right-side panel, top title, and close button are all removed from the Math Garden world screen.
 - Reviewed locked/unlocked click behavior to confirm locked worlds now produce a popup message and unlocked worlds still proceed.
 - Reviewed the hotspot-expansion logic to confirm click areas include more than the strict sign face while the visual overlays stay sign-anchored.
+- Confirmed the world image now renders in a fixed `3:2` frame so overlay placement is not distorted by resizing.
 
 ## 10. Example Output / Logs
-```text
-Choose a patch to explore.
-```
-
 ```text
 Geometry Yard is locked. Complete Fraction Forest
 ```
 
+```text
+← Back
+```
+
 ## 11. Recommended Reviewer Focus
-- Open `Book Statue` → `Math Garden` → `Adventure` and confirm the screen is fullscreen and image-first with no right panel.
+- Open `Book Statue` → `Math Garden` → `Adventure` and confirm the screen is fullscreen and image-first with no right panel, no extra top title, and no `X` button.
 - Verify each sign shows only title plus flowers or a lock, with no extra detail text on the sign.
 - Click a locked world and confirm a popup message appears.
+- Confirm the only world-screen navigation control is the overlaid `Back` button in the bottom-right.
 - Click an unlocked world and confirm it still proceeds into the placeholder world-entry screen.
 
 ## 12. Suggested Next Step
