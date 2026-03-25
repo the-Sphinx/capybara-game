@@ -2,7 +2,7 @@ import { gameState } from '../state.js';
 import { saveManager } from '../SaveManager.js';
 import { gameManager } from '../games/GameManager.js';
 import { ARCADE_REWARD_HINT, formatBonusPreview, getBonusTiers, getUnlockRequirementText } from '../games/rewardUtils.js';
-import { MATH_WORLD_SELECT_CONFIG } from '../games/mathGarden/worlds.js';
+import { MATH_WORLD_SELECT_CONFIG, NUMBER_GARDEN_LEVEL_OVERLAY } from '../games/mathGarden/worlds.js';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -10,7 +10,7 @@ const BASE_URL = import.meta.env.BASE_URL;
 let _overlay = null;
 let _categories = null;          // cached after first fetch
 
-let _screen = 'category';        // 'category' | 'mode' | 'levelmap' | 'arcade' | 'worldselect' | 'worldplaceholder'
+let _screen = 'category';        // 'category' | 'mode' | 'levelmap' | 'arcade' | 'worldselect' | 'worldplaceholder' | 'numbergardenoverlay'
 let _selectedCategory = null;
 let _selectedMode = null;        // 'adventure' | 'arcade'
 let _selectedLevel = null;
@@ -18,6 +18,7 @@ let _selectedWorld = null;
 let _preferredLevelNum = null;
 let _lockedPopup = null;
 let _lockedPopupTimer = null;
+let _selectedOverlayLevel = null;
 // _levelCache removed — levels are now bundled via gameManager.getLevels()
 
 // ── Overlay singleton ────────────────────────────────────────────────────────
@@ -42,6 +43,7 @@ export async function openHub() {
   _selectedWorld    = null;
   _preferredLevelNum = null;
   clearLockedPopup();
+  _selectedOverlayLevel = null;
 
   const overlay = getOverlay();
   overlay.style.display = 'flex';
@@ -87,6 +89,7 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
   _selectedWorld    = null;
   _preferredLevelNum = preferLevelNum;
   clearLockedPopup();
+  _selectedOverlayLevel = null;
 
   if (mode === 'arcade') {
     _screen = 'arcade';
@@ -188,6 +191,7 @@ function renderModeSelect(overlay) {
       _selectedWorld = null;
       _preferredLevelNum = null;
       clearLockedPopup();
+      _selectedOverlayLevel = null;
       if (_selectedMode === 'adventure') {
         loadAndRenderAdventureScreen(overlay);
       } else {
@@ -482,6 +486,101 @@ function lockedPopupHtml() {
   `;
 }
 
+function findNumberGardenOverlayLevels(levels) {
+  const nodeMap = new Map(NUMBER_GARDEN_LEVEL_OVERLAY.nodes.map((node) => [node.levelNum, node]));
+  return levels
+    .filter(level => level.worldId === NUMBER_GARDEN_LEVEL_OVERLAY.worldId && nodeMap.has(level.levelNum))
+    .map((level) => ({ ...level, node: nodeMap.get(level.levelNum) }))
+    .sort((a, b) => a.levelNum - b.levelNum);
+}
+
+function getOverlayLevelStatus(cat, level, levelsInWorld) {
+  const isCompleted = saveManager.isLevelCompleted(cat.id, level.levelNum);
+  const isUnlocked = saveManager.isLevelUnlocked(cat.id, level.levelNum);
+  const firstUnlockedIncomplete = levelsInWorld.find(item =>
+    saveManager.isLevelUnlocked(cat.id, item.levelNum) && !saveManager.isLevelCompleted(cat.id, item.levelNum)
+  );
+  const isCurrent = firstUnlockedIncomplete?.levelNum === level.levelNum;
+
+  return {
+    isCompleted,
+    isUnlocked,
+    isCurrent,
+    isLocked: !isUnlocked,
+    unlockCondition: getUnlockRequirementText(level.levelNum).replace(' to unlock', ''),
+  };
+}
+
+function getLevelNodeStyle(node) {
+  return [
+    `left:${node.x * 100}%`,
+    `top:${node.y * 100}%`,
+  ].join(';');
+}
+
+function getLevelBubblePosition(node) {
+  const width = 0.24;
+  const x = Math.min(1 - width / 2 - 0.02, Math.max(width / 2 + 0.02, node.x));
+  const y = Math.max(0.14, node.y - 0.08);
+  return { x, y };
+}
+
+function levelNodeHtml(cat, level, levelsInWorld) {
+  const status = getOverlayLevelStatus(cat, level, levelsInWorld);
+  const classes = [
+    'hub-overlay-node',
+    status.isCompleted && 'hub-overlay-node--completed',
+    status.isCurrent && 'hub-overlay-node--current',
+    status.isLocked && 'hub-overlay-node--locked',
+    _selectedOverlayLevel?.levelNum === level.levelNum && 'hub-overlay-node--selected',
+  ].filter(Boolean).join(' ');
+
+  return `
+    <button
+      class="${classes}"
+      data-levelnum="${level.levelNum}"
+      style="${getLevelNodeStyle(level.node)}"
+      type="button"
+      aria-label="Level ${level.levelNum}"
+    >
+      <span class="hub-overlay-node__stone"></span>
+      <span class="hub-overlay-node__number">${level.levelNum}</span>
+      ${status.isLocked ? '<span class="hub-overlay-node__lock" aria-hidden="true">🔒</span>' : ''}
+      ${status.isCurrent ? '<span class="hub-overlay-node__glow" aria-hidden="true"></span>' : ''}
+    </button>
+  `;
+}
+
+function renderLevelInfoBubble(cat, level, levelsInWorld) {
+  if (!_selectedOverlayLevel || _selectedOverlayLevel.levelNum !== level.levelNum) {
+    return '';
+  }
+
+  const status = getOverlayLevelStatus(cat, level, levelsInWorld);
+  const position = getLevelBubblePosition(level.node);
+  const bonusTiers = getBonusTiers({ ...level, category: cat.id });
+  const bonusText = bonusTiers.length
+    ? bonusTiers.map((tier) => `+${tier.reward}`).join(' / ')
+    : 'No bonus';
+
+  return `
+    <div class="hub-level-overlay-bubble" style="left:${position.x * 100}%;top:${position.y * 100}%">
+      ${status.isLocked
+        ? `
+          <div class="hub-level-overlay-bubble__headline">🔒 Locked</div>
+          <div class="hub-level-overlay-bubble__desc">${status.unlockCondition} first</div>
+        `
+        : `
+          <div class="hub-level-overlay-bubble__headline">Level ${level.levelNum} — ${level.label}</div>
+          <div class="hub-level-overlay-bubble__desc">${goalText(level)}</div>
+        `}
+      <div class="hub-level-overlay-bubble__meta">💰 ${level.clearReward ?? 0} coins</div>
+      <div class="hub-level-overlay-bubble__meta">⭐ Bonus: ${bonusText}</div>
+      ${status.isLocked ? '' : '<button class="hub-play-btn hub-level-overlay-bubble__play" id="hub-level-overlay-play" type="button">▶ Play</button>'}
+    </div>
+  `;
+}
+
 function renderWorldSelect(overlay) {
   const cat = _selectedCategory;
   const levels = gameManager.getLevels(cat.gameId);
@@ -551,6 +650,12 @@ function renderWorldSelect(overlay) {
 function renderWorldPlaceholder(overlay) {
   const cat = _selectedCategory;
   const world = _selectedWorld;
+  const levels = gameManager.getLevels(cat.gameId);
+
+  if (world?.id === NUMBER_GARDEN_LEVEL_OVERLAY.worldId) {
+    renderNumberGardenLevelOverlay(overlay, cat, levels);
+    return;
+  }
 
   overlay.innerHTML = `
     <div class="hub-panel">
@@ -577,6 +682,80 @@ function renderWorldPlaceholder(overlay) {
     hideLockedPopup(overlay);
     renderWorldSelect(overlay);
   });
+}
+
+function renderNumberGardenLevelOverlay(overlay, cat, levels) {
+  const isFirstEntry = _screen !== 'numbergardenoverlay-initialized';
+  _screen = 'numbergardenoverlay';
+  const levelEntries = findNumberGardenOverlayLevels(levels);
+  if (!levelEntries.length) {
+    renderError(overlay, 'No Number Garden levels found.');
+    return;
+  }
+
+  if (_preferredLevelNum !== null) {
+    _selectedOverlayLevel = levelEntries.find(level => level.levelNum === _preferredLevelNum) ?? _selectedOverlayLevel;
+  }
+
+  if (!_selectedOverlayLevel && isFirstEntry) {
+    _selectedOverlayLevel = levelEntries.find(level => getOverlayLevelStatus(cat, level, levelEntries).isCurrent)
+      ?? levelEntries.find(level => getOverlayLevelStatus(cat, level, levelEntries).isUnlocked)
+      ?? levelEntries[0];
+  }
+
+  const selectedLevel = levelEntries.find(level => level.levelNum === _selectedOverlayLevel?.levelNum) ?? null;
+  _screen = 'numbergardenoverlay-initialized';
+
+  overlay.innerHTML = `
+    <div class="hub-panel hub-panel--worldselect hub-panel--worldselect-fullscreen">
+      <div class="hub-world-map-shell hub-world-map-shell--fullscreen">
+        <div class="hub-world-map hub-world-map--fullscreen" style="background-image:url('${BASE_URL + MATH_WORLD_SELECT_CONFIG.levelOverlayBackgroundPath}')">
+          ${levelEntries.map(level => levelNodeHtml(cat, level, levelEntries)).join('')}
+          ${selectedLevel ? renderLevelInfoBubble(cat, selectedLevel, levelEntries) : ''}
+          <button class="hub-world-back-btn" id="hub-back" type="button">← Back</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  overlay.querySelector('#hub-back').addEventListener('click', () => {
+    _screen = 'worldselect';
+    _selectedOverlayLevel = null;
+    renderWorldSelect(overlay);
+  });
+
+  overlay.querySelectorAll('.hub-overlay-node').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const levelNum = parseInt(button.dataset.levelnum, 10);
+      _selectedOverlayLevel = levelEntries.find(level => level.levelNum === levelNum) ?? _selectedOverlayLevel;
+      renderNumberGardenLevelOverlay(overlay, cat, levels);
+    });
+  });
+
+  overlay.querySelector('.hub-world-map').addEventListener('click', (event) => {
+    if (event.target.closest('.hub-overlay-node') || event.target.closest('.hub-level-overlay-bubble')) {
+      return;
+    }
+    _selectedOverlayLevel = null;
+    _screen = 'numbergardenoverlay-initialized';
+    renderNumberGardenLevelOverlay(overlay, cat, levels);
+  });
+
+  const playButton = overlay.querySelector('#hub-level-overlay-play');
+  if (playButton && selectedLevel) {
+    playButton.addEventListener('click', () => {
+      const levelConfig = {
+        ...selectedLevel,
+        mode: 'adventure',
+        category: cat.id,
+        totalLevels: levels.length,
+      };
+      _preferredLevelNum = selectedLevel.levelNum;
+      closeHub();
+      gameManager.startGame(cat.gameId, levelConfig);
+    });
+  }
 }
 
 function renderLevelMap(overlay, levels) {

@@ -1,5 +1,6 @@
 export const MATH_WORLD_SELECT_CONFIG = {
   backgroundPath: 'assets/images/math_garden_v3.png',
+  levelOverlayBackgroundPath: 'assets/images/math_garden_v3.png',
   worlds: [
     {
       id: 'number_garden',
@@ -24,7 +25,7 @@ export const MATH_WORLD_SELECT_CONFIG = {
     },
     {
       id: 'multiplication_meadow',
-      title: 'Multiplication Meadow',
+      title: 'Times Meadow',
       subtitle: 'Groups and times',
       unlockRequirementText: 'Complete Subtraction Patch',
       signBox: { x: 0.5023, y: 0.5444, w: 0.111, h: 0.0532 },
@@ -33,7 +34,7 @@ export const MATH_WORLD_SELECT_CONFIG = {
       id: 'division_grove',
       title: 'Division Grove',
       subtitle: 'Split fairly',
-      unlockRequirementText: 'Complete Multiplication Meadow',
+      unlockRequirementText: 'Complete Times Meadow',
       signBox: { x: 0.1986, y: 0.7319, w: 0.126, h: 0.0649 },
     },
     {
@@ -49,6 +50,22 @@ export const MATH_WORLD_SELECT_CONFIG = {
       subtitle: 'Shapes and space',
       unlockRequirementText: 'Complete Fraction Forest',
       signBox: { x: 0.7822, y: 0.7334, w: 0.1289, h: 0.0629 },
+    },
+  ],
+};
+
+export const NUMBER_GARDEN_LEVEL_OVERLAY = {
+  worldId: 'number_garden',
+  nodes: [
+    {
+      levelNum: 1,
+      x: 0.115,
+      y: 0.41,
+    },
+    {
+      levelNum: 3,
+      x: 0.18,
+      y: 0.505,
     },
   ],
 };

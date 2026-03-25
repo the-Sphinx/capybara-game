@@ -1,5 +1,28 @@
 # Progress
 
+## 2026-03-26
+
+### Number Garden Level Overlay
+- Implemented `docs/tasks/number_garden_level_overlay_spec.md`.
+- Added a reusable full-screen level-overlay path for Math worlds and connected it to `Number Garden`.
+- Replaced the old generic `Number Garden` placeholder with clickable stone-style level nodes on the map.
+- Added explicit normalized Number Garden node coordinates to the Math world config.
+- Added current/completed/locked node visuals, including glow, lock overlay, and selection highlight.
+- Added a lightweight anchored info bubble with level title, description, reward, bonus preview, and play action for unlocked levels.
+- Added click-outside behavior to dismiss the selected level bubble.
+- Kept the remaining Math worlds on the placeholder path for now.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds from the repo root.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed `Number Garden` now enters the node-overlay flow instead of the generic placeholder.
+- Confirmed unlocked node bubbles can launch the corresponding Math Garden adventure level.
+
+### Known Risks
+- Number Garden node positions are authored directly in config because the task did not provide explicit node coordinates or a dedicated level-map image.
+- The overlay currently uses the shared Math Garden background image rather than a world-specific map asset.
+- This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
+
 ## 2026-03-25
 
 ### Locked Popup UX And Microcopy
