@@ -1,31 +1,28 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Math world fullscreen simplification
+- Task name: Locked popup UX and microcopy
 - Date: 2026-03-25
-- Time: 11:55 +03
+- Time: 12:12 +03
 - Branch: scene-restructure
 - Commit hash: pending
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Convert the existing Math Garden world-select screen into a fullscreen, image-first experience that removes the right-side panel, keeps overlays minimal on the wooden signs, and makes world selection feel like exploring the world art rather than navigating a menu.
+Replace the temporary top-banner locked feedback on the Math world screen with a small contextual popup that appears near the clicked locked world, feels like part of the game world, communicates the unlock requirement quickly, and disappears automatically without blocking interaction.
 
 ## 3. What Changed
-- Reworked the Math Garden world-select screen to use the background image as the dominant fullscreen UI surface.
-- Removed the right-side details panel from the world-select flow.
-- Removed the extra top title/chrome from the world-select screen so the artwork itself is the full-screen UI.
-- Removed the `X` button from the world screen and replaced navigation with a single overlaid `Back` button in the bottom-right corner.
-- Preserved the image’s native `3:2` aspect ratio so all sign overlays stay aligned to the authored coordinates.
-- Kept only minimal sign content on each wooden sign:
-- world title
-- 5 flower-based progress icons for unlocked worlds
-- centered lock icon for locked worlds
-- Added broader clickable hotspots around each sign so nearby world patches are easier to click.
-- Added fullscreen selection and hover feedback with subtle brightness/glow rather than heavy scaling.
-- Changed locked-world clicks to show an in-screen popup message instead of relying on a side details panel.
-- Kept unlocked-world clicks opening the existing placeholder world-entry screen.
+- Removed the temporary top-centered locked message banner from the fullscreen Math world screen.
+- Added a compact contextual popup that appears near the clicked locked world instead of at the top of the screen.
+- Anchored the popup to the clicked sign’s normalized sign-box position, preferring placement above the sign and falling back lower when needed.
+- Updated locked microcopy to the requested short two-line structure:
+- `Locked`
+- `Complete {Required World} first`
+- Added a short auto-dismiss flow of about 2 seconds.
+- Added immediate dismissal on the next interaction by clearing the popup on hover/selection changes.
+- Added a small bump animation on the clicked locked sign so the world itself reacts to the click.
+- Kept unlocked world behavior unchanged.
 
 ## 4. Files Changed
 - capy-village/src/ui/HubModal.js
@@ -34,69 +31,63 @@ Convert the existing Math Garden world-select screen into a fullscreen, image-fi
 - docs/progress.md
 
 ## 5. Architecture Impact
-This keeps the same underlying Math world metadata and save-derived world state, but simplifies the presentation layer. The world-select screen is now a fullscreen image-first renderer with larger interaction zones and minimal sign-local UI, making it easier to reuse the same architecture for future themed world maps without rebuilding a separate side-panel layout.
+This keeps the fullscreen Math world screen structure intact and only refines the locked feedback mechanism. Locked feedback is now represented as transient world-screen state with anchored popup positioning derived from the same sign-box metadata already used for the clickable regions, so no new global modal/toast system was introduced.
 
 ## 6. Key Implementation Notes
-The fullscreen world-select now uses:
+The locked popup now uses:
 
 ```text
-- one fullscreen-styled hub panel
-- the Math Garden image as the primary world UI
-- expanded hotspot hit areas derived from each exact sign box
-- visual sign content still anchored to the exact user-provided sign bounds
+- anchor point from the clicked world sign box
+- compact warm bubble styling
+- centered 2-line content
+- auto-dismiss timer
 ```
 
-Progress display now uses 5 flowers:
+Popup copy now follows:
 
 ```text
-- 1 flower = 2 completed levels
-- half flower = 1 completed level
-- locked worlds show only a centered lock icon
+Locked
+Complete Number Garden first
 ```
 
-Locked interactions now surface:
+The sign feedback includes:
 
 ```text
-{World Title} is locked. {Unlock requirement}
+1. contextual popup
+2. short bump animation on the clicked locked sign
 ```
-
-inside the fullscreen view as a lightweight popup banner.
 
 ## 7. Risks / Known Issues
-- The 5-flower progress row is derived from completed-level counts and assumes the current 10-level total model described in the task.
-- The broader click regions are generated from the sign boxes by expansion rather than hand-authored patch polygons, so they are friendlier than sign-only clicks but still approximate.
+- Popup placement is anchored from the normalized sign box with simple bounds clamping, so it is much closer to the clicked world than the previous banner but still not a hand-authored bubble anchor per world.
+- The popup currently avoids screen-edge/header overlap through generic clamping rather than a per-world authored placement table.
 - This pass was verified through publish/build and code-path inspection, but I intentionally did not start a new Playwright browser session because of the earlier orphan-window issue.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: improved because the fullscreen flow leans more heavily on the authored Math Garden image
+- source grounding: improved because locked feedback is now tied directly to the clicked world location
 - hybrid retrieval: unchanged
-- verification layer: improved because locked-world feedback is now immediate in-screen on click
+- verification layer: improved because the unlock requirement is now surfaced in immediate contextual feedback
 - generic schema: unchanged
-- inspectability: slightly improved because selection state is visible directly on the world art without splitting attention to a side panel
+- inspectability: improved because locked behavior is easier to understand from the world screen itself
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully from the repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Reviewed the world-select renderer to confirm the right-side panel, top title, and close button are all removed from the Math Garden world screen.
-- Reviewed locked/unlocked click behavior to confirm locked worlds now produce a popup message and unlocked worlds still proceed.
-- Reviewed the hotspot-expansion logic to confirm click areas include more than the strict sign face while the visual overlays stay sign-anchored.
-- Confirmed the world image now renders in a fixed `3:2` frame so overlay placement is not distorted by resizing.
+- Reviewed the Math world click handler to confirm locked worlds do not navigate.
+- Reviewed popup placement logic to confirm it is derived from the clicked sign box and clamped away from top/screen edges.
+- Reviewed interaction flow to confirm the popup auto-dismisses and clears on the next interaction.
+- Reviewed sign-class handling to confirm the bump animation only applies to the clicked locked world.
 
 ## 10. Example Output / Logs
 ```text
-Geometry Yard is locked. Complete Fraction Forest
-```
-
-```text
-← Back
+Locked
+Complete Number Garden first
 ```
 
 ## 11. Recommended Reviewer Focus
-- Open `Book Statue` → `Math Garden` → `Adventure` and confirm the screen is fullscreen and image-first with no right panel, no extra top title, and no `X` button.
-- Verify each sign shows only title plus flowers or a lock, with no extra detail text on the sign.
-- Click a locked world and confirm a popup message appears.
-- Confirm the only world-screen navigation control is the overlaid `Back` button in the bottom-right.
-- Click an unlocked world and confirm it still proceeds into the placeholder world-entry screen.
+- Open the Math world screen and click several locked worlds.
+- Confirm the popup appears near the clicked world rather than at the top of the screen.
+- Confirm the message is readable at a glance and disappears automatically.
+- Confirm the locked sign gives a small bump response and the game does not navigate.
 
 ## 12. Suggested Next Step
-The next natural follow-up would be replacing the current approximate expanded hotspots with hand-authored patch regions if you want even tighter island-level click targeting later.
+If you want even more polish later, the next follow-up would be adding a tiny speech-bubble pointer or per-world anchor offsets so the popup can point even more precisely at each specific sign.

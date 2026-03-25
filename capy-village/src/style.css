@@ -957,27 +957,6 @@ canvas { display: block; }
   transform: none;
 }
 
-.hub-world-message {
-  margin: 0 auto;
-  max-width: min(76vw, 720px);
-  padding: 12px 16px;
-  border-radius: 999px;
-  text-align: center;
-  color: #4f2f20;
-  font-size: 14px;
-  font-weight: 800;
-  background: linear-gradient(180deg, rgba(255, 236, 196, 0.98), rgba(241, 216, 172, 0.98));
-  box-shadow: 0 8px 18px rgba(0,0,0,0.16);
-}
-
-.hub-world-message--overlay {
-  position: absolute;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-}
-
 .hub-world-map-shell {
   background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
   border: 1px solid rgba(255,255,255,0.12);
@@ -1034,6 +1013,10 @@ canvas { display: block; }
 
 .hub-world-hotspot--selected {
   filter: brightness(1.12) drop-shadow(0 0 14px rgba(255, 224, 133, 0.38));
+}
+
+.hub-world-hotspot--bump .hub-world-sign {
+  animation: hubWorldSignBump 220ms ease;
 }
 
 .hub-world-sign {
@@ -1123,6 +1106,43 @@ canvas { display: block; }
   line-height: 1;
 }
 
+.hub-world-locked-popup {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -100%);
+  min-width: clamp(140px, 15vw, 220px);
+  max-width: clamp(160px, 18vw, 260px);
+  padding: 10px 14px 11px;
+  border-radius: 18px;
+  text-align: center;
+  color: #5a3e2b;
+  background: #fff3d6;
+  box-shadow: 0 10px 24px rgba(34, 23, 16, 0.2);
+  animation: hubLockedPopupIn 150ms ease-out;
+  pointer-events: none;
+}
+
+.hub-world-locked-popup__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.hub-world-locked-popup__title span {
+  color: #d9a441;
+}
+
+.hub-world-locked-popup__text {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
 .hub-world-back-btn {
   position: absolute;
   right: 18px;
@@ -1143,6 +1163,29 @@ canvas { display: block; }
 .hub-world-back-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.24);
+}
+
+@keyframes hubLockedPopupIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -96%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes hubWorldSignBump {
+  0% {
+    transform: translateY(-1px) scale(1);
+  }
+  40% {
+    transform: translateY(-1px) scale(0.97);
+  }
+  100% {
+    transform: translateY(-1px) scale(1);
+  }
 }
 
 .hub-world-placeholder {
@@ -1197,14 +1240,15 @@ canvas { display: block; }
     max-height: 84vh;
   }
 
-  .hub-world-message--overlay {
-    top: 12px;
-    max-width: calc(100% - 32px);
-  }
-
   .hub-world-back-btn {
     right: 12px;
     bottom: 12px;
+  }
+
+  .hub-world-locked-popup {
+    min-width: 132px;
+    max-width: min(220px, calc(100% - 20px));
+    padding-inline: 12px;
   }
 }
 

@@ -2,6 +2,27 @@
 
 ## 2026-03-25
 
+### Locked Popup UX And Microcopy
+- Implemented `docs/tasks/capy_locked_popup_spec.md`.
+- Replaced the temporary top-centered locked banner on the Math world screen with a contextual popup anchored near the clicked locked world.
+- Updated locked-world microcopy to a compact two-line format:
+- `Locked`
+- `Complete {Required World} first`
+- Added popup auto-dismiss after about 2 seconds.
+- Added popup dismissal on the next interaction by clearing it on hover/selection changes.
+- Added a subtle bump animation to the clicked locked sign.
+- Kept unlocked-world navigation behavior unchanged.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds from the repo root.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the previous top-centered world message is no longer used for locked feedback.
+- Confirmed locked-world popup placement is derived from the clicked sign box and clamped away from the top edge.
+
+### Known Risks
+- Popup placement uses a generic anchored clamp rather than per-world authored bubble anchors.
+- This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
+
 ### Math World Fullscreen Simplification
 - Implemented `docs/tasks/math_world_fullscreen_spec.md`.
 - Converted the Math Garden world-select screen from a split panel into a fullscreen, image-first experience.

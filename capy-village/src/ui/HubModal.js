@@ -16,7 +16,8 @@ let _selectedMode = null;        // 'adventure' | 'arcade'
 let _selectedLevel = null;
 let _selectedWorld = null;
 let _preferredLevelNum = null;
-let _worldMessage = '';
+let _lockedPopup = null;
+let _lockedPopupTimer = null;
 // _levelCache removed — levels are now bundled via gameManager.getLevels()
 
 // ── Overlay singleton ────────────────────────────────────────────────────────
@@ -40,7 +41,7 @@ export async function openHub() {
   _selectedLevel    = null;
   _selectedWorld    = null;
   _preferredLevelNum = null;
-  _worldMessage = '';
+  clearLockedPopup();
 
   const overlay = getOverlay();
   overlay.style.display = 'flex';
@@ -85,7 +86,7 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
   _selectedLevel    = null;
   _selectedWorld    = null;
   _preferredLevelNum = preferLevelNum;
-  _worldMessage = '';
+  clearLockedPopup();
 
   if (mode === 'arcade') {
     _screen = 'arcade';
@@ -96,6 +97,7 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
 }
 
 export function closeHub() {
+  clearLockedPopup();
   if (_overlay) _overlay.style.display = 'none';
   gameState.hubOpen   = false;
   gameState.modalOpen = false;
@@ -185,7 +187,7 @@ function renderModeSelect(overlay) {
       _selectedLevel = null;
       _selectedWorld = null;
       _preferredLevelNum = null;
-      _worldMessage = '';
+      clearLockedPopup();
       if (_selectedMode === 'adventure') {
         loadAndRenderAdventureScreen(overlay);
       } else {
@@ -347,6 +349,32 @@ function boxToStyle(box) {
   ].join(';');
 }
 
+function clearLockedPopup() {
+  if (_lockedPopupTimer) {
+    window.clearTimeout(_lockedPopupTimer);
+    _lockedPopupTimer = null;
+  }
+  _lockedPopup = null;
+}
+
+function lockedPopupPosition(box) {
+  const desiredX = box.x + (box.w / 2);
+  const desiredY = box.y - 0.05;
+  const width = 0.2;
+  const height = 0.08;
+  const minX = width / 2 + 0.015;
+  const maxX = 1 - width / 2 - 0.015;
+  const minY = 0.09;
+  const x = Math.min(maxX, Math.max(minX, desiredX));
+  const y = desiredY < minY ? Math.min(0.14, box.y + box.h + 0.03) : desiredY;
+
+  return { x, y, width, height };
+}
+
+function unlockRequirementShortText(world) {
+  return world.unlockRequirementText || 'Complete the previous world first';
+}
+
 function expandedHitBox(signBox) {
   const growX = 0.038;
   const growY = 0.07;
@@ -392,7 +420,7 @@ function worldOverlayHtml(world) {
 
   return `
     <button
-      class="hub-world-hotspot ${stateClass}${_selectedWorld?.id === world.id ? ' hub-world-hotspot--selected' : ''}"
+      class="hub-world-hotspot ${stateClass}${_selectedWorld?.id === world.id ? ' hub-world-hotspot--selected' : ''}${_lockedPopup?.worldId === world.id ? ' hub-world-hotspot--bump' : ''}"
       data-worldid="${world.id}"
       data-locked="${world.isLocked ? 'true' : 'false'}"
       style="${boxToStyle(hitBox)}"
@@ -413,6 +441,23 @@ function worldOverlayHtml(world) {
   `;
 }
 
+function lockedPopupHtml() {
+  if (!_lockedPopup) return '';
+
+  const { x, y } = _lockedPopup.position;
+  return `
+    <div
+      class="hub-world-locked-popup"
+      style="left:${x * 100}%;top:${y * 100}%"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="hub-world-locked-popup__title"><span aria-hidden="true">🔒</span> Locked</div>
+      <div class="hub-world-locked-popup__text">${_lockedPopup.message}</div>
+    </div>
+  `;
+}
+
 function renderWorldSelect(overlay) {
   const cat = _selectedCategory;
   const levels = gameManager.getLevels(cat.gameId);
@@ -427,9 +472,9 @@ function renderWorldSelect(overlay) {
   overlay.innerHTML = `
     <div class="hub-panel hub-panel--worldselect hub-panel--worldselect-fullscreen">
       <div class="hub-world-map-shell hub-world-map-shell--fullscreen">
-        ${_worldMessage ? `<div class="hub-world-message hub-world-message--overlay" id="hub-world-message">${_worldMessage}</div>` : ''}
         <div class="hub-world-map hub-world-map--fullscreen" style="background-image:url('${BASE_URL + MATH_WORLD_SELECT_CONFIG.backgroundPath}')">
           ${worlds.map(worldOverlayHtml).join('')}
+          ${lockedPopupHtml()}
           <button class="hub-world-back-btn" id="hub-back" type="button">← Back</button>
         </div>
       </div>
@@ -439,14 +484,14 @@ function renderWorldSelect(overlay) {
   overlay.querySelector('#hub-back').addEventListener('click', () => {
     _screen = 'mode';
     _selectedWorld = null;
-    _worldMessage = '';
+    clearLockedPopup();
     renderModeSelect(overlay);
   });
 
   overlay.querySelectorAll('.hub-world-hotspot').forEach((button) => {
     const applySelection = () => {
       _selectedWorld = worlds.find(world => world.id === button.dataset.worldid) ?? _selectedWorld;
-      _worldMessage = '';
+      clearLockedPopup();
       overlay.querySelectorAll('.hub-world-hotspot').forEach(node => node.classList.remove('hub-world-hotspot--selected'));
       button.classList.add('hub-world-hotspot--selected');
     };
@@ -456,7 +501,18 @@ function renderWorldSelect(overlay) {
     button.addEventListener('click', () => {
       applySelection();
       if (_selectedWorld?.isLocked) {
-        _worldMessage = `${_selectedWorld.title} is locked. ${_selectedWorld.unlockRequirementText}`;
+        _lockedPopup = {
+          worldId: _selectedWorld.id,
+          message: `${unlockRequirementShortText(_selectedWorld)} first`,
+          position: lockedPopupPosition(_selectedWorld.signBox),
+        };
+        if (_lockedPopupTimer) {
+          window.clearTimeout(_lockedPopupTimer);
+        }
+        _lockedPopupTimer = window.setTimeout(() => {
+          _lockedPopup = null;
+          renderWorldSelect(overlay);
+        }, 2000);
         renderWorldSelect(overlay);
         return;
       }
@@ -487,13 +543,13 @@ function renderWorldPlaceholder(overlay) {
 
   overlay.querySelector('#hub-back').addEventListener('click', () => {
     _screen = 'worldselect';
-    _worldMessage = '';
+    clearLockedPopup();
     renderWorldSelect(overlay);
   });
   overlay.querySelector('#hub-close').addEventListener('click', closeHub);
   overlay.querySelector('#hub-world-placeholder-back').addEventListener('click', () => {
     _screen = 'worldselect';
-    _worldMessage = '';
+    clearLockedPopup();
     renderWorldSelect(overlay);
   });
 }
