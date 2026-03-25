@@ -1,101 +1,95 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Reward system clarity pass
-- Date: 2026-03-24
-- Time: 00:40 +03
+- Task name: Math world select integration
+- Date: 2026-03-25
+- Time: 11:30 +03
 - Branch: scene-restructure
 - Commit hash: pending
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Make the reward system easier to understand across arcade and adventure play by standardizing arcade payouts, adding adventure bonus-tier rewards and breakdowns, restoring in-run goal-complete messaging, and letting players preview locked levels with reward details before they are unlocked.
+Replace the flat Math Garden adventure entry with a polished world-select screen that uses the finalized background image, exact sign-box coordinates, dynamic locked/unlocked/current/completed state rendering, and a clean placeholder path for future inside-world navigation.
 
 ## 3. What Changed
-- Added a shared reward helper module for:
-- `1 score = 1 coin` arcade messaging
-- goal-metric evaluation
-- adventure reward breakdown calculation
-- default bonus-tier generation when a level does not define explicit tiers
-- standardized arcade rewards across Watermelon Catch, Math Garden, and Language Grove to `coinsEarned = score`.
-- Removed adventure auto-finish-on-goal behavior from Math Garden and Language Grove so runs continue naturally after the clear threshold is reached.
-- Added the in-run message `Goal Complete! Keep going for bonus coins!` to all three adventure games, shown once per run when the main goal is first met.
-- Upgraded adventure result screens to show line-by-line reward breakdowns plus total earned coins.
-- Updated arcade result screens to present score-to-coin rewards directly with no hidden conversion.
-- Updated the hub so locked levels are previewable, show clear reward / bonus thresholds / unlock requirement, and cannot be started until unlocked.
-- Added the arcade reward hint to the hub’s arcade panel.
+- Added a dedicated Math Garden world-select flow inside the existing hub modal while leaving the other minigame hub paths unchanged.
+- Added a reusable world-select data source for the 7 Math worlds, including exact normalized sign-box coordinates and world metadata.
+- Added `worldId` metadata to Math Garden adventure levels so world progress can be derived explicitly instead of guessed from names.
+- Replaced the Math Garden adventure branch in the hub with a background-image world map, clickable sign overlays, and a warm right-side details panel.
+- Derived each world’s state from existing save data as `locked`, `unlocked`, `current`, or `completed`.
+- Added a clean `Open World` placeholder screen for unlocked worlds so the navigation path is ready for a future per-world level map.
 
 ## 4. Files Changed
-- capy-village/src/games/rewardUtils.js
-- capy-village/src/games/watermelonCatch/WatermelonCatchGame.js
-- capy-village/src/games/mathGarden/MathGardenGame.js
-- capy-village/src/games/languageGrove/LanguageGroveGame.js
+- capy-village/src/games/mathGarden/worlds.js
+- capy-village/src/games/mathGarden/adventure.json
 - capy-village/src/ui/HubModal.js
 - capy-village/src/style.css
+- assets/game_ready/images/math_garden_v3.png
 
 ## 5. Architecture Impact
-This introduces a shared reward-calculation layer used by multiple games and the hub UI. Reward logic is now less duplicated, adventure results are tied to one common breakdown model, and the hub can preview reward expectations for both unlocked and locked levels without inventing game-specific copy.
+This adds a reusable world-select rendering path to the hub without changing runtime-layout or game-launch architecture. The implementation is data-driven: world background, sign boxes, subtitles, and unlock copy live in world config, while world state is computed from existing save/level metadata. The flow is ready for future themes to plug in a different background and different sign coordinates.
 
 ## 6. Key Implementation Notes
-The new reward helper in `capy-village/src/games/rewardUtils.js` provides:
+The new Math world configuration in `capy-village/src/games/mathGarden/worlds.js` provides:
 
 ```text
-- arcade reward hint text
-- bonus-tier lookup / default generation
-- reward metric selection from score / catchCount / correctAnswers / combo
-- adventure reward breakdown computation
-- locked-level unlock requirement text
+- background image path
+- world ids / titles / subtitles
+- unlock requirement text
+- exact normalized sign boxes
 ```
 
-Adventure result screens now show:
+World state is derived in the hub from:
 
 ```text
-Goal Reached (...)
-Bonus Reached (...)
-Bonus (...): not reached
-Total Earned: ... coins
+- math adventure levels grouped by worldId
+- completedLevels from save data
+- unlockedLevels from save data
 ```
 
-Arcade panels and results now communicate the same rule everywhere:
+Math world selection currently prefers:
 
 ```text
-Arcade Reward: 1 score = 1 coin
+1. the world containing preferLevelNum when returning from gameplay
+2. otherwise the current world
+3. otherwise the first unlocked world
+4. otherwise the first world in order
 ```
 
 ## 7. Risks / Known Issues
-- This pass was verified through build and code-path inspection, but I intentionally did not start a new Playwright browser session because of the earlier orphan-window issue.
-- Bonus tiers are generated by shared defaults when a level does not define explicit `bonusTiers`, so the economy is now consistent and previewable without requiring a full content rewrite, but the exact balance may still want a later polish pass.
-- Language Grove now participates in the same arcade reward rule and adventure reward breakdown model even though the task’s sample balancing tables were focused on Watermelon Catch and Math Garden.
+- The current 10 Math Garden adventure levels are now distributed across 7 worlds using explicit `worldId` assignments, but some world-to-content semantics are still temporary until deeper world-specific content is authored.
+- `Open World` intentionally routes to a placeholder screen rather than a true world-internal level map, because the task explicitly scoped that part out.
+- This pass was verified through publish/build and code-path inspection, but I intentionally did not start a new Playwright browser session because of the earlier orphan-window issue.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: improved because reward communication now matches actual payout logic everywhere
+- source grounding: improved because Math Garden world selection now uses the finalized authored image and exact user-provided sign boxes
 - hybrid retrieval: unchanged
-- verification layer: improved because the hub and result screens now explain reward causes explicitly
-- generic schema: unchanged
-- inspectability: improved through previewable locked-level rewards and visible adventure reward breakdowns
+- verification layer: improved because locked/unlocked/current/completed world state is surfaced directly in the UI
+- generic schema: improved because the world-select component is data-driven and reusable for future themes
+- inspectability: improved through explicit world metadata and progress grouping in the hub
 
 ## 9. Testing Performed
+- Ran `npm run publish-assets` successfully from the repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Reviewed reward calculations in Watermelon Catch, Math Garden, and Language Grove to confirm arcade rewards now use score directly.
-- Reviewed the adventure end-of-run path to confirm coins are computed from clear reward plus reached bonus tiers.
-- Reviewed in-run success handlers to confirm reaching the main goal no longer ends adventure runs immediately in Math Garden and Language Grove.
-- Reviewed the hub level-map path to confirm locked levels can be selected for preview while their play button remains disabled.
-- Verified the updated shared UI/styles compile through the main app stylesheet build.
+- Verified the finalized `math_garden_v3.png` image is now published into the public assets path.
+- Reviewed the Math Garden hub path to confirm `Adventure` now enters the world-select screen instead of the old flat level map.
+- Reviewed the world-state derivation logic to confirm locked/unlocked/current/completed states are computed from existing level save data.
+- Reviewed the world placeholder navigation path to confirm unlocked worlds have a clean next-step action without inventing an out-of-scope level-map implementation.
 
 ## 10. Example Output / Logs
 ```text
-Arcade Reward: 1 score = 1 coin
+Math Garden — Adventure Worlds
 ```
 
 ```text
-Goal Complete! Keep going for bonus coins!
+Open World
 ```
 
 ## 11. Recommended Reviewer Focus
-- Start each arcade game and confirm the run/result UI communicates `1 score = 1 coin`.
-- Finish an adventure level above and below the clear threshold and confirm the result breakdown matches the earned total.
-- Select a locked level in the hub and confirm its reward preview is visible, the unlock requirement is explicit, and the level cannot start.
+- Open `Book Statue` → `Math Garden` → `Adventure` and confirm the world-select screen appears with the finalized background art.
+- Check that each world overlay aligns with the intended wooden sign and stays aligned when the panel scales.
+- Confirm locked worlds can be selected for preview, unlocked worlds enable `Open World`, and the details panel reflects the selected world immediately.
 
 ## 12. Suggested Next Step
-If needed, the next good follow-up would be moving the generated default bonus tiers into explicit content data once the economy numbers feel stable enough to lock down per level.
+The next good follow-up would be replacing the current `Open World` placeholder with a true per-world level-map screen that reuses the selected world context and only shows levels from that world.

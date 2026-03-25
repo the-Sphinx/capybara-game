@@ -2,6 +2,7 @@ import { gameState } from '../state.js';
 import { saveManager } from '../SaveManager.js';
 import { gameManager } from '../games/GameManager.js';
 import { ARCADE_REWARD_HINT, formatBonusPreview, getBonusTiers, getUnlockRequirementText } from '../games/rewardUtils.js';
+import { MATH_WORLD_SELECT_CONFIG } from '../games/mathGarden/worlds.js';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -9,10 +10,12 @@ const BASE_URL = import.meta.env.BASE_URL;
 let _overlay = null;
 let _categories = null;          // cached after first fetch
 
-let _screen = 'category';        // 'category' | 'mode' | 'levelmap' | 'arcade'
+let _screen = 'category';        // 'category' | 'mode' | 'levelmap' | 'arcade' | 'worldselect' | 'worldplaceholder'
 let _selectedCategory = null;
 let _selectedMode = null;        // 'adventure' | 'arcade'
 let _selectedLevel = null;
+let _selectedWorld = null;
+let _preferredLevelNum = null;
 // _levelCache removed — levels are now bundled via gameManager.getLevels()
 
 // ── Overlay singleton ────────────────────────────────────────────────────────
@@ -34,6 +37,8 @@ export async function openHub() {
   _selectedCategory = null;
   _selectedMode     = null;
   _selectedLevel    = null;
+  _selectedWorld    = null;
+  _preferredLevelNum = null;
 
   const overlay = getOverlay();
   overlay.style.display = 'flex';
@@ -76,18 +81,14 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
   _selectedCategory = _categories.find(c => c.id === categoryId) ?? _categories[0];
   _selectedMode     = mode;
   _selectedLevel    = null;
+  _selectedWorld    = null;
+  _preferredLevelNum = preferLevelNum;
 
   if (mode === 'arcade') {
     _screen = 'arcade';
     renderArcadePanel(overlay);
   } else {
-    _screen = 'levelmap';
-    // preferLevelNum lets us pre-select a specific level (e.g. the next one)
-    if (preferLevelNum !== null) {
-      const levels = gameManager.getLevels(_selectedCategory.gameId);
-      _selectedLevel = levels.find(l => l.levelNum === preferLevelNum) ?? null;
-    }
-    renderLevelMap(overlay, gameManager.getLevels(_selectedCategory.gameId));
+    loadAndRenderAdventureScreen(overlay);
   }
 }
 
@@ -179,9 +180,10 @@ function renderModeSelect(overlay) {
     btn.addEventListener('click', () => {
       _selectedMode = btn.dataset.mode;
       _selectedLevel = null;
+      _selectedWorld = null;
+      _preferredLevelNum = null;
       if (_selectedMode === 'adventure') {
-        _screen = 'levelmap';
-        loadAndRenderLevelMap(overlay);
+        loadAndRenderAdventureScreen(overlay);
       } else {
         _screen = 'arcade';
         renderArcadePanel(overlay);
@@ -236,6 +238,27 @@ function renderArcadePanel(overlay) {
 }
 
 // ── Screen: Level Map ────────────────────────────────────────────────────────
+function isWorldSelectCategory(cat) {
+  return cat?.gameId === 'math_garden';
+}
+
+function loadAndRenderAdventureScreen(overlay) {
+  const cat = _selectedCategory;
+  if (!cat) {
+    renderError(overlay, 'No category selected.');
+    return;
+  }
+
+  if (isWorldSelectCategory(cat)) {
+    _screen = 'worldselect';
+    renderWorldSelect(overlay);
+    return;
+  }
+
+  _screen = 'levelmap';
+  loadAndRenderLevelMap(overlay);
+}
+
 function loadAndRenderLevelMap(overlay) {
   const cat    = _selectedCategory;
   const levels = gameManager.getLevels(cat.gameId);
@@ -244,6 +267,220 @@ function loadAndRenderLevelMap(overlay) {
     return;
   }
   renderLevelMap(overlay, levels);
+}
+
+function buildMathWorldModels(cat, levels) {
+  const worlds = MATH_WORLD_SELECT_CONFIG.worlds.map((world) => {
+    const worldLevels = levels.filter(level => level.worldId === world.id);
+    const levelsTotal = worldLevels.length;
+    const levelsCompleted = worldLevels.filter(level => saveManager.isLevelCompleted(cat.id, level.levelNum)).length;
+    const levelsUnlocked = worldLevels.filter(level => saveManager.isLevelUnlocked(cat.id, level.levelNum)).length;
+    const isLocked = levelsTotal > 0 ? levelsUnlocked === 0 : true;
+    const isCompleted = levelsTotal > 0 && levelsCompleted === levelsTotal;
+    const starsMax = 3;
+    const starsEarned = levelsTotal > 0
+      ? Math.min(starsMax, Math.ceil((levelsCompleted / levelsTotal) * starsMax))
+      : 0;
+
+    return {
+      ...world,
+      levels: worldLevels,
+      levelsTotal,
+      levelsCompleted,
+      starsMax,
+      starsEarned,
+      isLocked,
+      isCompleted,
+      isCurrent: false,
+    };
+  });
+
+  const currentWorld = worlds.find(world => !world.isLocked && !world.isCompleted);
+  if (currentWorld) {
+    currentWorld.isCurrent = true;
+  }
+
+  return worlds;
+}
+
+function getSelectedMathWorld(worlds, levels) {
+  if (_selectedWorld) {
+    const persisted = worlds.find(world => world.id === _selectedWorld.id);
+    if (persisted) return persisted;
+  }
+
+  if (_preferredLevelNum !== null) {
+    const preferredLevel = levels.find(level => level.levelNum === _preferredLevelNum);
+    const preferredWorld = worlds.find(world => world.id === preferredLevel?.worldId);
+    if (preferredWorld) return preferredWorld;
+  }
+
+  return worlds.find(world => world.isCurrent)
+    ?? worlds.find(world => !world.isLocked)
+    ?? worlds[0]
+    ?? null;
+}
+
+function worldStatusLabel(world) {
+  if (world.isCompleted) return 'Completed';
+  if (world.isLocked) return 'Locked';
+  if (world.isCurrent) return 'Current';
+  return 'Unlocked';
+}
+
+function worldStarsText(world) {
+  const filled = '★'.repeat(world.starsEarned);
+  const empty = '☆'.repeat(Math.max(0, world.starsMax - world.starsEarned));
+  return filled + empty;
+}
+
+function boxToStyle(box) {
+  return [
+    `left:${box.x * 100}%`,
+    `top:${box.y * 100}%`,
+    `width:${box.w * 100}%`,
+    `height:${box.h * 100}%`,
+  ].join(';');
+}
+
+function worldOverlayHtml(world) {
+  const stateClass = world.isLocked
+    ? 'hub-world-sign--locked'
+    : world.isCompleted
+      ? 'hub-world-sign--completed'
+      : world.isCurrent
+        ? 'hub-world-sign--current'
+        : 'hub-world-sign--unlocked';
+  const progressText = world.isLocked
+    ? '🔒 Locked'
+    : `${world.levelsCompleted}/${world.levelsTotal}`;
+
+  return `
+    <button
+      class="hub-world-sign ${stateClass}${_selectedWorld?.id === world.id ? ' hub-world-sign--selected' : ''}"
+      data-worldid="${world.id}"
+      style="${boxToStyle(world.signBox)}"
+      title="${world.title}"
+      aria-label="${world.title}"
+      type="button"
+    >
+      <span class="hub-world-sign__title">${world.title}</span>
+      <span class="hub-world-sign__stars">${world.isLocked ? '' : worldStarsText(world)}</span>
+      <span class="hub-world-sign__progress">${progressText}</span>
+    </button>
+  `;
+}
+
+function worldInfoHtml(world) {
+  const buttonLabel = world.isLocked ? '🔒 Locked' : '▶ Open World';
+  return `
+    <div class="hub-world-detail-card">
+      <div class="hub-world-detail-status hub-world-detail-status--${worldStatusLabel(world).toLowerCase()}">${worldStatusLabel(world)}</div>
+      <h3 class="hub-lvl-title">${world.title}</h3>
+      <p class="hub-world-detail-subtitle">${world.subtitle}</p>
+      <div class="hub-world-detail-grid">
+        <div><strong>Progress:</strong> ${world.levelsCompleted}/${world.levelsTotal}</div>
+        <div><strong>Stars:</strong> ${world.starsEarned}/${world.starsMax}</div>
+      </div>
+      ${world.isLocked ? `<div class="hub-lvl-unlock">Unlock: ${world.unlockRequirementText}</div>` : '<div class="hub-lvl-unlock">Status: Ready to explore</div>'}
+      <button class="hub-play-btn" id="hub-open-world-btn" ${world.isLocked ? 'disabled' : ''}>${buttonLabel}</button>
+      <p class="hub-world-detail-note">World interiors are coming next. This screen is wired as the new selection step.</p>
+    </div>
+  `;
+}
+
+function renderWorldSelect(overlay) {
+  const cat = _selectedCategory;
+  const levels = gameManager.getLevels(cat.gameId);
+  if (!levels.length) {
+    renderError(overlay, 'No levels found for this game.');
+    return;
+  }
+
+  const worlds = buildMathWorldModels(cat, levels);
+  _selectedWorld = getSelectedMathWorld(worlds, levels);
+
+  overlay.innerHTML = `
+    <div class="hub-panel hub-panel--worldselect">
+      <button class="hub-back-btn" id="hub-back">← Back</button>
+      <button class="hub-close-btn" id="hub-close">✕</button>
+      <h2 class="hub-title">${cat.icon} ${cat.label} — ⚔️ Adventure Worlds</h2>
+      <div class="hub-worldselect-layout">
+        <div class="hub-world-map-shell">
+          <div class="hub-world-map" style="background-image:url('${BASE_URL + MATH_WORLD_SELECT_CONFIG.backgroundPath}')">
+            ${worlds.map(worldOverlayHtml).join('')}
+          </div>
+        </div>
+        <div class="hub-world-info" id="hub-world-info">
+          ${_selectedWorld ? worldInfoHtml(_selectedWorld) : '<p style="color:#aaa">Select a world</p>'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  overlay.querySelector('#hub-back').addEventListener('click', () => {
+    _screen = 'mode';
+    _selectedWorld = null;
+    renderModeSelect(overlay);
+  });
+  overlay.querySelector('#hub-close').addEventListener('click', closeHub);
+
+  overlay.querySelectorAll('.hub-world-sign').forEach((button) => {
+    const applySelection = () => {
+      _selectedWorld = worlds.find(world => world.id === button.dataset.worldid) ?? _selectedWorld;
+      overlay.querySelectorAll('.hub-world-sign').forEach(node => node.classList.remove('hub-world-sign--selected'));
+      button.classList.add('hub-world-sign--selected');
+
+      const infoEl = overlay.querySelector('#hub-world-info');
+      infoEl.innerHTML = _selectedWorld ? worldInfoHtml(_selectedWorld) : '<p style="color:#aaa">Select a world</p>';
+      attachOpenWorldButton(overlay);
+    };
+
+    button.addEventListener('mouseenter', applySelection);
+    button.addEventListener('focus', applySelection);
+    button.addEventListener('click', applySelection);
+  });
+
+  attachOpenWorldButton(overlay);
+}
+
+function renderWorldPlaceholder(overlay) {
+  const cat = _selectedCategory;
+  const world = _selectedWorld;
+
+  overlay.innerHTML = `
+    <div class="hub-panel">
+      <button class="hub-back-btn" id="hub-back">← Back</button>
+      <button class="hub-close-btn" id="hub-close">✕</button>
+      <h2 class="hub-title">${cat.icon} ${world?.title ?? 'World'} </h2>
+      <div class="hub-world-placeholder">
+        <div class="hub-world-placeholder__badge">Adventure World</div>
+        <h3 class="hub-world-placeholder__title">${world?.title ?? 'World'} is ready for the next step</h3>
+        <p class="hub-world-placeholder__text">The new world-select flow is now connected. The inside-of-world level map will plug into this screen next.</p>
+        <button class="hub-play-btn" id="hub-world-placeholder-back">← Back to Worlds</button>
+      </div>
+    </div>
+  `;
+
+  overlay.querySelector('#hub-back').addEventListener('click', () => {
+    _screen = 'worldselect';
+    renderWorldSelect(overlay);
+  });
+  overlay.querySelector('#hub-close').addEventListener('click', closeHub);
+  overlay.querySelector('#hub-world-placeholder-back').addEventListener('click', () => {
+    _screen = 'worldselect';
+    renderWorldSelect(overlay);
+  });
+}
+
+function attachOpenWorldButton(overlay) {
+  const btn = overlay.querySelector('#hub-open-world-btn');
+  if (!btn || !_selectedWorld) return;
+  btn.addEventListener('click', () => {
+    if (_selectedWorld?.isLocked) return;
+    _screen = 'worldplaceholder';
+    renderWorldPlaceholder(overlay);
+  });
 }
 
 function renderLevelMap(overlay, levels) {

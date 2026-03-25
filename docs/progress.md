@@ -1,5 +1,28 @@
 # Progress
 
+## 2026-03-25
+
+### Math World Select Integration
+- Implemented `docs/tasks/capy_math_world_select_integration.md`.
+- Added a dedicated Math Garden world-select screen inside the existing hub flow for `Adventure`.
+- Added the finalized `math_garden_v3.png` background image to `assets/game_ready/images`.
+- Added a data-driven Math world configuration source with 7 worlds and the exact user-provided normalized sign-box coordinates.
+- Added `worldId` metadata to Math Garden adventure levels so world progress is grouped explicitly.
+- Replaced the old flat Math adventure level-map entry with clickable world signs and a warm right-side details panel.
+- Derived `locked`, `unlocked`, `current`, and `completed` world states from the existing save data instead of creating a separate world-save model.
+- Added an `Open World` placeholder screen for unlocked worlds so the navigation path is cleanly wired for a future inside-world level map.
+
+### Self-Check
+- Verified `npm run publish-assets` succeeds from the repo root.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the finalized background image is published into the public assets path.
+- Confirmed the Math Garden adventure branch now routes to the new world-select screen rather than the old flat level list.
+
+### Known Risks
+- The current 10 Math Garden adventure levels are now distributed across 7 worlds using explicit `worldId` assignments, but some world-to-content semantics are still temporary until deeper world-specific content is authored.
+- `Open World` is intentionally a placeholder screen for now, because world-internal level maps were out of scope for this task.
+- This pass was not browser-verified because I intentionally avoided starting another Playwright Chrome session after the earlier orphan-window issue.
+
 ## 2026-03-24
 
 ### Reward System Clarity Pass
