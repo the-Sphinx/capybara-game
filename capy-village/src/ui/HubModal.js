@@ -357,6 +357,28 @@ function clearLockedPopup() {
   _lockedPopup = null;
 }
 
+function hideLockedPopup(overlay) {
+  if (_lockedPopupTimer) {
+    window.clearTimeout(_lockedPopupTimer);
+    _lockedPopupTimer = null;
+  }
+  _lockedPopup = null;
+
+  if (!overlay) return;
+
+  const popupEl = overlay.querySelector('.hub-world-locked-popup');
+  if (popupEl) {
+    popupEl.classList.add('hub-world-locked-popup--closing');
+    window.setTimeout(() => {
+      popupEl.remove();
+    }, 120);
+  }
+
+  overlay.querySelectorAll('.hub-world-hotspot--bump').forEach((node) => {
+    node.classList.remove('hub-world-hotspot--bump');
+  });
+}
+
 function lockedPopupPosition(box) {
   const desiredX = box.x + (box.w / 2);
   const desiredY = box.y - 0.05;
@@ -484,14 +506,14 @@ function renderWorldSelect(overlay) {
   overlay.querySelector('#hub-back').addEventListener('click', () => {
     _screen = 'mode';
     _selectedWorld = null;
-    clearLockedPopup();
+    hideLockedPopup(overlay);
     renderModeSelect(overlay);
   });
 
   overlay.querySelectorAll('.hub-world-hotspot').forEach((button) => {
     const applySelection = () => {
       _selectedWorld = worlds.find(world => world.id === button.dataset.worldid) ?? _selectedWorld;
-      clearLockedPopup();
+      hideLockedPopup(overlay);
       overlay.querySelectorAll('.hub-world-hotspot').forEach(node => node.classList.remove('hub-world-hotspot--selected'));
       button.classList.add('hub-world-hotspot--selected');
     };
@@ -510,8 +532,7 @@ function renderWorldSelect(overlay) {
           window.clearTimeout(_lockedPopupTimer);
         }
         _lockedPopupTimer = window.setTimeout(() => {
-          _lockedPopup = null;
-          renderWorldSelect(overlay);
+          hideLockedPopup(overlay);
         }, 2000);
         renderWorldSelect(overlay);
         return;
@@ -543,13 +564,13 @@ function renderWorldPlaceholder(overlay) {
 
   overlay.querySelector('#hub-back').addEventListener('click', () => {
     _screen = 'worldselect';
-    clearLockedPopup();
+    hideLockedPopup(overlay);
     renderWorldSelect(overlay);
   });
   overlay.querySelector('#hub-close').addEventListener('click', closeHub);
   overlay.querySelector('#hub-world-placeholder-back').addEventListener('click', () => {
     _screen = 'worldselect';
-    clearLockedPopup();
+    hideLockedPopup(overlay);
     renderWorldSelect(overlay);
   });
 }

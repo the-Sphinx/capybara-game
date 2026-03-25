@@ -11,6 +11,7 @@
 - Added popup auto-dismiss after about 2 seconds.
 - Added popup dismissal on the next interaction by clearing it on hover/selection changes.
 - Added a subtle bump animation to the clicked locked sign.
+- Tightened sign presentation by slightly enlarging titles, brightening the flower row, reducing lock size a bit, and normalizing title-to-row spacing.
 - Kept unlocked-world navigation behavior unchanged.
 
 ### Self-Check
@@ -18,6 +19,7 @@
 - Verified `npm run build` succeeds in `capy-village`.
 - Confirmed the previous top-centered world message is no longer used for locked feedback.
 - Confirmed locked-world popup placement is derived from the clicked sign box and clamped away from the top edge.
+- Confirmed popup dismissal is now handled explicitly instead of depending on a full rerender.
 
 ### Known Risks
 - Popup placement uses a generic anchored clamp rather than per-world authored bubble anchors.

@@ -1021,11 +1021,12 @@ canvas { display: block; }
 
 .hub-world-sign {
   position: absolute;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0.25vw 0.35vw 0.32vw;
+  justify-content: flex-start;
+  gap: clamp(3px, 0.28vw, 6px);
+  padding: 0.16vw 0.35vw 0.18vw;
   background: rgba(255, 246, 226, 0.14);
   border: 1px solid rgba(255, 232, 179, 0.3);
   border-radius: 14px;
@@ -1061,7 +1062,8 @@ canvas { display: block; }
 }
 
 .hub-world-sign__title {
-  font-size: clamp(9px, 0.72vw, 13px);
+  margin-top: 4%;
+  font-size: clamp(10px, 0.82vw, 14px);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: 0.01em;
@@ -1073,19 +1075,21 @@ canvas { display: block; }
   align-items: center;
   justify-content: center;
   gap: clamp(1px, 0.18vw, 3px);
-  font-size: clamp(8px, 0.7vw, 12px);
+  margin-top: auto;
+  margin-bottom: 12%;
+  font-size: clamp(8px, 0.74vw, 12px);
   line-height: 1;
 }
 
 .hub-world-sign__flower {
   position: relative;
   display: inline-block;
-  color: rgba(123, 94, 58, 0.22);
+  color: rgba(175, 140, 82, 0.36);
   text-shadow: 0 1px 0 rgba(255,255,255,0.55);
 }
 
 .hub-world-sign__flower--full {
-  color: #d79a1f;
+  color: #edb742;
 }
 
 .hub-world-sign__flower--half {
@@ -1098,11 +1102,13 @@ canvas { display: block; }
   inset: 0;
   width: 50%;
   overflow: hidden;
-  color: #d79a1f;
+  color: #edb742;
 }
 
 .hub-world-sign__lock {
-  font-size: clamp(11px, 0.92vw, 16px);
+  margin-top: auto;
+  margin-bottom: 12%;
+  font-size: clamp(10px, 0.8vw, 14px);
   line-height: 1;
 }
 
@@ -1120,6 +1126,10 @@ canvas { display: block; }
   box-shadow: 0 10px 24px rgba(34, 23, 16, 0.2);
   animation: hubLockedPopupIn 150ms ease-out;
   pointer-events: none;
+}
+
+.hub-world-locked-popup--closing {
+  animation: hubLockedPopupOut 120ms ease-in forwards;
 }
 
 .hub-world-locked-popup__title {
@@ -1173,6 +1183,17 @@ canvas { display: block; }
   to {
     opacity: 1;
     transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes hubLockedPopupOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -96%) scale(0.97);
   }
 }
 
