@@ -454,10 +454,12 @@ function worldOverlayHtml(world) {
         class="hub-world-sign"
         style="left:${signOffsetX}%;top:${signOffsetY}%;width:${signWidth}%;height:${signHeight}%"
       >
-        <span class="hub-world-sign__title">${world.title}</span>
-        ${world.isLocked
-          ? '<span class="hub-world-sign__lock" aria-hidden="true">🔒</span>'
-          : `<span class="hub-world-sign__flowers">${flowerProgressIcons(world)}</span>`}
+        <span class="hub-world-sign__content">
+          <span class="hub-world-sign__title">${world.title}</span>
+          ${world.isLocked
+            ? '<span class="hub-world-sign__lock" aria-hidden="true">🔒</span>'
+            : `<span class="hub-world-sign__flowers">${flowerProgressIcons(world)}</span>`}
+        </span>
       </span>
     </button>
   `;
@@ -511,9 +513,11 @@ function renderWorldSelect(overlay) {
   });
 
   overlay.querySelectorAll('.hub-world-hotspot').forEach((button) => {
-    const applySelection = () => {
+    const applySelection = ({ clearPopup = false } = {}) => {
       _selectedWorld = worlds.find(world => world.id === button.dataset.worldid) ?? _selectedWorld;
-      hideLockedPopup(overlay);
+      if (clearPopup) {
+        hideLockedPopup(overlay);
+      }
       overlay.querySelectorAll('.hub-world-hotspot').forEach(node => node.classList.remove('hub-world-hotspot--selected'));
       button.classList.add('hub-world-hotspot--selected');
     };
@@ -521,7 +525,7 @@ function renderWorldSelect(overlay) {
     button.addEventListener('mouseenter', applySelection);
     button.addEventListener('focus', applySelection);
     button.addEventListener('click', () => {
-      applySelection();
+      applySelection({ clearPopup: true });
       if (_selectedWorld?.isLocked) {
         _lockedPopup = {
           worldId: _selectedWorld.id,

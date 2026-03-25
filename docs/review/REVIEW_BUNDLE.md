@@ -24,6 +24,7 @@ Replace the temporary top-banner locked feedback on the Math world screen with a
 - Added a small bump animation on the clicked locked sign so the world itself reacts to the click.
 - Tightened the sign typography and spacing so titles and second-row content align more consistently across all signs.
 - Increased title size slightly, brightened the flower row, reduced the lock icon a bit, and normalized the gap between the title and second row.
+- Centered the title + second-row content as a single pack inside each sign instead of anchoring them independently.
 - Kept unlocked world behavior unchanged.
 
 ## 4. Files Changed
@@ -79,6 +80,7 @@ The sign feedback includes:
 - Reviewed interaction flow to confirm the popup auto-dismisses and clears on the next interaction.
 - Reviewed sign-class handling to confirm the bump animation only applies to the clicked locked world.
 - Reviewed the sign layout CSS to confirm second-row alignment and spacing are now fixed more consistently across signs.
+- Reviewed the world-screen selection handler to confirm hover/focus no longer clears the popup immediately after the locked click rerender.
 
 ## 10. Example Output / Logs
 ```text
