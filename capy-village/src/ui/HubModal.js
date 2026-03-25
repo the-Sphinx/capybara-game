@@ -16,6 +16,7 @@ let _selectedMode = null;        // 'adventure' | 'arcade'
 let _selectedLevel = null;
 let _selectedWorld = null;
 let _preferredLevelNum = null;
+let _worldMessage = '';
 // _levelCache removed — levels are now bundled via gameManager.getLevels()
 
 // ── Overlay singleton ────────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ export async function openHub() {
   _selectedLevel    = null;
   _selectedWorld    = null;
   _preferredLevelNum = null;
+  _worldMessage = '';
 
   const overlay = getOverlay();
   overlay.style.display = 'flex';
@@ -83,6 +85,7 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
   _selectedLevel    = null;
   _selectedWorld    = null;
   _preferredLevelNum = preferLevelNum;
+  _worldMessage = '';
 
   if (mode === 'arcade') {
     _screen = 'arcade';
@@ -182,6 +185,7 @@ function renderModeSelect(overlay) {
       _selectedLevel = null;
       _selectedWorld = null;
       _preferredLevelNum = null;
+      _worldMessage = '';
       if (_selectedMode === 'adventure') {
         loadAndRenderAdventureScreen(overlay);
       } else {
@@ -343,49 +347,69 @@ function boxToStyle(box) {
   ].join(';');
 }
 
+function expandedHitBox(signBox) {
+  const growX = 0.038;
+  const growY = 0.07;
+  return {
+    x: Math.max(0, signBox.x - growX),
+    y: Math.max(0, signBox.y - growY),
+    w: Math.min(1 - Math.max(0, signBox.x - growX), signBox.w + growX * 2),
+    h: Math.min(1 - Math.max(0, signBox.y - growY), signBox.h + growY * 2),
+  };
+}
+
+function flowerProgressIcons(world) {
+  const totalIcons = 5;
+  const fullIcons = Math.floor(world.levelsCompleted / 2);
+  const hasHalf = world.levelsCompleted % 2 === 1;
+
+  return Array.from({ length: totalIcons }, (_, index) => {
+    let cls = 'hub-world-sign__flower';
+    if (index < fullIcons) {
+      cls += ' hub-world-sign__flower--full';
+    } else if (index === fullIcons && hasHalf) {
+      cls += ' hub-world-sign__flower--half';
+    } else {
+      cls += ' hub-world-sign__flower--empty';
+    }
+    return `<span class="${cls}" aria-hidden="true">✿</span>`;
+  }).join('');
+}
+
 function worldOverlayHtml(world) {
   const stateClass = world.isLocked
-    ? 'hub-world-sign--locked'
+    ? 'hub-world-hotspot--locked'
     : world.isCompleted
-      ? 'hub-world-sign--completed'
+      ? 'hub-world-hotspot--completed'
       : world.isCurrent
-        ? 'hub-world-sign--current'
-        : 'hub-world-sign--unlocked';
-  const progressText = world.isLocked
-    ? '🔒 Locked'
-    : `${world.levelsCompleted}/${world.levelsTotal}`;
+        ? 'hub-world-hotspot--current'
+        : 'hub-world-hotspot--unlocked';
+  const hitBox = expandedHitBox(world.signBox);
+  const signOffsetX = ((world.signBox.x - hitBox.x) / hitBox.w) * 100;
+  const signOffsetY = ((world.signBox.y - hitBox.y) / hitBox.h) * 100;
+  const signWidth = (world.signBox.w / hitBox.w) * 100;
+  const signHeight = (world.signBox.h / hitBox.h) * 100;
 
   return `
     <button
-      class="hub-world-sign ${stateClass}${_selectedWorld?.id === world.id ? ' hub-world-sign--selected' : ''}"
+      class="hub-world-hotspot ${stateClass}${_selectedWorld?.id === world.id ? ' hub-world-hotspot--selected' : ''}"
       data-worldid="${world.id}"
-      style="${boxToStyle(world.signBox)}"
+      data-locked="${world.isLocked ? 'true' : 'false'}"
+      style="${boxToStyle(hitBox)}"
       title="${world.title}"
       aria-label="${world.title}"
       type="button"
     >
-      <span class="hub-world-sign__title">${world.title}</span>
-      <span class="hub-world-sign__stars">${world.isLocked ? '' : worldStarsText(world)}</span>
-      <span class="hub-world-sign__progress">${progressText}</span>
+      <span
+        class="hub-world-sign"
+        style="left:${signOffsetX}%;top:${signOffsetY}%;width:${signWidth}%;height:${signHeight}%"
+      >
+        <span class="hub-world-sign__title">${world.title}</span>
+        ${world.isLocked
+          ? '<span class="hub-world-sign__lock" aria-hidden="true">🔒</span>'
+          : `<span class="hub-world-sign__flowers">${flowerProgressIcons(world)}</span>`}
+      </span>
     </button>
-  `;
-}
-
-function worldInfoHtml(world) {
-  const buttonLabel = world.isLocked ? '🔒 Locked' : '▶ Open World';
-  return `
-    <div class="hub-world-detail-card">
-      <div class="hub-world-detail-status hub-world-detail-status--${worldStatusLabel(world).toLowerCase()}">${worldStatusLabel(world)}</div>
-      <h3 class="hub-lvl-title">${world.title}</h3>
-      <p class="hub-world-detail-subtitle">${world.subtitle}</p>
-      <div class="hub-world-detail-grid">
-        <div><strong>Progress:</strong> ${world.levelsCompleted}/${world.levelsTotal}</div>
-        <div><strong>Stars:</strong> ${world.starsEarned}/${world.starsMax}</div>
-      </div>
-      ${world.isLocked ? `<div class="hub-lvl-unlock">Unlock: ${world.unlockRequirementText}</div>` : '<div class="hub-lvl-unlock">Status: Ready to explore</div>'}
-      <button class="hub-play-btn" id="hub-open-world-btn" ${world.isLocked ? 'disabled' : ''}>${buttonLabel}</button>
-      <p class="hub-world-detail-note">World interiors are coming next. This screen is wired as the new selection step.</p>
-    </div>
   `;
 }
 
@@ -401,18 +425,17 @@ function renderWorldSelect(overlay) {
   _selectedWorld = getSelectedMathWorld(worlds, levels);
 
   overlay.innerHTML = `
-    <div class="hub-panel hub-panel--worldselect">
+    <div class="hub-panel hub-panel--worldselect hub-panel--worldselect-fullscreen">
       <button class="hub-back-btn" id="hub-back">← Back</button>
       <button class="hub-close-btn" id="hub-close">✕</button>
-      <h2 class="hub-title">${cat.icon} ${cat.label} — ⚔️ Adventure Worlds</h2>
-      <div class="hub-worldselect-layout">
-        <div class="hub-world-map-shell">
-          <div class="hub-world-map" style="background-image:url('${BASE_URL + MATH_WORLD_SELECT_CONFIG.backgroundPath}')">
-            ${worlds.map(worldOverlayHtml).join('')}
-          </div>
-        </div>
-        <div class="hub-world-info" id="hub-world-info">
-          ${_selectedWorld ? worldInfoHtml(_selectedWorld) : '<p style="color:#aaa">Select a world</p>'}
+      <div class="hub-worldscreen-head">
+        <h2 class="hub-title">${cat.icon} ${cat.label}</h2>
+        <p class="hub-worldscreen-subtitle">Choose a patch to explore.</p>
+      </div>
+      ${_worldMessage ? `<div class="hub-world-message" id="hub-world-message">${_worldMessage}</div>` : ''}
+      <div class="hub-world-map-shell hub-world-map-shell--fullscreen">
+        <div class="hub-world-map hub-world-map--fullscreen" style="background-image:url('${BASE_URL + MATH_WORLD_SELECT_CONFIG.backgroundPath}')">
+          ${worlds.map(worldOverlayHtml).join('')}
         </div>
       </div>
     </div>
@@ -421,27 +444,33 @@ function renderWorldSelect(overlay) {
   overlay.querySelector('#hub-back').addEventListener('click', () => {
     _screen = 'mode';
     _selectedWorld = null;
+    _worldMessage = '';
     renderModeSelect(overlay);
   });
   overlay.querySelector('#hub-close').addEventListener('click', closeHub);
 
-  overlay.querySelectorAll('.hub-world-sign').forEach((button) => {
+  overlay.querySelectorAll('.hub-world-hotspot').forEach((button) => {
     const applySelection = () => {
       _selectedWorld = worlds.find(world => world.id === button.dataset.worldid) ?? _selectedWorld;
-      overlay.querySelectorAll('.hub-world-sign').forEach(node => node.classList.remove('hub-world-sign--selected'));
-      button.classList.add('hub-world-sign--selected');
-
-      const infoEl = overlay.querySelector('#hub-world-info');
-      infoEl.innerHTML = _selectedWorld ? worldInfoHtml(_selectedWorld) : '<p style="color:#aaa">Select a world</p>';
-      attachOpenWorldButton(overlay);
+      _worldMessage = '';
+      overlay.querySelectorAll('.hub-world-hotspot').forEach(node => node.classList.remove('hub-world-hotspot--selected'));
+      button.classList.add('hub-world-hotspot--selected');
     };
 
     button.addEventListener('mouseenter', applySelection);
     button.addEventListener('focus', applySelection);
-    button.addEventListener('click', applySelection);
-  });
+    button.addEventListener('click', () => {
+      applySelection();
+      if (_selectedWorld?.isLocked) {
+        _worldMessage = `${_selectedWorld.title} is locked. ${_selectedWorld.unlockRequirementText}`;
+        renderWorldSelect(overlay);
+        return;
+      }
 
-  attachOpenWorldButton(overlay);
+      _screen = 'worldplaceholder';
+      renderWorldPlaceholder(overlay);
+    });
+  });
 }
 
 function renderWorldPlaceholder(overlay) {
@@ -464,22 +493,14 @@ function renderWorldPlaceholder(overlay) {
 
   overlay.querySelector('#hub-back').addEventListener('click', () => {
     _screen = 'worldselect';
+    _worldMessage = '';
     renderWorldSelect(overlay);
   });
   overlay.querySelector('#hub-close').addEventListener('click', closeHub);
   overlay.querySelector('#hub-world-placeholder-back').addEventListener('click', () => {
     _screen = 'worldselect';
+    _worldMessage = '';
     renderWorldSelect(overlay);
-  });
-}
-
-function attachOpenWorldButton(overlay) {
-  const btn = overlay.querySelector('#hub-open-world-btn');
-  if (!btn || !_selectedWorld) return;
-  btn.addEventListener('click', () => {
-    if (_selectedWorld?.isLocked) return;
-    _screen = 'worldplaceholder';
-    renderWorldPlaceholder(overlay);
   });
 }
 
