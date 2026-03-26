@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "backgroundPath": "assets/games/math_garden/level_select.jpeg",
+  "worldNodeSets": {
+    "number_garden": [
+      { "levelNum": 1, "x": 0.115, "y": 0.41 },
+      { "levelNum": 3, "x": 0.18, "y": 0.505 }
+    ],
+    "addition_field": [],
+    "subtraction_patch": [],
+    "multiplication_meadow": [],
+    "division_grove": [],
+    "fraction_forest": [],
+    "geometry_yard": []
+  }
+}

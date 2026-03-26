@@ -16,13 +16,13 @@ Unify minigame world-select assets, level-select assets, and gameplay config und
 - Replaced the earlier manifest-based experiment with the simpler final structure:
 - `config/games/<gameId>/arcade.json`
 - `config/games/<gameId>/world_select.json`
-- `config/games/<gameId>/worlds/<worldId>/level_select.json`
-- `config/games/<gameId>/worlds/<worldId>/adventure_levels.json`
+- `config/games/<gameId>/level_select.json`
+- `config/games/<gameId>/levels/<worldId>_levels.json`
 - Moved Math, Watermelon Catch, and Language Grove adventure/arcade JSON out of `capy-village/src/games/**` into `config/games/**`.
 - Added Math-specific published world metadata in:
 - `config/games/math_garden/world_select.json`
-- `config/games/math_garden/worlds/<worldId>/level_select.json`
-- `config/games/math_garden/worlds/<worldId>/adventure_levels.json`
+- `config/games/math_garden/level_select.json`
+- `config/games/math_garden/levels/<worldId>_levels.json`
 - Moved Math world-select and Number Garden level-select images into:
 - `assets/game_ready/games/math_garden/world_select.png`
 - `assets/game_ready/games/math_garden/level_select.jpeg`
@@ -40,13 +40,16 @@ Unify minigame world-select assets, level-select assets, and gameplay config und
 - assets/game_ready/games/math_garden/level_select.jpeg
 - config/games/math_garden/arcade.json
 - config/games/math_garden/world_select.json
-- config/games/math_garden/worlds/*
+- config/games/math_garden/level_select.json
+- config/games/math_garden/levels/*
 - config/games/watermelon_catch/arcade.json
 - config/games/watermelon_catch/world_select.json
-- config/games/watermelon_catch/worlds/main/*
+- config/games/watermelon_catch/level_select.json
+- config/games/watermelon_catch/levels/main_levels.json
 - config/games/language_grove/arcade.json
 - config/games/language_grove/world_select.json
-- config/games/language_grove/worlds/main/*
+- config/games/language_grove/level_select.json
+- config/games/language_grove/levels/main_levels.json
 - capy-village/src/games/GameManager.js
 - capy-village/src/games/mathGarden/MathGardenGame.js
 - capy-village/src/games/watermelonCatch/WatermelonCatchGame.js
@@ -71,8 +74,8 @@ The new runtime config model is:
 ```text
 arcade.json
 world_select.json
-worlds/<worldId>/level_select.json
-worlds/<worldId>/adventure_levels.json
+level_select.json
+levels/<worldId>_levels.json
 ```
 
 Published paths now include:
@@ -86,13 +89,13 @@ Math-specific authored map config is now JSON-only:
 
 ```text
 world_select.json -> world sign boxes and labels
-worlds/<worldId>/level_select.json -> level node coordinates and shared background image path
-worlds/<worldId>/adventure_levels.json -> levels belonging only to that world
+level_select.json -> all world node coordinates and the shared level-select background image
+levels/<worldId>_levels.json -> levels belonging only to that world
 ```
 
 ## 7. Risks / Known Issues
 - The app still preloads a fixed list of current minigame ids in `main.js`; that is acceptable for the current 3-game set, but future fully dynamic game discovery would require categories-driven preload.
-- Watermelon Catch and Language Grove now carry `world_select.json` in the same structure, but with `enabled: false` so they preserve direct level-map behavior.
+- Watermelon Catch and Language Grove now carry `world_select.json` and `level_select.json` in the same structure, but both stay disabled for direct level-map behavior.
 - This pass was verified through publish/build and code-path inspection, but I intentionally did not start a new Playwright browser session because of the earlier orphan-window issue.
 
 ## 8. Alignment Check Against MASTER_BRIEF
@@ -108,17 +111,17 @@ worlds/<worldId>/adventure_levels.json -> levels belonging only to that world
 - Verified published config output exists under `capy-village/public/assets/config/games`.
 - Verified published Math game images exist under `capy-village/public/assets/games/math_garden`.
 - Reviewed `main.js` and `GameManager` wiring to confirm bundled minigame JSON imports were removed.
-- Reviewed `HubModal.js` to confirm world-select and world-map rendering now resolve through cached fetched config rather than `worlds.js`.
+- Reviewed `HubModal.js` to confirm world-select and level-select rendering now resolve through cached fetched config rather than `worlds.js`.
 
 ## 10. Example Output / Logs
 ```text
 public/assets/config/games/math_garden/world_select.json
-public/assets/config/games/math_garden/worlds/number_garden/level_select.json
+public/assets/config/games/math_garden/level_select.json
 public/assets/games/math_garden/world_select.png
 ```
 
 ```text
-public/assets/config/games/watermelon_catch/worlds/main/adventure_levels.json
+public/assets/config/games/watermelon_catch/levels/main_levels.json
 public/assets/config/games/language_grove/arcade.json
 ```
 

@@ -513,8 +513,9 @@ function lockedPopupHtml() {
 }
 
 function findNumberGardenOverlayLevels(levels) {
-  const overlayConfig = gameManager.getWorldMapConfig(_selectedCategory?.gameId, _selectedWorld?.id);
-  const nodeMap = new Map((overlayConfig?.nodes ?? []).map((node) => [node.levelNum, node]));
+  const levelSelectConfig = gameManager.getLevelSelectConfig(_selectedCategory?.gameId);
+  const nodes = levelSelectConfig?.worldNodeSets?.[_selectedWorld?.id] ?? [];
+  const nodeMap = new Map(nodes.map((node) => [node.levelNum, node]));
   return levels
     .filter(level => level.worldId === _selectedWorld?.id && nodeMap.has(level.levelNum))
     .map((level) => ({ ...level, node: nodeMap.get(level.levelNum) }))
@@ -685,9 +686,10 @@ function renderWorldPlaceholder(overlay) {
   const cat = _selectedCategory;
   const world = _selectedWorld;
   const levels = gameManager.getLevels(cat.gameId);
-  const worldMapConfig = gameManager.getWorldMapConfig(cat.gameId, world?.id);
+  const levelSelectConfig = gameManager.getLevelSelectConfig(cat.gameId);
+  const worldNodes = levelSelectConfig?.worldNodeSets?.[world?.id] ?? [];
 
-  if (worldMapConfig?.nodes?.length) {
+  if (worldNodes.length) {
     renderNumberGardenLevelOverlay(overlay, cat, levels);
     return;
   }
@@ -722,9 +724,9 @@ function renderWorldPlaceholder(overlay) {
 function renderNumberGardenLevelOverlay(overlay, cat, levels) {
   const isFirstEntry = _screen !== 'numbergardenoverlay-initialized';
   _screen = 'numbergardenoverlay';
-  const worldMapConfig = gameManager.getWorldMapConfig(cat.gameId, _selectedWorld?.id);
+  const levelSelectConfig = gameManager.getLevelSelectConfig(cat.gameId);
   const levelEntries = findNumberGardenOverlayLevels(levels);
-  if (!worldMapConfig?.backgroundPath || !levelEntries.length) {
+  if (!levelSelectConfig?.backgroundPath || !levelEntries.length) {
     renderError(overlay, 'No world level map found.');
     return;
   }
@@ -745,7 +747,7 @@ function renderNumberGardenLevelOverlay(overlay, cat, levels) {
   overlay.innerHTML = `
     <div class="hub-panel hub-panel--worldselect hub-panel--worldselect-fullscreen">
       <div class="hub-world-map-shell hub-world-map-shell--fullscreen">
-        <div class="hub-world-map hub-world-map--fullscreen" style="background-image:url('${BASE_URL + worldMapConfig.backgroundPath}')">
+        <div class="hub-world-map hub-world-map--fullscreen" style="background-image:url('${BASE_URL + levelSelectConfig.backgroundPath}')">
           ${levelEntries.map(level => levelNodeHtml(cat, level, levelEntries)).join('')}
           ${selectedLevel ? renderLevelInfoBubble(cat, selectedLevel, levelEntries) : ''}
           <button class="hub-world-back-btn" id="hub-back" type="button">← Back</button>

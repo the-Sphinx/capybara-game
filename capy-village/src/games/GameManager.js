@@ -57,20 +57,16 @@ class GameManager {
   }
 
   async _loadGameConfig(gameId) {
-    const [arcadeConfig, worldSelectConfig] = await Promise.all([
+    const [arcadeConfig, worldSelectConfig, levelSelectConfig] = await Promise.all([
       fetchJson(joinConfigPath(gameId, 'arcade.json')),
       fetchJson(joinConfigPath(gameId, 'world_select.json')),
+      fetchJson(joinConfigPath(gameId, 'level_select.json')),
     ]);
 
     const levels = [];
-    const worldMapConfigs = {};
     for (const world of worldSelectConfig?.worlds ?? []) {
       const worldId = world.id;
-      const [levelSelectConfig, adventureLevels] = await Promise.all([
-        fetchJson(joinConfigPath(gameId, `worlds/${worldId}/level_select.json`)),
-        fetchJson(joinConfigPath(gameId, `worlds/${worldId}/adventure_levels.json`)),
-      ]);
-      worldMapConfigs[worldId] = levelSelectConfig;
+      const adventureLevels = await fetchJson(joinConfigPath(gameId, `levels/${worldId}_levels.json`));
       levels.push(...adventureLevels);
     }
 
@@ -79,7 +75,7 @@ class GameManager {
       levels,
       arcadeConfig,
       worldSelectConfig,
-      worldMapConfigs,
+      levelSelectConfig,
     };
   }
 
@@ -95,8 +91,8 @@ class GameManager {
     return this._gameConfigs.get(gameId)?.worldSelectConfig ?? null;
   }
 
-  getWorldMapConfig(gameId, worldId) {
-    return this._gameConfigs.get(gameId)?.worldMapConfigs?.[worldId] ?? null;
+  getLevelSelectConfig(gameId) {
+    return this._gameConfigs.get(gameId)?.levelSelectConfig ?? null;
   }
 
   startGame(gameId, levelConfig = null) {

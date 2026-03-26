@@ -7,15 +7,15 @@
 - Added a shared `config/games/<gameId>/...` structure with:
 - one `arcade.json` per game
 - one `world_select.json` per game
-- one `worlds/<worldId>/level_select.json` per world
-- one `worlds/<worldId>/adventure_levels.json` per world
+- one `level_select.json` per game
+- one `levels/<worldId>_levels.json` per world
 - Added a published runtime config path under `public/assets/config/games/...` by extending the asset publish step.
 - Moved Math Garden authored map images into `assets/game_ready/games/math_garden/` as:
 - `world_select.png`
 - `level_select.jpeg`
 - Removed hardcoded Math world and level-overlay metadata from JS and deleted `capy-village/src/games/mathGarden/worlds.js`.
 - Removed the old source-import minigame JSON files from `capy-village/src/games/**` and switched runtime loading to fetched published JSON.
-- Removed the earlier `manifest.json` experiment and rewired `GameManager` to load by convention from `arcade.json`, `world_select.json`, and each world folder.
+- Removed the earlier `manifest.json` experiment and rewired `GameManager` to load by convention from `arcade.json`, `world_select.json`, `level_select.json`, and `levels/<worldId>_levels.json`.
 - Rewired `main.js` and `HubModal.js` to use that fetched config cache.
 - Kept gameplay ids, world ids, level numbers, rewards, unlock behavior, and current Number Garden overlay behavior unchanged.
 
@@ -26,10 +26,12 @@
 - Confirmed published Math game images now exist as:
 - `capy-village/public/assets/games/math_garden/world_select.png`
 - `capy-village/public/assets/games/math_garden/level_select.jpeg`
+- Confirmed Math level nodes now come from one shared `config/games/math_garden/level_select.json`.
+- Confirmed Math gameplay levels are now split into `config/games/math_garden/levels/<worldId>_levels.json`.
 
 ### Known Risks
 - This pass was verified through publish/build and source inspection, but I intentionally did not start another Playwright Chrome session because of the earlier orphan-window issue.
-- Only Math Garden currently uses the world-select / level-select map path, but Watermelon Catch and Language Grove now follow the same per-game / per-world config structure with `world_select.json` disabled for direct level-map behavior.
+- Only Math Garden currently uses the world-select / level-select map path, but Watermelon Catch and Language Grove now follow the same config shape with `world_select.json` and `level_select.json` disabled for direct level-map behavior.
 
 ### Number Garden Level Overlay
 - Implemented `docs/tasks/number_garden_level_overlay_spec.md`.
