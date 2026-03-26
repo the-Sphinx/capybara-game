@@ -1,112 +1,128 @@
 # REVIEW BUNDLE
 
 ## 1. Task Summary
-- Task name: Number Garden level overlay
+- Task name: Published minigame config restructure
 - Date: 2026-03-26
-- Time: 00:35 +03
+- Time: 02:10 +03
 - Branch: scene-restructure
 - Commit hash: pending
 - Agent: Codex
 - Status: completed
 
 ## 2. Objective
-Implement a Number Garden level-node overlay system that opens from the Math world-select flow, keeps the map full-screen, adds clickable level nodes with lock/current/completed states, and uses a lightweight info bubble instead of panels.
+Unify minigame world-select assets, level-select assets, and gameplay config under a published JSON-driven structure so authored map metadata no longer lives in JS and all minigames follow the same scalable folder layout.
 
 ## 3. What Changed
-- Added a reusable Math level-overlay path that currently activates when opening the `Number Garden` world.
-- Replaced the old generic placeholder for `Number Garden` with a full-screen node overlay rendered on top of the Math world background image.
-- Added explicit normalized node coordinates for Number Garden levels in the Math world config.
-- Added clickable stone-style level nodes with:
-- level number
-- lock overlay for locked levels
-- current-level glow/pulse
-- selected-node highlight
-- Added an anchored info bubble near the selected node showing:
-- level title
-- short description
-- clear reward
-- bonus preview
-- play button when unlocked
-- Added click-outside behavior to dismiss the info bubble.
-- Kept other worlds on the existing placeholder path for now.
+- Added `config/games/<gameId>/manifest.json` as the required entry point for minigame configuration.
+- Moved Math, Watermelon Catch, and Language Grove adventure/arcade JSON out of `capy-village/src/games/**` into `config/games/**/levels/`.
+- Added Math-specific published world metadata in:
+- `config/games/math_garden/worlds/world_select.json`
+- `config/games/math_garden/worlds/number_garden.json`
+- Moved Math world-select and Number Garden level-select images into:
+- `assets/game_ready/games/math_garden/world_select/background.png`
+- `assets/game_ready/games/math_garden/worlds/number_garden/level_select/background.jpeg`
+- Extended the publish step so `config/games/**` is copied into `capy-village/public/assets/config/games/**`.
+- Reworked `GameManager` to fetch and cache manifest-driven game config at runtime.
+- Reworked `main.js` to preload published minigame config instead of importing gameplay JSON from source.
+- Reworked `HubModal.js` to read world-select and world-map metadata from `GameManager` cache instead of `worlds.js`.
+- Deleted:
+- `capy-village/src/games/mathGarden/worlds.js`
+- `config/level_points.json`
+- bundled minigame `adventure.json` / `arcade.json` files under `capy-village/src/games/**`
 
 ## 4. Files Changed
-- capy-village/src/games/mathGarden/worlds.js
+- assets/game_ready/games/math_garden/world_select/background.png
+- assets/game_ready/games/math_garden/worlds/number_garden/level_select/background.jpeg
+- config/games/math_garden/manifest.json
+- config/games/math_garden/levels/adventure.json
+- config/games/math_garden/levels/arcade.json
+- config/games/math_garden/worlds/world_select.json
+- config/games/math_garden/worlds/number_garden.json
+- config/games/watermelon_catch/manifest.json
+- config/games/watermelon_catch/levels/adventure.json
+- config/games/watermelon_catch/levels/arcade.json
+- config/games/language_grove/manifest.json
+- config/games/language_grove/levels/adventure.json
+- config/games/language_grove/levels/arcade.json
+- capy-village/src/games/GameManager.js
+- capy-village/src/games/mathGarden/MathGardenGame.js
+- capy-village/src/games/watermelonCatch/WatermelonCatchGame.js
+- capy-village/src/games/languageGrove/LanguageGroveGame.js
+- capy-village/src/main.js
 - capy-village/src/ui/HubModal.js
-- capy-village/src/style.css
+- tools/publish_assets.ts
 - docs/review/REVIEW_BUNDLE.md
 - docs/progress.md
 
 ## 5. Architecture Impact
-This introduces a reusable level-overlay renderer inside the hub flow while keeping the current fullscreen world-map shell. Node coordinates are explicit config data instead of hardcoded in rendering logic, which leaves room for future world-specific overlays without changing the hub architecture again.
+This replaces the old split source-of-truth with one published config pipeline:
+- authored game images under `assets/game_ready/games/**`
+- authored game JSON under `config/games/**`
+- published runtime consumption from `public/assets/games/**` and `public/assets/config/games/**`
+
+The app now treats minigame config as runtime data loaded through `GameManager`, which removes hardcoded authored world metadata from JS and gives future games/worlds a consistent place to add images, coordinates, and level data.
 
 ## 6. Key Implementation Notes
-The Number Garden overlay currently uses:
+The new runtime config model is:
 
 ```text
-- the same fullscreen Math background shell
-- explicit normalized level-node coordinates
-- save-driven locked/current/completed node state
-- a lightweight anchored bubble instead of a side panel
+manifest.json
+  -> levels/adventure.json
+  -> levels/arcade.json
+  -> optional worlds/world_select.json
+  -> optional worlds/<worldId>.json
 ```
 
-Node behavior now includes:
+Published paths now include:
 
 ```text
-- hover: slight brightness and scale
-- click: open bubble
-- click elsewhere: close bubble
-- unlocked: show play button
-- locked: show lock-state bubble text
+public/assets/config/games/<gameId>/...
+public/assets/games/<gameId>/...
 ```
 
-The info bubble displays:
+Math-specific authored map config is now JSON-only:
 
 ```text
-Level N — Label
-Description / goal text
-💰 reward
-⭐ bonus preview
-[ Play ] when unlocked
+world_select.json -> world sign boxes and labels
+number_garden.json -> level node coordinates and background image
 ```
 
 ## 7. Risks / Known Issues
-- The Number Garden node positions are authored directly in config for now because the task did not include node coordinates or a dedicated level-map image.
-- The overlay currently uses the existing Math Garden background image rather than a separate world-specific level-map asset.
-- Only `Number Garden` is upgraded to the new node-overlay flow in this pass; other worlds still use the placeholder path.
+- The app still preloads a fixed list of current minigame ids in `main.js`; that is acceptable for the current 3-game set, but future fully dynamic game discovery would require categories-driven preload.
+- Only Math Garden currently has published world-select / world-map JSON, but the other games now share the same manifest and levels structure.
 - This pass was verified through publish/build and code-path inspection, but I intentionally did not start a new Playwright browser session because of the earlier orphan-window issue.
 
 ## 8. Alignment Check Against MASTER_BRIEF
-- source grounding: improved because Number Garden now has explicit overlay structure rather than a generic placeholder
-- hybrid retrieval: unchanged
-- verification layer: improved because level info now appears contextually next to selected nodes
-- generic schema: improved because node coordinates and overlay behavior are separated from rendering code
-- inspectability: improved through visible node states and anchored info bubbles
+- source grounding: strongly improved because authored map metadata now lives in published JSON instead of JS constants
+- hybrid retrieval: improved because minigame config is now fetched as runtime data while gameplay logic stays in code
+- verification layer: improved because published config output can be inspected directly under `public/assets/config/games`
+- generic schema: improved through a consistent manifest + levels + worlds layout across games
+- inspectability: improved because images and coordinates are now colocated by game/world rather than scattered across flat asset/config files
 
 ## 9. Testing Performed
 - Ran `npm run publish-assets` successfully from the repo root.
 - Ran `npm run build` successfully in `capy-village`.
-- Reviewed the hub flow to confirm opening `Number Garden` now enters the node-overlay screen instead of the generic placeholder.
-- Reviewed node-state derivation to confirm locked/current/completed visuals come from existing save progression.
-- Reviewed the node bubble logic to confirm click selection and click-outside dismissal work through explicit overlay state.
-- Reviewed unlocked play-button wiring to confirm selected unlocked nodes start the corresponding Math Garden adventure level.
+- Verified published config output exists under `capy-village/public/assets/config/games`.
+- Verified published Math world images exist under `capy-village/public/assets/games/math_garden`.
+- Reviewed `main.js` and `GameManager` wiring to confirm bundled minigame JSON imports were removed.
+- Reviewed `HubModal.js` to confirm world-select and world-map rendering now resolve through cached fetched config rather than `worlds.js`.
 
 ## 10. Example Output / Logs
 ```text
-Level 1 — Sprout
-Answer 3 correctly
+public/assets/config/games/math_garden/manifest.json
+public/assets/config/games/math_garden/worlds/world_select.json
+public/assets/games/math_garden/world_select/background.png
 ```
 
 ```text
-💰 15 coins
-⭐ Bonus: +6 / +8
+public/assets/config/games/watermelon_catch/levels/adventure.json
+public/assets/config/games/language_grove/levels/arcade.json
 ```
 
 ## 11. Recommended Reviewer Focus
-- Open `Book Statue` → `Math Garden` → `Adventure` → `Number Garden`.
-- Verify the level nodes appear on the full-screen map and show number/current/lock state clearly.
-- Click unlocked and locked nodes to confirm the info bubble content and play-button behavior.
-- Click outside the bubble and confirm it dismisses cleanly.
+- Inspect the published `assets/config/games/**` output and confirm each game has a manifest plus level JSON.
+- Confirm Math world-select and Number Garden level-select image paths now come from config JSON rather than JS constants.
+- Confirm there are no remaining source imports of minigame `adventure.json` / `arcade.json` under `capy-village/src`.
 
 ## 12. Suggested Next Step
-The next strong follow-up would be adding dedicated node-coordinate maps for the remaining Math worlds so the current reusable overlay renderer can replace the placeholder path world by world.
+The next strong follow-up would be extending Math’s `worlds/<worldId>.json` coverage beyond `number_garden` so the remaining Math worlds can move from placeholder world-entry screens to authored level-map overlays.

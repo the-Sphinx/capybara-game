@@ -1,13 +1,13 @@
 {
   "arcadeWeights": {
-    "vowels":                2,
-    "consonants":            2,
+    "vowels": 2,
+    "consonants": 2,
     "categoryCatch_animals": 3,
-    "categoryCatch_foods":   2,
-    "sentenceCompletion":    2,
-    "opposites":             2,
-    "synonyms":              2,
-    "riddle":                1
+    "categoryCatch_foods": 2,
+    "sentenceCompletion": 2,
+    "opposites": 2,
+    "synonyms": 2,
+    "riddle": 1
   },
   "modes": [
     {

@@ -1,11 +1,25 @@
 import { gameState }   from '../state.js';
 import { saveManager } from '../SaveManager.js';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load ${url}: ${response.status}`);
+  }
+  return response.json();
+}
+
+function joinConfigPath(gameId, relativePath) {
+  return `${BASE_URL}assets/config/games/${gameId}/${relativePath}`;
+}
+
 class GameManager {
   constructor() {
     this._registry      = new Map();
-    this._levels        = new Map();
-    this._arcadeConfigs = new Map();
+    this._gameConfigs   = new Map();
+    this._configLoads   = new Map();
     this._activeGame    = null;
 
     this._overlay = document.createElement('div');
@@ -18,20 +32,70 @@ class GameManager {
     this._registry.set(gameId, factory);
   }
 
-  registerLevels(gameId, levels) {
-    this._levels.set(gameId, levels);
+  async ensureGameConfig(gameId) {
+    if (this._gameConfigs.has(gameId)) {
+      return this._gameConfigs.get(gameId);
+    }
+    if (this._configLoads.has(gameId)) {
+      return this._configLoads.get(gameId);
+    }
+
+    const loadPromise = this._loadGameConfig(gameId);
+    this._configLoads.set(gameId, loadPromise);
+
+    try {
+      const config = await loadPromise;
+      this._gameConfigs.set(gameId, config);
+      return config;
+    } finally {
+      this._configLoads.delete(gameId);
+    }
   }
 
-  registerArcadeConfig(gameId, config) {
-    this._arcadeConfigs.set(gameId, config);
+  async preloadGameConfigs(gameIds) {
+    await Promise.all(gameIds.map((gameId) => this.ensureGameConfig(gameId)));
+  }
+
+  async _loadGameConfig(gameId) {
+    const manifest = await fetchJson(joinConfigPath(gameId, 'manifest.json'));
+
+    const [levels, arcadeConfig] = await Promise.all([
+      manifest.levels?.adventure ? fetchJson(joinConfigPath(gameId, manifest.levels.adventure)) : Promise.resolve([]),
+      manifest.levels?.arcade ? fetchJson(joinConfigPath(gameId, manifest.levels.arcade)) : Promise.resolve(null),
+    ]);
+
+    const worldSelectConfig = manifest.worldSelectConfig
+      ? await fetchJson(joinConfigPath(gameId, manifest.worldSelectConfig))
+      : null;
+
+    const worldMapConfigs = {};
+    for (const [worldId, relativePath] of Object.entries(manifest.worldMapConfigs ?? {})) {
+      worldMapConfigs[worldId] = await fetchJson(joinConfigPath(gameId, relativePath));
+    }
+
+    return {
+      manifest,
+      levels,
+      arcadeConfig,
+      worldSelectConfig,
+      worldMapConfigs,
+    };
   }
 
   getLevels(gameId) {
-    return this._levels.get(gameId) ?? [];
+    return this._gameConfigs.get(gameId)?.levels ?? [];
   }
 
   getArcadeConfig(gameId) {
-    return this._arcadeConfigs.get(gameId) ?? null;
+    return this._gameConfigs.get(gameId)?.arcadeConfig ?? null;
+  }
+
+  getWorldSelectConfig(gameId) {
+    return this._gameConfigs.get(gameId)?.worldSelectConfig ?? null;
+  }
+
+  getWorldMapConfig(gameId, worldId) {
+    return this._gameConfigs.get(gameId)?.worldMapConfigs?.[worldId] ?? null;
   }
 
   startGame(gameId, levelConfig = null) {

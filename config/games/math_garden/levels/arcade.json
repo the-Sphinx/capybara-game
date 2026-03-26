@@ -1,9 +1,9 @@
 {
   "arcadeWeights": {
-    "answer_add":    1,
-    "answer_mixed":  1,
-    "collect_even":  2,
-    "collect_odd":   2,
+    "answer_add": 1,
+    "answer_mixed": 1,
+    "collect_even": 2,
+    "collect_odd": 2,
     "collect_mult3": 3,
     "collect_mult5": 2
   },

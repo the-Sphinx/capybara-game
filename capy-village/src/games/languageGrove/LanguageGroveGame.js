@@ -1,7 +1,7 @@
 import { BaseGame } from '../BaseGame.js';
+import { gameManager } from '../GameManager.js';
 import { soundManager } from '../../audio/SoundManager.js';
 import { saveManager } from '../../SaveManager.js';
-import arcadeConfig from './arcade.json';
 import { computeAdventureRewards, renderRewardBreakdownHtml } from '../rewardUtils.js';
 import {
   VOWELS, CONSONANTS, ALL_LETTERS,
@@ -68,16 +68,17 @@ export class LanguageGroveGame extends BaseGame {
 
     this._levelConfig = levelConfig;
     this._isArcade    = !levelConfig || levelConfig.mode === 'arcade';
+    this._arcadeConfig = gameManager.getArcadeConfig('language_grove') ?? { arcadeWeights: {}, modes: [] };
 
     // Resolve active mode from arcade config or level config
     if (this._isArcade) {
-      const weights    = levelConfig?.arcadeWeights ?? arcadeConfig.arcadeWeights ?? {};
-      this._activeMode = weightedPick(arcadeConfig.modes, weights);
+      const weights    = levelConfig?.arcadeWeights ?? this._arcadeConfig.arcadeWeights ?? {};
+      this._activeMode = weightedPick(this._arcadeConfig.modes, weights);
     } else {
       // Adventure: find matching arcade mode entry for metadata (title/prompt/pts)
-      this._activeMode = arcadeConfig.modes.find(m => m.id === levelConfig.modeId)
-        ?? arcadeConfig.modes.find(m => m.modeId === levelConfig.modeId)
-        ?? arcadeConfig.modes[0];
+      this._activeMode = this._arcadeConfig.modes.find(m => m.id === levelConfig.modeId)
+        ?? this._arcadeConfig.modes.find(m => m.modeId === levelConfig.modeId)
+        ?? this._arcadeConfig.modes[0];
     }
 
     const cfg = levelConfig;

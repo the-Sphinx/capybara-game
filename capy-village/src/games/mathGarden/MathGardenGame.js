@@ -1,7 +1,7 @@
 import { BaseGame } from '../BaseGame.js';
+import { gameManager } from '../GameManager.js';
 import { soundManager } from '../../audio/SoundManager.js';
 import { saveManager } from '../../SaveManager.js';
-import arcadeConfig from './arcade.json';
 import { computeAdventureRewards, renderRewardBreakdownHtml } from '../rewardUtils.js';
 
 function resolveIsCorrect(spec) {
@@ -9,8 +9,6 @@ function resolveIsCorrect(spec) {
   if (spec.type === 'mod_equals') return (v) => v % spec.mod === spec.result;
   return () => false;
 }
-
-const MATH_MODES = arcadeConfig.modes.map(m => ({ ...m, isCorrect: resolveIsCorrect(m.isCorrect) }));
 
 const WMC_BASE = import.meta.env.BASE_URL + 'games/watermelon/';
 
@@ -84,13 +82,18 @@ export class MathGardenGame extends BaseGame {
     super({ gameId: 'math_garden', label: 'Math Garden' });
     this._levelConfig = levelConfig;
     this._isArcade    = !levelConfig || levelConfig.mode === 'arcade';
+    this._arcadeConfig = gameManager.getArcadeConfig('math_garden') ?? { arcadeWeights: {}, modes: [] };
+    this._mathModes = this._arcadeConfig.modes.map((mode) => ({
+      ...mode,
+      isCorrect: resolveIsCorrect(mode.isCorrect),
+    }));
 
     // Determine active mode
     if (levelConfig?.subType && levelConfig?.modeId) {
-      this._activeMode = MATH_MODES.find(m => m.id === levelConfig.modeId) ?? MATH_MODES[0];
+      this._activeMode = this._mathModes.find(m => m.id === levelConfig.modeId) ?? this._mathModes[0];
     } else {
-      const weights    = levelConfig?.arcadeWeights ?? arcadeConfig.arcadeWeights ?? {};
-      this._activeMode = weightedPick(MATH_MODES, weights);
+      const weights    = levelConfig?.arcadeWeights ?? this._arcadeConfig.arcadeWeights ?? {};
+      this._activeMode = weightedPick(this._mathModes, weights);
     }
     this._subType = this._activeMode.subType;
 

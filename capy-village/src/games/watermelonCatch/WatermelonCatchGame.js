@@ -1,7 +1,7 @@
 import { BaseGame }    from '../BaseGame.js';
+import { gameManager } from '../GameManager.js';
 import { soundManager } from '../../audio/SoundManager.js';
 import { saveManager }  from '../../SaveManager.js';
-import arcadeConfig     from './arcade.json';
 import { computeAdventureRewards, renderRewardBreakdownHtml } from '../rewardUtils.js';
 
 const BASE_URL = import.meta.env.BASE_URL + 'games/watermelon/';
@@ -12,9 +12,6 @@ const SPAWN_MAX     = 1.4;  // seconds between spawns (max)
 const SPEED_MIN     = 80;   // px/s
 const SPEED_MAX     = 180;  // px/s
 const ITEM_SIZE     = 120;  // px
-
-// Classic mode — read from arcade.json
-const CLASSIC_MODE = arcadeConfig.modes[0];
 
 // ── Sprite catalog ───────────────────────────────────────────────────────────
 const SPRITES = {
@@ -46,8 +43,9 @@ function formatTime(secs) {
 export class WatermelonCatchGame extends BaseGame {
   constructor(levelConfig = null) {
     super({ gameId: 'watermelon_catch', label: 'Watermelon Catch' });
+    this._arcadeConfig   = gameManager.getArcadeConfig('watermelon_catch') ?? { modes: [] };
     this._levelConfig   = levelConfig;
-    this._mode          = CLASSIC_MODE;
+    this._mode          = this._arcadeConfig.modes[0] ?? null;
     this._isArcade      = !levelConfig || levelConfig.mode !== 'adventure';
     this._score         = 0;
     this._missed        = 0;

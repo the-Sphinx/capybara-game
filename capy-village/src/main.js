@@ -10,12 +10,6 @@ import { WatermelonCatchGame } from './games/watermelonCatch/WatermelonCatchGame
 import { MathGardenGame } from './games/mathGarden/MathGardenGame.js';
 import { LanguageGroveGame } from './games/languageGrove/LanguageGroveGame.js';
 import { loadPublishedVillage } from './runtimeLayout.js';
-import wmcAdventure from './games/watermelonCatch/adventure.json';
-import wmcArcade from './games/watermelonCatch/arcade.json';
-import mgAdventure from './games/mathGarden/adventure.json';
-import mgArcade from './games/mathGarden/arcade.json';
-import lgAdventure from './games/languageGrove/adventure.json';
-import lgArcade from './games/languageGrove/arcade.json';
 import { soundManager } from './audio/SoundManager.js';
 import { SOUND_CONFIG } from './config/sounds.js';
 import { saveManager } from './SaveManager.js';
@@ -38,16 +32,13 @@ async function bootstrap() {
 
   // ─── Register minigames ─────────────────────────────────────────────────────
   gameManager.register('watermelon_catch', (cfg) => new WatermelonCatchGame(cfg));
-  gameManager.registerLevels('watermelon_catch', wmcAdventure);
-  gameManager.registerArcadeConfig('watermelon_catch', wmcArcade);
-
   gameManager.register('math_garden', (cfg) => new MathGardenGame(cfg));
-  gameManager.registerLevels('math_garden', mgAdventure);
-  gameManager.registerArcadeConfig('math_garden', mgArcade);
-
   gameManager.register('language_grove', (cfg) => new LanguageGroveGame(cfg));
-  gameManager.registerLevels('language_grove', lgAdventure);
-  gameManager.registerArcadeConfig('language_grove', lgArcade);
+  await gameManager.preloadGameConfigs([
+    'watermelon_catch',
+    'math_garden',
+    'language_grove',
+  ]);
 
   // Dev helpers
   window.ACCESSORIES = ACCESSORIES;

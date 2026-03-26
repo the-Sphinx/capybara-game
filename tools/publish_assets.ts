@@ -7,8 +7,10 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const assetsSourceDir = path.resolve(repoRoot, 'assets/game_ready');
+const gameConfigSourceDir = path.resolve(repoRoot, 'config/games');
 const layoutsSourceDir = path.resolve(repoRoot, 'layouts');
 const assetsTargetDir = path.resolve(repoRoot, 'capy-village/public/assets');
+const gameConfigTargetDir = path.resolve(repoRoot, 'capy-village/public/assets/config/games');
 const layoutsTargetDir = path.resolve(repoRoot, 'capy-village/public/layouts');
 const legacyPublicDirs = [
   path.resolve(repoRoot, 'capy-village/public/models'),
@@ -88,6 +90,7 @@ async function removeLegacyPublicDirs(): Promise<void> {
 
 async function publish(): Promise<void> {
   await ensureDirExists(assetsSourceDir, 'Assets source folder');
+  await ensureDirExists(gameConfigSourceDir, 'Game config source folder');
   await ensureDirExists(layoutsSourceDir, 'Layouts source folder');
 
   log('Copying assets...');
@@ -102,6 +105,12 @@ async function publish(): Promise<void> {
     }
   });
   await writeManifest(manifest);
+
+  log('Copying game configs...');
+  await clearDirectoryContents(gameConfigTargetDir);
+  await copyRecursive(gameConfigSourceDir, gameConfigTargetDir, async (sourceFile) => {
+    log(`Copied config: ${path.basename(sourceFile)}`);
+  });
 
   log('Copying layouts...');
   await clearDirectoryContents(layoutsTargetDir);
