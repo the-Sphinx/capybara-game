@@ -1,5 +1,7 @@
 {
-  "backgroundPath": "assets/games/math_garden/world_select/background.png",
+  "enabled": true,
+  "backgroundPath": "assets/games/math_garden/world_select.png",
+  "levelSelectBackgroundPath": "assets/games/math_garden/level_select.jpeg",
   "worlds": [
     {
       "id": "number_garden",

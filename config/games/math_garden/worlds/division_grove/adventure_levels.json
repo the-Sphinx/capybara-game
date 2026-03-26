@@ -1,0 +1,13 @@
+[
+  {
+    "levelNum": 7,
+    "worldId": "division_grove",
+    "label": "High Five",
+    "subType": "collection",
+    "modeId": "collect_mult5",
+    "timeLimit": 45,
+    "numberRange": [1, 20],
+    "goal": { "type": "catchCount", "value": 5 },
+    "clearReward": 35
+  }
+]

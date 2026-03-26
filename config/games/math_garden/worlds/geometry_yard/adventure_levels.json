@@ -1,0 +1,24 @@
+[
+  {
+    "levelNum": 9,
+    "worldId": "geometry_yard",
+    "label": "Orchard",
+    "subType": "collection",
+    "modeId": "collect_odd",
+    "timeLimit": 40,
+    "numberRange": [1, 25],
+    "goal": { "type": "catchCount", "value": 10 },
+    "clearReward": 50
+  },
+  {
+    "levelNum": 10,
+    "worldId": "geometry_yard",
+    "label": "Grand Garden",
+    "subType": "collection",
+    "modeId": "collect_mult3",
+    "timeLimit": 40,
+    "numberRange": [1, 30],
+    "goal": { "type": "catchCount", "value": 8 },
+    "clearReward": 60
+  }
+]

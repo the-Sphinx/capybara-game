@@ -1,0 +1,15 @@
+[
+  {
+    "levelNum": 8,
+    "worldId": "fraction_forest",
+    "label": "Garden",
+    "subType": "answer",
+    "modeId": "answer_mixed",
+    "timeLimit": 45,
+    "operation": "mixed",
+    "numberRange": [5, 20],
+    "answerCount": 4,
+    "goal": { "type": "correctAnswers", "value": 10 },
+    "clearReward": 45
+  }
+]

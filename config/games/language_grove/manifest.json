@@ -1,8 +1,0 @@
-{
-  "gameId": "language_grove",
-  "title": "Language Grove",
-  "levels": {
-    "adventure": "levels/adventure.json",
-    "arcade": "levels/arcade.json"
-  }
-}

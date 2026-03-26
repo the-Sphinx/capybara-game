@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "worlds": [
+    {
+      "id": "main",
+      "title": "Language Grove",
+      "subtitle": "Letters and words",
+      "unlockRequirementText": ""
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-{
-  "gameId": "watermelon_catch",
-  "title": "Watermelon Catch",
-  "levels": {
-    "adventure": "levels/adventure.json",
-    "arcade": "levels/arcade.json"
-  }
-}

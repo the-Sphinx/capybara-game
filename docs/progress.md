@@ -4,23 +4,32 @@
 
 ### Published Minigame Config Restructure
 - Implemented the minigame config and asset reorganization task.
-- Added a shared `config/games/<gameId>/...` structure for all minigame manifests, adventure levels, arcade configs, and Math world/map metadata.
+- Added a shared `config/games/<gameId>/...` structure with:
+- one `arcade.json` per game
+- one `world_select.json` per game
+- one `worlds/<worldId>/level_select.json` per world
+- one `worlds/<worldId>/adventure_levels.json` per world
 - Added a published runtime config path under `public/assets/config/games/...` by extending the asset publish step.
-- Moved Math Garden authored map images into `assets/game_ready/games/math_garden/...` so world-select and level-select art now lives with its game-specific asset tree.
+- Moved Math Garden authored map images into `assets/game_ready/games/math_garden/` as:
+- `world_select.png`
+- `level_select.jpeg`
 - Removed hardcoded Math world and level-overlay metadata from JS and deleted `capy-village/src/games/mathGarden/worlds.js`.
 - Removed the old source-import minigame JSON files from `capy-village/src/games/**` and switched runtime loading to fetched published JSON.
-- Added async manifest/config caching in `GameManager` and rewired `main.js` and `HubModal.js` to use it.
+- Removed the earlier `manifest.json` experiment and rewired `GameManager` to load by convention from `arcade.json`, `world_select.json`, and each world folder.
+- Rewired `main.js` and `HubModal.js` to use that fetched config cache.
 - Kept gameplay ids, world ids, level numbers, rewards, unlock behavior, and current Number Garden overlay behavior unchanged.
 
 ### Self-Check
 - Verified `npm run publish-assets` succeeds from the repo root.
 - Verified `npm run build` succeeds in `capy-village`.
 - Confirmed published game configs now exist under `capy-village/public/assets/config/games`.
-- Confirmed published Math world images now exist under `capy-village/public/assets/games/math_garden/...`.
+- Confirmed published Math game images now exist as:
+- `capy-village/public/assets/games/math_garden/world_select.png`
+- `capy-village/public/assets/games/math_garden/level_select.jpeg`
 
 ### Known Risks
 - This pass was verified through publish/build and source inspection, but I intentionally did not start another Playwright Chrome session because of the earlier orphan-window issue.
-- Only Math Garden currently uses world-select / world-map JSON, but Watermelon Catch and Language Grove are now migrated into the same manifest + levels structure for consistency.
+- Only Math Garden currently uses the world-select / level-select map path, but Watermelon Catch and Language Grove now follow the same per-game / per-world config structure with `world_select.json` disabled for direct level-map behavior.
 
 ### Number Garden Level Overlay
 - Implemented `docs/tasks/number_garden_level_overlay_spec.md`.

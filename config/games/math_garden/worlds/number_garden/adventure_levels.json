@@ -1,0 +1,26 @@
+[
+  {
+    "levelNum": 1,
+    "worldId": "number_garden",
+    "label": "Sprout",
+    "subType": "answer",
+    "modeId": "answer_add",
+    "timeLimit": 60,
+    "operation": "addition",
+    "numberRange": [1, 5],
+    "answerCount": 2,
+    "goal": { "type": "correctAnswers", "value": 3 },
+    "clearReward": 15
+  },
+  {
+    "levelNum": 3,
+    "worldId": "number_garden",
+    "label": "Even Harvest",
+    "subType": "collection",
+    "modeId": "collect_even",
+    "timeLimit": 55,
+    "numberRange": [1, 15],
+    "goal": { "type": "catchCount", "value": 8 },
+    "clearReward": 25
+  }
+]

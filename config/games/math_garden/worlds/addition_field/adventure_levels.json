@@ -1,0 +1,28 @@
+[
+  {
+    "levelNum": 2,
+    "worldId": "addition_field",
+    "label": "Seedling",
+    "subType": "answer",
+    "modeId": "answer_add",
+    "timeLimit": 60,
+    "operation": "addition",
+    "numberRange": [1, 10],
+    "answerCount": 3,
+    "goal": { "type": "correctAnswers", "value": 5 },
+    "clearReward": 20
+  },
+  {
+    "levelNum": 5,
+    "worldId": "addition_field",
+    "label": "Flowering",
+    "subType": "answer",
+    "modeId": "answer_mixed",
+    "timeLimit": 50,
+    "operation": "mixed",
+    "numberRange": [1, 10],
+    "answerCount": 3,
+    "goal": { "type": "correctAnswers", "value": 7 },
+    "clearReward": 30
+  }
+]

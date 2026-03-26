@@ -269,7 +269,8 @@ function renderArcadePanel(overlay) {
 
 // ── Screen: Level Map ────────────────────────────────────────────────────────
 function isWorldSelectCategory(cat) {
-  return !!cat && !!gameManager.getWorldSelectConfig(cat.gameId);
+  const config = cat ? gameManager.getWorldSelectConfig(cat.gameId) : null;
+  return !!config && config.enabled !== false;
 }
 
 async function loadAndRenderAdventureScreen(overlay) {
@@ -686,7 +687,7 @@ function renderWorldPlaceholder(overlay) {
   const levels = gameManager.getLevels(cat.gameId);
   const worldMapConfig = gameManager.getWorldMapConfig(cat.gameId, world?.id);
 
-  if (worldMapConfig) {
+  if (worldMapConfig?.nodes?.length) {
     renderNumberGardenLevelOverlay(overlay, cat, levels);
     return;
   }

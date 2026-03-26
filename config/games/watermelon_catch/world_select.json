@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "worlds": [
+    {
+      "id": "main",
+      "title": "Watermelon Catch",
+      "subtitle": "Catch and score",
+      "unlockRequirementText": ""
+    }
+  ]
+}

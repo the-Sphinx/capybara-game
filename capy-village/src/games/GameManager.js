@@ -57,24 +57,25 @@ class GameManager {
   }
 
   async _loadGameConfig(gameId) {
-    const manifest = await fetchJson(joinConfigPath(gameId, 'manifest.json'));
-
-    const [levels, arcadeConfig] = await Promise.all([
-      manifest.levels?.adventure ? fetchJson(joinConfigPath(gameId, manifest.levels.adventure)) : Promise.resolve([]),
-      manifest.levels?.arcade ? fetchJson(joinConfigPath(gameId, manifest.levels.arcade)) : Promise.resolve(null),
+    const [arcadeConfig, worldSelectConfig] = await Promise.all([
+      fetchJson(joinConfigPath(gameId, 'arcade.json')),
+      fetchJson(joinConfigPath(gameId, 'world_select.json')),
     ]);
 
-    const worldSelectConfig = manifest.worldSelectConfig
-      ? await fetchJson(joinConfigPath(gameId, manifest.worldSelectConfig))
-      : null;
-
+    const levels = [];
     const worldMapConfigs = {};
-    for (const [worldId, relativePath] of Object.entries(manifest.worldMapConfigs ?? {})) {
-      worldMapConfigs[worldId] = await fetchJson(joinConfigPath(gameId, relativePath));
+    for (const world of worldSelectConfig?.worlds ?? []) {
+      const worldId = world.id;
+      const [levelSelectConfig, adventureLevels] = await Promise.all([
+        fetchJson(joinConfigPath(gameId, `worlds/${worldId}/level_select.json`)),
+        fetchJson(joinConfigPath(gameId, `worlds/${worldId}/adventure_levels.json`)),
+      ]);
+      worldMapConfigs[worldId] = levelSelectConfig;
+      levels.push(...adventureLevels);
     }
 
     return {
-      manifest,
+      gameId,
       levels,
       arcadeConfig,
       worldSelectConfig,
