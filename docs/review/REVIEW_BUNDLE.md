@@ -30,6 +30,8 @@ Unify minigame world-select assets, level-select assets, and gameplay config und
 - Reworked `GameManager` to fetch and cache convention-driven game config at runtime.
 - Reworked `main.js` to preload published minigame config instead of importing gameplay JSON from source.
 - Reworked `HubModal.js` to read world-select and world-map metadata from `GameManager` cache instead of `worlds.js`.
+- Refined `config/games/math_garden/level_select.json` so shared node positions are stored as reusable `slots` rather than global `levelNum`-keyed positions.
+- Reworked Math level-overlay binding so each world’s level list is assigned onto shared slots by sorted world level order.
 - Deleted:
 - `capy-village/src/games/mathGarden/worlds.js`
 - `config/level_points.json`
@@ -89,7 +91,7 @@ Math-specific authored map config is now JSON-only:
 
 ```text
 world_select.json -> world sign boxes and labels
-level_select.json -> all world node coordinates and the shared level-select background image
+level_select.json -> shared slot coordinates and the shared level-select background image
 levels/<worldId>_levels.json -> levels belonging only to that world
 ```
 
@@ -112,6 +114,7 @@ levels/<worldId>_levels.json -> levels belonging only to that world
 - Verified published Math game images exist under `capy-village/public/assets/games/math_garden`.
 - Reviewed `main.js` and `GameManager` wiring to confirm bundled minigame JSON imports were removed.
 - Reviewed `HubModal.js` to confirm world-select and level-select rendering now resolve through cached fetched config rather than `worlds.js`.
+- Reviewed shared-slot mapping to confirm world level overlays no longer depend on global `levelNum` coordinates in `level_select.json`.
 
 ## 10. Example Output / Logs
 ```text

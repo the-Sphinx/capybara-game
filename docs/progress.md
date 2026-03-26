@@ -18,6 +18,8 @@
 - Removed the earlier `manifest.json` experiment and rewired `GameManager` to load by convention from `arcade.json`, `world_select.json`, `level_select.json`, and `levels/<worldId>_levels.json`.
 - Rewired `main.js` and `HubModal.js` to use that fetched config cache.
 - Kept gameplay ids, world ids, level numbers, rewards, unlock behavior, and current Number Garden overlay behavior unchanged.
+- Refined Math Garden shared level-select config so node positions are now reusable `slots` instead of being keyed by global `levelNum`.
+- Updated the Math level overlay to assign each world’s levels onto the shared slots by level order.
 
 ### Self-Check
 - Verified `npm run publish-assets` succeeds from the repo root.
@@ -28,6 +30,7 @@
 - `capy-village/public/assets/games/math_garden/level_select.jpeg`
 - Confirmed Math level nodes now come from one shared `config/games/math_garden/level_select.json`.
 - Confirmed Math gameplay levels are now split into `config/games/math_garden/levels/<worldId>_levels.json`.
+- Confirmed shared Math level-select slots no longer depend on global `levelNum` keys.
 
 ### Known Risks
 - This pass was verified through publish/build and source inspection, but I intentionally did not start another Playwright Chrome session because of the earlier orphan-window issue.

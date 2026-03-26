@@ -514,12 +514,14 @@ function lockedPopupHtml() {
 
 function findNumberGardenOverlayLevels(levels) {
   const levelSelectConfig = gameManager.getLevelSelectConfig(_selectedCategory?.gameId);
-  const nodes = levelSelectConfig?.worldNodeSets?.[_selectedWorld?.id] ?? [];
-  const nodeMap = new Map(nodes.map((node) => [node.levelNum, node]));
-  return levels
-    .filter(level => level.worldId === _selectedWorld?.id && nodeMap.has(level.levelNum))
-    .map((level) => ({ ...level, node: nodeMap.get(level.levelNum) }))
+  const slots = [...(levelSelectConfig?.slots ?? [])].sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
+  const worldLevels = levels
+    .filter(level => level.worldId === _selectedWorld?.id)
     .sort((a, b) => a.levelNum - b.levelNum);
+
+  return worldLevels
+    .map((level, index) => ({ ...level, node: slots[index] ?? null }))
+    .filter((level) => !!level.node);
 }
 
 function getOverlayLevelStatus(cat, level, levelsInWorld) {
