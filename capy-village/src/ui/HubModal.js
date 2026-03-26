@@ -515,13 +515,30 @@ function lockedPopupHtml() {
 function findNumberGardenOverlayLevels(levels) {
   const levelSelectConfig = gameManager.getLevelSelectConfig(_selectedCategory?.gameId);
   const slots = [...(levelSelectConfig?.slots ?? [])].sort((a, b) => (a.slot ?? 0) - (b.slot ?? 0));
+  const slotMap = new Map(slots.map((slot) => [slot.slot, slot]));
   const worldLevels = levels
     .filter(level => level.worldId === _selectedWorld?.id)
     .sort((a, b) => a.levelNum - b.levelNum);
 
   return worldLevels
-    .map((level, index) => ({ ...level, node: slots[index] ?? null }))
+    .map((level, index) => ({
+      ...level,
+      node: slotMap.get(level.slot) ?? slots[index] ?? null,
+    }))
     .filter((level) => !!level.node);
+}
+
+function hasSharedLevelSelectOverlay(cat, world) {
+  if (!cat || !world) return false;
+
+  const levelSelectConfig = gameManager.getLevelSelectConfig(cat.gameId);
+  if (levelSelectConfig?.enabled === false) return false;
+
+  const slots = levelSelectConfig?.slots ?? [];
+  if (!slots.length) return false;
+
+  const levels = gameManager.getLevels(cat.gameId);
+  return levels.some((level) => level.worldId === world.id);
 }
 
 function getOverlayLevelStatus(cat, level, levelsInWorld) {
@@ -678,6 +695,12 @@ function renderWorldSelect(overlay) {
         return;
       }
 
+      if (hasSharedLevelSelectOverlay(cat, _selectedWorld)) {
+        _selectedOverlayLevel = null;
+        renderNumberGardenLevelOverlay(overlay, cat, levels);
+        return;
+      }
+
       _screen = 'worldplaceholder';
       renderWorldPlaceholder(overlay);
     });
@@ -688,10 +711,8 @@ function renderWorldPlaceholder(overlay) {
   const cat = _selectedCategory;
   const world = _selectedWorld;
   const levels = gameManager.getLevels(cat.gameId);
-  const levelSelectConfig = gameManager.getLevelSelectConfig(cat.gameId);
-  const worldNodes = levelSelectConfig?.worldNodeSets?.[world?.id] ?? [];
 
-  if (worldNodes.length) {
+  if (hasSharedLevelSelectOverlay(cat, world)) {
     renderNumberGardenLevelOverlay(overlay, cat, levels);
     return;
   }
@@ -774,7 +795,11 @@ function renderNumberGardenLevelOverlay(overlay, cat, levels) {
   });
 
   overlay.querySelector('.hub-world-map').addEventListener('click', (event) => {
-    if (event.target.closest('.hub-overlay-node') || event.target.closest('.hub-level-overlay-bubble')) {
+    if (
+      event.target.closest('.hub-overlay-node') ||
+      event.target.closest('.hub-level-overlay-bubble') ||
+      event.target.closest('.hub-world-back-btn')
+    ) {
       return;
     }
     _selectedOverlayLevel = null;

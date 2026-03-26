@@ -1,6 +1,7 @@
 [
   {
     "levelNum": 9,
+    "slot": 1,
     "worldId": "geometry_yard",
     "label": "Orchard",
     "subType": "collection",
@@ -12,6 +13,7 @@
   },
   {
     "levelNum": 10,
+    "slot": 2,
     "worldId": "geometry_yard",
     "label": "Grand Garden",
     "subType": "collection",

@@ -1,26 +1,50 @@
 [
   {
     "levelNum": 1,
+    "slot": 1,
     "worldId": "number_garden",
-    "label": "Sprout",
-    "subType": "answer",
-    "modeId": "answer_add",
+    "label": "Odd Harvest",
+    "subType": "collection",
+    "modeId": "collect_odd",
     "timeLimit": 60,
-    "operation": "addition",
-    "numberRange": [1, 5],
-    "answerCount": 2,
-    "goal": { "type": "correctAnswers", "value": 3 },
-    "clearReward": 15
+    "numberRange": [1, 15],
+    "goal": { "type": "catchCount", "value": 5 },
+    "clearReward": 10
   },
   {
-    "levelNum": 3,
+    "levelNum": 2,
+    "slot": 2,
     "worldId": "number_garden",
     "label": "Even Harvest",
     "subType": "collection",
     "modeId": "collect_even",
-    "timeLimit": 55,
+    "timeLimit": 50,
     "numberRange": [1, 15],
     "goal": { "type": "catchCount", "value": 8 },
-    "clearReward": 25
+    "clearReward": 10
+  },
+  {
+    "levelNum": 3,
+    "slot": 3,
+    "worldId": "number_garden",
+    "label": "Odd Harvest 2",
+    "subType": "collection",
+    "modeId": "collect_odd",
+    "timeLimit": 45,
+    "numberRange": [10, 25],
+    "goal": { "type": "catchCount", "value": 12 },
+    "clearReward": 10
+  },
+  {
+    "levelNum": 4,
+    "slot": 4,
+    "worldId": "number_garden",
+    "label": "Even Harvest 2",
+    "subType": "collection",
+    "modeId": "collect_even",
+    "timeLimit": 40,
+    "numberRange": [10, 25],
+    "goal": { "type": "catchCount", "value": 14 },
+    "clearReward": 15
   }
 ]

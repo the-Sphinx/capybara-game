@@ -748,9 +748,9 @@ canvas { display: block; }
   padding: 32px 36px 36px;
 }
 .hub-panel--worldselect-fullscreen {
-  width: min(98vw, calc(92vh * 1.5));
-  max-width: min(98vw, calc(92vh * 1.5));
-  max-height: 92vh;
+  width: min(100vw, calc(100vh * 16 / 9));
+  max-width: min(100vw, calc(100vh * 16 / 9));
+  max-height: 100vh;
   padding: 0;
   background: transparent;
   border: none;
@@ -969,7 +969,7 @@ canvas { display: block; }
   position: relative;
   padding: 0;
   border: none;
-  border-radius: 24px;
+  border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -977,22 +977,23 @@ canvas { display: block; }
 .hub-world-map {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 16 / 9;
   border-radius: 18px;
   overflow: hidden;
-  background-size: cover;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
 }
 
 .hub-world-map--fullscreen {
-  aspect-ratio: 3 / 2;
-  width: min(98vw, calc(92vh * 1.5));
-  max-width: min(98vw, calc(92vh * 1.5));
-  max-height: 92vh;
+  aspect-ratio: 16 / 9;
+  width: min(100vw, calc(100vh * 16 / 9));
+  max-width: min(100vw, calc(100vh * 16 / 9));
+  max-height: 100vh;
   min-height: auto;
   margin: 0 auto;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.36);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .hub-world-hotspot {
@@ -1220,35 +1221,53 @@ canvas { display: block; }
 
 .hub-overlay-node__number {
   color: #5a3e2b;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   text-shadow: 0 1px 0 rgba(255,255,255,0.45);
 }
 
 .hub-overlay-node__lock {
-  color: rgba(103, 78, 62, 0.72);
-  font-size: 15px;
-  background: rgba(255,243,214,0.22);
+  inset: 9px;
+  color: #6f533f;
+  font-size: 18px;
+  font-weight: 900;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 249, 233, 0.98) 0%, rgba(241, 224, 188, 0.96) 65%, rgba(225, 204, 161, 0.96) 100%);
   border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(255, 246, 219, 0.95), 0 6px 14px rgba(62, 41, 24, 0.24);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.7);
 }
 
 .hub-overlay-node__glow {
-  inset: -7px;
+  inset: -11px;
   z-index: 0;
-  background: radial-gradient(circle, rgba(247, 205, 98, 0.55) 0%, rgba(247, 205, 98, 0.18) 55%, rgba(247, 205, 98, 0) 100%);
+  background:
+    radial-gradient(circle, rgba(255, 241, 170, 0.9) 0%, rgba(255, 216, 104, 0.62) 38%, rgba(255, 196, 70, 0.26) 62%, rgba(255, 196, 70, 0) 100%);
   animation: hubOverlayNodePulse 1.8s ease-in-out infinite;
 }
 
 .hub-overlay-node--locked .hub-overlay-node__stone {
-  filter: grayscale(0.18) brightness(0.92);
+  filter: grayscale(0.24) brightness(0.86) saturate(0.8);
 }
 
 .hub-overlay-node--locked .hub-overlay-node__number {
-  color: rgba(90, 62, 43, 0.55);
+  color: rgba(90, 62, 43, 0.28);
 }
 
 .hub-overlay-node--completed .hub-overlay-node__stone {
   box-shadow: 0 0 0 2px rgba(255,255,255,0.35), 0 8px 14px rgba(43, 31, 22, 0.28);
+}
+
+.hub-overlay-node--current .hub-overlay-node__stone {
+  box-shadow:
+    0 0 0 3px rgba(255, 247, 214, 0.96),
+    0 0 0 7px rgba(255, 219, 107, 0.42),
+    0 14px 24px rgba(43, 31, 22, 0.32);
+  filter: brightness(1.06) saturate(1.05);
+}
+
+.hub-overlay-node--current .hub-overlay-node__number {
+  color: #5a381f;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.72), 0 0 10px rgba(255, 227, 136, 0.42);
 }
 
 .hub-overlay-node--selected .hub-overlay-node__stone {
@@ -1329,11 +1348,11 @@ canvas { display: block; }
 
 @keyframes hubOverlayNodePulse {
   0%, 100% {
-    transform: scale(0.98);
-    opacity: 0.7;
+    transform: scale(0.96);
+    opacity: 0.82;
   }
   50% {
-    transform: scale(1.04);
+    transform: scale(1.1);
     opacity: 1;
   }
 }
@@ -1390,15 +1409,15 @@ canvas { display: block; }
   }
 
   .hub-panel--worldselect-fullscreen {
-    width: min(99vw, calc(84vh * 1.5));
-    max-width: min(99vw, calc(84vh * 1.5));
-    max-height: 84vh;
+    width: min(100vw, calc(100vh * 16 / 9));
+    max-width: min(100vw, calc(100vh * 16 / 9));
+    max-height: 100vh;
   }
 
   .hub-world-map--fullscreen {
-    width: min(99vw, calc(84vh * 1.5));
-    max-width: min(99vw, calc(84vh * 1.5));
-    max-height: 84vh;
+    width: min(100vw, calc(100vh * 16 / 9));
+    max-width: min(100vw, calc(100vh * 16 / 9));
+    max-height: 100vh;
   }
 
   .hub-world-back-btn {

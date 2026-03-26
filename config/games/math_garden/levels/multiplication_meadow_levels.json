@@ -1,6 +1,7 @@
 [
   {
     "levelNum": 6,
+    "slot": 1,
     "worldId": "multiplication_meadow",
     "label": "Triple Vines",
     "subType": "collection",

@@ -1,6 +1,7 @@
 [
   {
     "levelNum": 2,
+    "slot": 1,
     "worldId": "addition_field",
     "label": "Seedling",
     "subType": "answer",
@@ -14,6 +15,7 @@
   },
   {
     "levelNum": 5,
+    "slot": 2,
     "worldId": "addition_field",
     "label": "Flowering",
     "subType": "answer",

@@ -1,6 +1,7 @@
 [
   {
     "levelNum": 8,
+    "slot": 1,
     "worldId": "fraction_forest",
     "label": "Garden",
     "subType": "answer",
