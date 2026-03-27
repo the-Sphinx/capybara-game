@@ -1,0 +1,30 @@
+[
+  {
+    "levelNum": 7,
+    "slot": 1,
+    "worldId": "division_grove",
+    "label": "High Five",
+    "subType": "collection",
+    "modeId": "collect_mult5",
+    "timeLimit": 45,
+    "numberRange": [
+      1,
+      20
+    ],
+    "goal": {
+      "type": "catchCount",
+      "value": 5
+    },
+    "clearReward": 35,
+    "bonusTiers": [
+      {
+        "threshold": 9,
+        "reward": 14
+      },
+      {
+        "threshold": 13,
+        "reward": 18
+      }
+    ]
+  }
+]

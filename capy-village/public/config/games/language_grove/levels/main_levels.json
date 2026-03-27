@@ -1,0 +1,246 @@
+[
+  {
+    "levelNum": 1,
+    "label": "Vowel Garden",
+    "subType": "stream",
+    "modeId": "vowels",
+    "timeLimit": 60,
+    "fallSpeed": 1,
+    "itemCount": 4,
+    "goal": {
+      "type": "catchCount",
+      "value": 3
+    },
+    "clearReward": 15,
+    "bonusTiers": [
+      {
+        "threshold": 5,
+        "reward": 6
+      },
+      {
+        "threshold": 7,
+        "reward": 8
+      }
+    ]
+  },
+  {
+    "levelNum": 2,
+    "label": "More Vowels",
+    "subType": "stream",
+    "modeId": "vowels",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": {
+      "type": "catchCount",
+      "value": 5
+    },
+    "clearReward": 20,
+    "bonusTiers": [
+      {
+        "threshold": 7,
+        "reward": 8
+      },
+      {
+        "threshold": 9,
+        "reward": 10
+      }
+    ]
+  },
+  {
+    "levelNum": 3,
+    "label": "Consonant Trail",
+    "subType": "stream",
+    "modeId": "consonants",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": {
+      "type": "catchCount",
+      "value": 5
+    },
+    "clearReward": 20,
+    "bonusTiers": [
+      {
+        "threshold": 7,
+        "reward": 8
+      },
+      {
+        "threshold": 9,
+        "reward": 10
+      }
+    ]
+  },
+  {
+    "levelNum": 4,
+    "label": "Animal Friends",
+    "subType": "stream",
+    "modeId": "categoryCatch",
+    "category": "animals",
+    "timeLimit": 60,
+    "fallSpeed": 1,
+    "itemCount": 4,
+    "goal": {
+      "type": "catchCount",
+      "value": 4
+    },
+    "clearReward": 25,
+    "bonusTiers": [
+      {
+        "threshold": 6,
+        "reward": 10
+      },
+      {
+        "threshold": 8,
+        "reward": 13
+      }
+    ]
+  },
+  {
+    "levelNum": 5,
+    "label": "Fruit Basket",
+    "subType": "stream",
+    "modeId": "categoryCatch",
+    "category": "fruits",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": {
+      "type": "catchCount",
+      "value": 4
+    },
+    "clearReward": 25,
+    "bonusTiers": [
+      {
+        "threshold": 6,
+        "reward": 10
+      },
+      {
+        "threshold": 8,
+        "reward": 13
+      }
+    ]
+  },
+  {
+    "levelNum": 6,
+    "label": "Finish the Sentence",
+    "subType": "choiceRound",
+    "modeId": "sentenceCompletion",
+    "timeLimit": 60,
+    "fallSpeed": 1,
+    "answerCount": 3,
+    "goal": {
+      "type": "correctAnswers",
+      "value": 3
+    },
+    "clearReward": 30,
+    "bonusTiers": [
+      {
+        "threshold": 5,
+        "reward": 12
+      },
+      {
+        "threshold": 7,
+        "reward": 15
+      }
+    ]
+  },
+  {
+    "levelNum": 7,
+    "label": "Letters in DOG",
+    "subType": "stream",
+    "modeId": "lettersInWord",
+    "targetWord": "DOG",
+    "timeLimit": 45,
+    "fallSpeed": 1.1,
+    "itemCount": 5,
+    "goal": {
+      "type": "catchCount",
+      "value": 3
+    },
+    "clearReward": 30,
+    "bonusTiers": [
+      {
+        "threshold": 5,
+        "reward": 12
+      },
+      {
+        "threshold": 7,
+        "reward": 15
+      }
+    ]
+  },
+  {
+    "levelNum": 8,
+    "label": "Opposites!",
+    "subType": "choiceRound",
+    "modeId": "opposites",
+    "timeLimit": 55,
+    "fallSpeed": 1.1,
+    "answerCount": 4,
+    "goal": {
+      "type": "correctAnswers",
+      "value": 4
+    },
+    "clearReward": 35,
+    "bonusTiers": [
+      {
+        "threshold": 6,
+        "reward": 14
+      },
+      {
+        "threshold": 8,
+        "reward": 18
+      }
+    ]
+  },
+  {
+    "levelNum": 9,
+    "label": "Flying Things",
+    "subType": "stream",
+    "modeId": "categoryCatch",
+    "category": "flyingThings",
+    "timeLimit": 50,
+    "fallSpeed": 1.2,
+    "itemCount": 5,
+    "goal": {
+      "type": "catchCount",
+      "value": 5
+    },
+    "clearReward": 40,
+    "bonusTiers": [
+      {
+        "threshold": 7,
+        "reward": 16
+      },
+      {
+        "threshold": 9,
+        "reward": 20
+      }
+    ]
+  },
+  {
+    "levelNum": 10,
+    "label": "Word Wizard",
+    "subType": "choiceRound",
+    "modeId": "synonyms",
+    "timeLimit": 50,
+    "fallSpeed": 1.2,
+    "answerCount": 4,
+    "goal": {
+      "type": "correctAnswers",
+      "value": 5
+    },
+    "clearReward": 50,
+    "bonusTiers": [
+      {
+        "threshold": 7,
+        "reward": 20
+      },
+      {
+        "threshold": 9,
+        "reward": 25
+      }
+    ]
+  }
+]

@@ -649,3 +649,9 @@
 
 ### Known Risks
 - The current Node-based GLB pipeline emits texture-loading warnings, so final texture preservation still needs review.
+- Moved authored runtime JSON into `capy-village/public/config/...` so the game/editor now read one in-app source of truth instead of repo-root config plus published copies.
+- Moved the layout source to `capy-village/public/config/layouts/village_hub_v1.json` and updated runtime/editor paths accordingly.
+- Moved hub categories to `capy-village/public/config/games/categories.json` and updated the hub fetch path.
+- Replaced the dead legacy `public/data/accessories.json` with a real `capy-village/public/config/accessories.json` consumed by `state.js`.
+- Kept only the layout schema in `capy-village/src/config/layouts/village_layout.schema.json`.
+- Simplified `publish-assets` so it now publishes curated assets only and clears old legacy generated config/layout output under `public/assets/config` and `public/layouts`.

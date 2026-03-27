@@ -49,7 +49,7 @@ export async function openHub() {
   if (!_categories) {
     renderLoading(overlay);
     try {
-      const res = await fetch(BASE_URL + 'data/categories.json');
+      const res = await fetch(BASE_URL + 'config/games/categories.json');
       if (!res.ok) throw new Error(res.status);
       _categories = await res.json();
     } catch (e) {
@@ -72,7 +72,7 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
   if (!_categories) {
     renderLoading(overlay);
     try {
-      const res = await fetch(BASE_URL + 'data/categories.json');
+      const res = await fetch(BASE_URL + 'config/games/categories.json');
       if (!res.ok) throw new Error(res.status);
       _categories = await res.json();
     } catch (e) {
@@ -614,18 +614,13 @@ function renderLevelInfoBubble(cat, level, levelsInWorld) {
 
   return `
     <div class="hub-level-overlay-bubble" style="left:${position.x * 100}%;top:${position.y * 100}%">
-      ${status.isLocked
-        ? `
-          <div class="hub-level-overlay-bubble__headline">🔒 Locked</div>
-          <div class="hub-level-overlay-bubble__desc">${status.unlockCondition} first</div>
-        `
-        : `
-          <div class="hub-level-overlay-bubble__headline">Level ${level.levelNum} — ${level.label}</div>
-          <div class="hub-level-overlay-bubble__desc">${goalText(level)}</div>
-        `}
+      <div class="hub-level-overlay-bubble__headline">Level ${level.levelNum} — ${level.label}</div>
+      <div class="hub-level-overlay-bubble__desc">${goalText(level)}</div>
       <div class="hub-level-overlay-bubble__meta">💰 ${level.clearReward ?? 0} coins</div>
       <div class="hub-level-overlay-bubble__meta">⭐ Bonus: ${bonusText}</div>
-      ${status.isLocked ? '' : '<button class="hub-play-btn hub-level-overlay-bubble__play" id="hub-level-overlay-play" type="button">▶ Play</button>'}
+      ${status.isLocked
+        ? '<button class="hub-play-btn hub-level-overlay-bubble__play" type="button" disabled>🔒 Locked</button>'
+        : '<button class="hub-play-btn hub-level-overlay-bubble__play" id="hub-level-overlay-play" type="button">▶ Play</button>'}
     </div>
   `;
 }

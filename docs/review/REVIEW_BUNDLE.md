@@ -135,3 +135,8 @@ public/assets/config/games/language_grove/arcade.json
 
 ## 12. Suggested Next Step
 The next strong follow-up would be extending Math’s `worlds/<worldId>.json` coverage beyond `number_garden` so the remaining Math worlds can move from placeholder world-entry screens to authored level-map overlays.
+- Config home is now split by purpose:
+  - authored runtime JSON lives in `capy-village/public/config/...`
+  - editor-only schema lives in `capy-village/src/config/layouts/village_layout.schema.json`
+- Runtime and hub no longer depend on published copies under `public/assets/config/...`.
+- `publish-assets` is now asset-focused again; it removes old generated config/layout output instead of republishing config JSON.

@@ -1,0 +1,30 @@
+[
+  {
+    "levelNum": 6,
+    "slot": 1,
+    "worldId": "multiplication_meadow",
+    "label": "Triple Vines",
+    "subType": "collection",
+    "modeId": "collect_mult3",
+    "timeLimit": 50,
+    "numberRange": [
+      1,
+      20
+    ],
+    "goal": {
+      "type": "catchCount",
+      "value": 6
+    },
+    "clearReward": 30,
+    "bonusTiers": [
+      {
+        "threshold": 10,
+        "reward": 12
+      },
+      {
+        "threshold": 14,
+        "reward": 15
+      }
+    ]
+  }
+]

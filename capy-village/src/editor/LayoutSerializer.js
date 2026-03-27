@@ -1,4 +1,4 @@
-import layoutSchema from '../../../config/layout_schemas/village_layout.schema.json';
+import layoutSchema from '../config/layouts/village_layout.schema.json';
 
 function isVectorTriplet(value) {
   return Array.isArray(value) && value.length === 3 && value.every((item) => Number.isFinite(item));

@@ -1,0 +1,58 @@
+[
+  {
+    "levelNum": 9,
+    "slot": 1,
+    "worldId": "geometry_yard",
+    "label": "Orchard",
+    "subType": "collection",
+    "modeId": "collect_odd",
+    "timeLimit": 40,
+    "numberRange": [
+      1,
+      25
+    ],
+    "goal": {
+      "type": "catchCount",
+      "value": 10
+    },
+    "clearReward": 50,
+    "bonusTiers": [
+      {
+        "threshold": 14,
+        "reward": 20
+      },
+      {
+        "threshold": 18,
+        "reward": 25
+      }
+    ]
+  },
+  {
+    "levelNum": 10,
+    "slot": 2,
+    "worldId": "geometry_yard",
+    "label": "Grand Garden",
+    "subType": "collection",
+    "modeId": "collect_mult3",
+    "timeLimit": 40,
+    "numberRange": [
+      1,
+      30
+    ],
+    "goal": {
+      "type": "catchCount",
+      "value": 8
+    },
+    "clearReward": 60,
+    "bonusTiers": [
+      {
+        "threshold": 12,
+        "reward": 24
+      },
+      {
+        "threshold": 16,
+        "reward": 30
+      }
+    ]
+  }
+]

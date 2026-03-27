@@ -291,7 +291,7 @@ async function fetchJson(url) {
 export async function loadPublishedVillage(scene) {
   try {
     const [layout, manifest] = await Promise.all([
-      fetchJson(withBaseUrl('/layouts/village_hub_v1.json')),
+      fetchJson(withBaseUrl('/config/layouts/village_hub_v1.json')),
       fetchJson(withBaseUrl('/assets/manifest.json')),
     ]);
 

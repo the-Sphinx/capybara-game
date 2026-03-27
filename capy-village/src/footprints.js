@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import sharedFootprintConfig from '../../config/collider_footprints.json';
+import sharedFootprintConfig from './config/collider_footprints.json';
 
 function cloneFootprint(footprint) {
   if (!footprint) {

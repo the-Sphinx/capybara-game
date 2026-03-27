@@ -12,7 +12,7 @@ async function fetchJson(url) {
 }
 
 function joinConfigPath(gameId, relativePath) {
-  return `${BASE_URL}assets/config/games/${gameId}/${relativePath}`;
+  return `${BASE_URL}config/games/${gameId}/${relativePath}`;
 }
 
 class GameManager {

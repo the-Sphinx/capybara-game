@@ -7,15 +7,14 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const assetsSourceDir = path.resolve(repoRoot, 'assets/game_ready');
-const gameConfigSourceDir = path.resolve(repoRoot, 'config/games');
-const layoutsSourceDir = path.resolve(repoRoot, 'layouts');
 const assetsTargetDir = path.resolve(repoRoot, 'capy-village/public/assets');
-const gameConfigTargetDir = path.resolve(repoRoot, 'capy-village/public/assets/config/games');
-const layoutsTargetDir = path.resolve(repoRoot, 'capy-village/public/layouts');
 const legacyPublicDirs = [
   path.resolve(repoRoot, 'capy-village/public/models'),
   path.resolve(repoRoot, 'capy-village/public/audio'),
   path.resolve(repoRoot, 'capy-village/public/images'),
+  path.resolve(repoRoot, 'capy-village/public/data'),
+  path.resolve(repoRoot, 'capy-village/public/assets/config'),
+  path.resolve(repoRoot, 'capy-village/public/layouts'),
 ];
 
 type Manifest = Record<string, string>;
@@ -48,7 +47,12 @@ async function clearDirectoryContents(dirPath: string): Promise<void> {
   await Promise.all(entries.map((entry) => fs.rm(path.join(dirPath, entry), { recursive: true, force: true })));
 }
 
-async function copyRecursive(sourceDir: string, targetDir: string, onFile: (sourceFile: string, targetFile: string) => Promise<void>): Promise<void> {
+async function copyRecursive(
+  sourceDir: string,
+  targetDir: string,
+  onFile: (sourceFile: string, targetFile: string) => Promise<void>,
+  shouldCopyFile: (sourceFile: string) => boolean = () => true,
+): Promise<void> {
   const entries = await fs.readdir(sourceDir, { withFileTypes: true });
   await ensureDir(targetDir);
 
@@ -66,6 +70,10 @@ async function copyRecursive(sourceDir: string, targetDir: string, onFile: (sour
     }
 
     if (!entry.isFile()) {
+      continue;
+    }
+
+    if (!shouldCopyFile(sourcePath)) {
       continue;
     }
 
@@ -90,8 +98,6 @@ async function removeLegacyPublicDirs(): Promise<void> {
 
 async function publish(): Promise<void> {
   await ensureDirExists(assetsSourceDir, 'Assets source folder');
-  await ensureDirExists(gameConfigSourceDir, 'Game config source folder');
-  await ensureDirExists(layoutsSourceDir, 'Layouts source folder');
 
   log('Copying assets...');
   await clearDirectoryContents(assetsTargetDir);
@@ -105,18 +111,6 @@ async function publish(): Promise<void> {
     }
   });
   await writeManifest(manifest);
-
-  log('Copying game configs...');
-  await clearDirectoryContents(gameConfigTargetDir);
-  await copyRecursive(gameConfigSourceDir, gameConfigTargetDir, async (sourceFile) => {
-    log(`Copied config: ${path.basename(sourceFile)}`);
-  });
-
-  log('Copying layouts...');
-  await clearDirectoryContents(layoutsTargetDir);
-  await copyRecursive(layoutsSourceDir, layoutsTargetDir, async (sourceFile) => {
-    log(`Copied: ${path.basename(sourceFile)}`);
-  });
 
   await removeLegacyPublicDirs();
   log('Done.');

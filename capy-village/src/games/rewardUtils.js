@@ -1,49 +1,9 @@
 export const ARCADE_REWARD_HINT = 'Arcade Reward: 1 score = 1 coin';
 
-function getDefaultBonusOffsets(levelConfig) {
-  const category = levelConfig?.category ?? '';
-  const goalType = levelConfig?.goal?.type;
-
-  if (goalType === 'combo') {
-    return [1, 2];
-  }
-
-  if (category === 'watermelonCatch') {
-    return [10, 20];
-  }
-
-  if (category === 'mathGarden') {
-    return [4, 8];
-  }
-
-  if (category === 'languageGrove') {
-    return [2, 4];
-  }
-
-  return [5, 10];
-}
-
-function buildDefaultBonusTiers(levelConfig) {
-  const goalValue = levelConfig?.goal?.value;
-  const clearReward = levelConfig?.clearReward ?? 0;
-  if (!Number.isFinite(goalValue) || goalValue <= 0) {
-    return [];
-  }
-
-  const [offsetA, offsetB] = getDefaultBonusOffsets(levelConfig);
-  const rewardA = Math.max(5, Math.floor(clearReward * 0.4));
-  const rewardB = Math.max(rewardA, Math.round(clearReward * 0.5));
-
-  return [
-    { threshold: goalValue + offsetA, reward: rewardA },
-    { threshold: goalValue + offsetB, reward: rewardB },
-  ];
-}
-
 export function getBonusTiers(levelConfig) {
-  const tiers = Array.isArray(levelConfig?.bonusTiers) && levelConfig.bonusTiers.length > 0
+  const tiers = Array.isArray(levelConfig?.bonusTiers)
     ? levelConfig.bonusTiers
-    : buildDefaultBonusTiers(levelConfig);
+    : [];
 
   return tiers
     .filter((tier) => Number.isFinite(tier?.threshold) && Number.isFinite(tier?.reward))

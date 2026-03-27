@@ -1,0 +1,139 @@
+{
+  "registry": {
+    "crown": {
+      "anchor": "hat_anchor",
+      "path": "assets/models/accessories/crown.glb",
+      "scale": 1,
+      "tiltX": -7
+    },
+    "chef_hat": {
+      "anchor": "hat_anchor",
+      "path": "assets/models/accessories/chef_hat.glb",
+      "scale": 1,
+      "tiltX": -7,
+      "color": "#FFFFFF",
+      "roughness": 0.7
+    },
+    "beanie_red": {
+      "anchor": "hat_anchor",
+      "path": "assets/models/accessories/knit_beanie.glb",
+      "scale": 1,
+      "tiltX": -15,
+      "doubleSided": true,
+      "polygonOffsetPart": "beanie_body",
+      "colors": {
+        "beanie_body": "#E63946",
+        "beanie_pompom": "#FFFFFF"
+      }
+    },
+    "beanie_blue": {
+      "anchor": "hat_anchor",
+      "path": "assets/models/accessories/knit_beanie.glb",
+      "scale": 1,
+      "tiltX": -15,
+      "doubleSided": true,
+      "polygonOffsetPart": "beanie_body",
+      "colors": {
+        "beanie_body": "#2B62E3",
+        "beanie_pompom": "#FFFFFF"
+      }
+    },
+    "scarf": {
+      "anchor": "neck_anchor",
+      "path": "assets/models/accessories/scarf_v2.glb",
+      "scale": 1,
+      "tiltX": 0,
+      "offset": {
+        "x": 0,
+        "y": -0.08,
+        "z": -0.22
+      }
+    },
+    "scarf_red": {
+      "anchor": "neck_anchor",
+      "path": "assets/models/accessories/scarf_v2.glb",
+      "scale": 1,
+      "tiltX": 0,
+      "offset": {
+        "x": 0,
+        "y": -0.08,
+        "z": -0.22
+      },
+      "color": "#FF0000"
+    },
+    "scarf_blue": {
+      "anchor": "neck_anchor",
+      "path": "assets/models/accessories/scarf_v2.glb",
+      "scale": 1,
+      "tiltX": 0,
+      "offset": {
+        "x": 0,
+        "y": -0.08,
+        "z": -0.22
+      },
+      "color": "#0000FF"
+    },
+    "scarf_yellow": {
+      "anchor": "neck_anchor",
+      "path": "assets/models/accessories/scarf_v2.glb",
+      "scale": 1,
+      "tiltX": 0,
+      "offset": {
+        "x": 0,
+        "y": -0.08,
+        "z": -0.22
+      },
+      "color": "#F9E90C"
+    },
+    "scarf_orange": {
+      "anchor": "neck_anchor",
+      "path": "assets/models/accessories/scarf_v2.glb",
+      "scale": 1,
+      "tiltX": 0,
+      "offset": {
+        "x": 0,
+        "y": -0.08,
+        "z": -0.22
+      },
+      "color": "#FF930F"
+    },
+    "scarf_black": {
+      "anchor": "neck_anchor",
+      "path": "assets/models/accessories/scarf_v2.glb",
+      "scale": 1,
+      "tiltX": 0,
+      "offset": {
+        "x": 0,
+        "y": -0.08,
+        "z": -0.22
+      },
+      "color": "#000000"
+    }
+  },
+  "closetTabs": {
+    "hats": {
+      "label": "Hats",
+      "icon": "🎩",
+      "anchor": "hat_anchor",
+      "items": [
+        { "id": "crown", "label": "Crown", "icon": "👑", "price": 120, "locked": true },
+        { "id": "chef_hat", "label": "Chef Hat", "icon": "🍳", "price": 8, "locked": false },
+        { "id": "beanie_red", "label": "Beanie", "icon": "🧢", "price": 40, "locked": false },
+        { "id": "beanie_blue", "label": "Beanie", "icon": "🧢", "price": 40, "locked": false }
+      ]
+    },
+    "neck": {
+      "label": "Neck",
+      "icon": "🎀",
+      "anchor": "neck_anchor",
+      "items": [
+        { "id": "scarf", "label": "Scarf", "icon": "🧣", "price": 6, "locked": false },
+        { "id": "scarf_red", "label": "Scarf", "icon": "🧣", "price": 6, "locked": false },
+        { "id": "scarf_blue", "label": "Scarf", "icon": "🧣", "price": 6, "locked": false },
+        { "id": "scarf_yellow", "label": "Scarf", "icon": "🧣", "price": 6, "locked": false },
+        { "id": "scarf_orange", "label": "Scarf", "icon": "🧣", "price": 6, "locked": false },
+        { "id": "scarf_black", "label": "Scarf", "icon": "🧣", "price": 6, "locked": false }
+      ]
+    }
+  }
+}

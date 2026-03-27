@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
-import initialLayout from '../../../layouts/village_hub_v1.json';
+import initialLayout from '../../public/config/layouts/village_hub_v1.json';
 import playerPreviewUrl from '../../../assets/game_ready/models/characters/capy_idle.glb?url';
 import { AssetPalette } from './AssetPalette.js';
 import { getAssetRegistry } from './assetRegistry.js';
