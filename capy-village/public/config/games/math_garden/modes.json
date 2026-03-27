@@ -1,0 +1,70 @@
+[
+  {
+    "id": "answer_add",
+    "family": "answer",
+    "title": "Addition Garden",
+    "prompt": "Tap the correct answer!",
+    "operation": "addition",
+    "numberRange": [1, 10],
+    "answerCount": 3,
+    "pointsPerCorrect": 10,
+    "wrongFeedback": "Wrong!",
+    "wrongPenalty": 0
+  },
+  {
+    "id": "answer_mixed",
+    "family": "answer",
+    "title": "Mixed Math",
+    "prompt": "Tap the correct answer!",
+    "operation": "mixed",
+    "numberRange": [1, 15],
+    "answerCount": 3,
+    "pointsPerCorrect": 10,
+    "wrongFeedback": "Wrong!",
+    "wrongPenalty": 0
+  },
+  {
+    "id": "collect_even",
+    "family": "collection",
+    "title": "Collect Even Numbers",
+    "prompt": "Catch even numbers!",
+    "numberRange": [1, 20],
+    "isCorrect": { "type": "mod_equals", "mod": 2, "result": 0 },
+    "pointsPerCorrect": 2,
+    "wrongFeedback": "Odd!",
+    "wrongPenalty": 1
+  },
+  {
+    "id": "collect_odd",
+    "family": "collection",
+    "title": "Collect Odd Numbers",
+    "prompt": "Catch odd numbers!",
+    "numberRange": [1, 20],
+    "isCorrect": { "type": "mod_equals", "mod": 2, "result": 1 },
+    "pointsPerCorrect": 2,
+    "wrongFeedback": "Even!",
+    "wrongPenalty": 1
+  },
+  {
+    "id": "collect_mult3",
+    "family": "collection",
+    "title": "Collect Multiples of 3",
+    "prompt": "Catch multiples of 3!",
+    "numberRange": [1, 20],
+    "isCorrect": { "type": "mod_equals", "mod": 3, "result": 0 },
+    "pointsPerCorrect": 5,
+    "wrongFeedback": "Not ×3!",
+    "wrongPenalty": 1
+  },
+  {
+    "id": "collect_mult5",
+    "family": "collection",
+    "title": "Collect Multiples of 5",
+    "prompt": "Catch multiples of 5!",
+    "numberRange": [1, 20],
+    "isCorrect": { "type": "mod_equals", "mod": 5, "result": 0 },
+    "pointsPerCorrect": 5,
+    "wrongFeedback": "Not ×5!",
+    "wrongPenalty": 1
+  }
+]

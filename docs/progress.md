@@ -655,3 +655,22 @@
 - Replaced the dead legacy `public/data/accessories.json` with a real `capy-village/public/config/accessories.json` consumed by `state.js`.
 - Kept only the layout schema in `capy-village/src/config/layouts/village_layout.schema.json`.
 - Simplified `publish-assets` so it now publishes curated assets only and clears old legacy generated config/layout output under `public/assets/config` and `public/layouts`.
+
+## 2026-03-27
+
+### Completed
+- Rebuilt the minigame runtime around a shared engine shell in `capy-village/src/games/engine/EngineGame.js`.
+- Added explicit reusable mode families under `capy-village/src/games/modes/` for `collection`, `answer`, `stream`, and `choice_round`.
+- Converted Math Garden, Language Grove, and Watermelon Catch into thin adapters over that shared shell plus per-game runtime providers.
+- Added per-game `modes.json` files under `capy-village/public/config/games/*/modes.json`.
+- Added stable `levelId` fields to adventure level JSON and switched hub/save progression to use level IDs instead of bare `levelNum`.
+- Reset minigame progression in `SaveManager` migration `v4` so world-aware progress no longer collides across Math worlds.
+- Removed authored `subType` from level JSON; handler family is now derived from the selected mode recipe.
+- Simplified Math level-slot selection so the shared `level_select.json` only uses explicit `slot` mapping and no longer falls back to ordered placement.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village`.
+
+### Follow-up Watchpoints
+- The new engine shell preserves the shared HUD/timer/reward flow, but gameplay behavior should still be spot-checked in-browser for Math, Language, and Watermelon after the refactor.
+- `main.js` still preloads a fixed set of current minigame ids; future dynamic game discovery would be a separate cleanup.

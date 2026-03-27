@@ -1,10 +1,10 @@
 [
   {
+    "levelId": "geometry_yard_9",
     "levelNum": 9,
     "slot": 1,
     "worldId": "geometry_yard",
     "label": "Orchard",
-    "subType": "collection",
     "modeId": "collect_odd",
     "timeLimit": 40,
     "numberRange": [
@@ -28,11 +28,11 @@
     ]
   },
   {
+    "levelId": "geometry_yard_10",
     "levelNum": 10,
     "slot": 2,
     "worldId": "geometry_yard",
     "label": "Grand Garden",
-    "subType": "collection",
     "modeId": "collect_mult3",
     "timeLimit": 40,
     "numberRange": [

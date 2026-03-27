@@ -140,3 +140,37 @@ The next strong follow-up would be extending Math’s `worlds/<worldId>.json` co
   - editor-only schema lives in `capy-village/src/config/layouts/village_layout.schema.json`
 - Runtime and hub no longer depend on published copies under `public/assets/config/...`.
 - `publish-assets` is now asset-focused again; it removes old generated config/layout output instead of republishing config JSON.
+
+## 13. Minigame Engine Rewrite
+
+### What Changed
+- Added a shared engine shell at `capy-village/src/games/engine/EngineGame.js` to own common minigame lifecycle, HUD, timer loop, reward handling, result screens, and hub return flow.
+- Added explicit mode families under `capy-village/src/games/modes/`:
+  - `collection`
+  - `answer`
+  - `stream`
+  - `choice_round`
+- Refactored:
+  - `MathGardenGame`
+  - `LanguageGroveGame`
+  - `WatermelonCatchGame`
+  into thin adapters over that shared engine plus per-game runtime providers.
+- Added per-game mode recipe files:
+  - `capy-village/public/config/games/math_garden/modes.json`
+  - `capy-village/public/config/games/language_grove/modes.json`
+  - `capy-village/public/config/games/watermelon_catch/modes.json`
+- Added stable `levelId` to adventure level JSON and switched save/hub progression to level-id-based unlock/completion.
+- Removed authored `subType` from level JSON so mode family now derives from the selected mode recipe.
+
+### Save/Progress Model
+- `SaveManager` now uses `completedLevelIds` and `unlockedLevelIds`.
+- Save version bumped to `4`.
+- Migration intentionally resets minigame progression to the new level-id model while keeping coins and closet/equipment data.
+
+### Reviewer Focus
+- Confirm `GameManager` now loads `modes.json` in addition to `arcade.json`, `world_select.json`, `level_select.json`, and per-world level JSON.
+- Confirm hub world/level overlays now rely on `levelId` rather than `levelNum` for unlock/completion state.
+- Confirm Math, Language, and Watermelon no longer duplicate their own timer/HUD/result shell logic.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village`.

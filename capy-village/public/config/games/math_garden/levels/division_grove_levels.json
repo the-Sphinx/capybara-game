@@ -1,10 +1,10 @@
 [
   {
+    "levelId": "division_grove_7",
     "levelNum": 7,
     "slot": 1,
     "worldId": "division_grove",
     "label": "High Five",
-    "subType": "collection",
     "modeId": "collect_mult5",
     "timeLimit": 45,
     "numberRange": [

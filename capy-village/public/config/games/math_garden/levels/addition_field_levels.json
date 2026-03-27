@@ -1,10 +1,10 @@
 [
   {
+    "levelId": "addition_field_2",
     "levelNum": 2,
     "slot": 1,
     "worldId": "addition_field",
     "label": "Seedling",
-    "subType": "answer",
     "modeId": "answer_add",
     "timeLimit": 60,
     "operation": "addition",
@@ -30,11 +30,11 @@
     ]
   },
   {
+    "levelId": "addition_field_5",
     "levelNum": 5,
     "slot": 2,
     "worldId": "addition_field",
     "label": "Flowering",
-    "subType": "answer",
     "modeId": "answer_mixed",
     "timeLimit": 50,
     "operation": "mixed",

@@ -1,10 +1,10 @@
 [
   {
+    "levelId": "subtraction_patch_4",
     "levelNum": 4,
     "slot": 1,
     "worldId": "subtraction_patch",
     "label": "Odd Garden",
-    "subType": "collection",
     "modeId": "collect_odd",
     "timeLimit": 55,
     "numberRange": [

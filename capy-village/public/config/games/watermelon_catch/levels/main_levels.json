@@ -1,5 +1,6 @@
 [
   {
+    "levelId": "main_1",
     "levelNum": 1,
     "label": "Warm-Up",
     "timeLimit": 45,
@@ -29,6 +30,7 @@
     ]
   },
   {
+    "levelId": "main_2",
     "levelNum": 2,
     "label": "Getting Going",
     "timeLimit": 40,
@@ -58,6 +60,7 @@
     ]
   },
   {
+    "levelId": "main_3",
     "levelNum": 3,
     "label": "Catcher's Debut",
     "timeLimit": 35,
@@ -87,6 +90,7 @@
     ]
   },
   {
+    "levelId": "main_4",
     "levelNum": 4,
     "label": "Combo Starter",
     "timeLimit": 35,
@@ -116,6 +120,7 @@
     ]
   },
   {
+    "levelId": "main_5",
     "levelNum": 5,
     "label": "Golden Rush",
     "timeLimit": 35,
@@ -145,6 +150,7 @@
     ]
   },
   {
+    "levelId": "main_6",
     "levelNum": 6,
     "label": "Speed Picker",
     "timeLimit": 30,
@@ -174,6 +180,7 @@
     ]
   },
   {
+    "levelId": "main_7",
     "levelNum": 7,
     "label": "Combo King",
     "timeLimit": 30,
@@ -203,6 +210,7 @@
     ]
   },
   {
+    "levelId": "main_8",
     "levelNum": 8,
     "label": "High Scorer",
     "timeLimit": 30,
@@ -232,6 +240,7 @@
     ]
   },
   {
+    "levelId": "main_9",
     "levelNum": 9,
     "label": "Marathon",
     "timeLimit": 30,
@@ -261,6 +270,7 @@
     ]
   },
   {
+    "levelId": "main_10",
     "levelNum": 10,
     "label": "Grand Master",
     "timeLimit": 30,

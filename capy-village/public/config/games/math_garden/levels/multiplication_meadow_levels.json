@@ -1,10 +1,10 @@
 [
   {
+    "levelId": "multiplication_meadow_6",
     "levelNum": 6,
     "slot": 1,
     "worldId": "multiplication_meadow",
     "label": "Triple Vines",
-    "subType": "collection",
     "modeId": "collect_mult3",
     "timeLimit": 50,
     "numberRange": [

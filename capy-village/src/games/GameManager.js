@@ -57,26 +57,47 @@ class GameManager {
   }
 
   async _loadGameConfig(gameId) {
-    const [arcadeConfig, worldSelectConfig, levelSelectConfig] = await Promise.all([
+    const [arcadeConfig, worldSelectConfig, levelSelectConfig, modes] = await Promise.all([
       fetchJson(joinConfigPath(gameId, 'arcade.json')),
       fetchJson(joinConfigPath(gameId, 'world_select.json')),
       fetchJson(joinConfigPath(gameId, 'level_select.json')),
+      fetchJson(joinConfigPath(gameId, 'modes.json')),
     ]);
 
+    const modeMap = new Map((modes ?? []).map((mode) => [mode.id, mode]));
     const levels = [];
     for (const world of worldSelectConfig?.worlds ?? []) {
       const worldId = world.id;
       const adventureLevels = await fetchJson(joinConfigPath(gameId, `levels/${worldId}_levels.json`));
-      levels.push(...adventureLevels);
+      levels.push(...(adventureLevels ?? []).map((level) => ({
+        worldId,
+        levelId: level.levelId ?? `${worldId}_${level.levelNum}`,
+        ...level,
+      })));
     }
+
+    const arcadeModeIds = arcadeConfig?.modeIds
+      ?? Object.keys(arcadeConfig?.arcadeWeights ?? {});
+    const resolvedArcadeModes = arcadeModeIds
+      .map((modeId) => modeMap.get(modeId))
+      .filter(Boolean);
 
     return {
       gameId,
       levels,
-      arcadeConfig,
+      modes,
+      modeMap,
+      arcadeConfig: {
+        ...arcadeConfig,
+        modes: resolvedArcadeModes,
+      },
       worldSelectConfig,
       levelSelectConfig,
     };
+  }
+
+  ensureCachedGameConfig(gameId) {
+    return this._gameConfigs.get(gameId) ?? null;
   }
 
   getLevels(gameId) {
@@ -93,6 +114,29 @@ class GameManager {
 
   getLevelSelectConfig(gameId) {
     return this._gameConfigs.get(gameId)?.levelSelectConfig ?? null;
+  }
+
+  getModeConfig(gameId, modeId) {
+    return this._gameConfigs.get(gameId)?.modeMap?.get(modeId) ?? null;
+  }
+
+  getModes(gameId) {
+    return this._gameConfigs.get(gameId)?.modes ?? [];
+  }
+
+  getLevelById(gameId, levelId) {
+    return this.getLevels(gameId).find((level) => level.levelId === levelId) ?? null;
+  }
+
+  getNextAdventureLevel(gameId, levelId) {
+    const levels = this.getLevels(gameId);
+    const current = this.getLevelById(gameId, levelId);
+    if (!current) return null;
+    const worldLevels = levels
+      .filter((level) => level.worldId === current.worldId)
+      .sort((a, b) => a.levelNum - b.levelNum);
+    const index = worldLevels.findIndex((level) => level.levelId === levelId);
+    return index >= 0 ? (worldLevels[index + 1] ?? null) : null;
   }
 
   startGame(gameId, levelConfig = null) {

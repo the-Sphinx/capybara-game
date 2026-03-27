@@ -14,7 +14,7 @@ let _selectedCategory = null;
 let _selectedMode = null;        // 'adventure' | 'arcade'
 let _selectedLevel = null;
 let _selectedWorld = null;
-let _preferredLevelNum = null;
+let _preferredLevelId = null;
 let _lockedPopup = null;
 let _lockedPopupTimer = null;
 let _selectedOverlayLevel = null;
@@ -39,7 +39,7 @@ export async function openHub() {
   _selectedMode     = null;
   _selectedLevel    = null;
   _selectedWorld    = null;
-  _preferredLevelNum = null;
+  _preferredLevelId = null;
   clearLockedPopup();
   _selectedOverlayLevel = null;
 
@@ -62,7 +62,7 @@ export async function openHub() {
 }
 
 // Open the hub directly at a specific screen (used after a game ends)
-export async function openHubAt(categoryId, mode, preferLevelNum = null) {
+export async function openHubAt(categoryId, mode, preferLevelId = null) {
   gameState.modalOpen = true;
   gameState.hubOpen   = true;
 
@@ -85,7 +85,7 @@ export async function openHubAt(categoryId, mode, preferLevelNum = null) {
   _selectedMode     = mode;
   _selectedLevel    = null;
   _selectedWorld    = null;
-  _preferredLevelNum = preferLevelNum;
+  _preferredLevelId = preferLevelId;
   clearLockedPopup();
   _selectedOverlayLevel = null;
 
@@ -205,7 +205,7 @@ function renderModeSelect(overlay) {
       _selectedMode = btn.dataset.mode;
       _selectedLevel = null;
       _selectedWorld = null;
-      _preferredLevelNum = null;
+      _preferredLevelId = null;
       clearLockedPopup();
       _selectedOverlayLevel = null;
       renderLoading(overlay);
@@ -309,8 +309,8 @@ function buildMathWorldModels(cat, levels) {
   const worlds = (worldSelectConfig?.worlds ?? []).map((world) => {
     const worldLevels = levels.filter(level => level.worldId === world.id);
     const levelsTotal = worldLevels.length;
-    const levelsCompleted = worldLevels.filter(level => saveManager.isLevelCompleted(cat.id, level.levelNum)).length;
-    const levelsUnlocked = worldLevels.filter(level => saveManager.isLevelUnlocked(cat.id, level.levelNum)).length;
+    const levelsCompleted = worldLevels.filter(level => saveManager.isLevelCompleted(cat.id, level)).length;
+    const levelsUnlocked = worldLevels.filter(level => saveManager.isLevelUnlocked(cat.id, level)).length;
     const isLocked = levelsTotal > 0 ? levelsUnlocked === 0 : true;
     const isCompleted = levelsTotal > 0 && levelsCompleted === levelsTotal;
     const starsMax = 3;
@@ -345,8 +345,8 @@ function getSelectedMathWorld(worlds, levels) {
     if (persisted) return persisted;
   }
 
-  if (_preferredLevelNum !== null) {
-    const preferredLevel = levels.find(level => level.levelNum === _preferredLevelNum);
+  if (_preferredLevelId !== null) {
+    const preferredLevel = levels.find(level => level.levelId === _preferredLevelId);
     const preferredWorld = worlds.find(world => world.id === preferredLevel?.worldId);
     if (preferredWorld) return preferredWorld;
   }
@@ -521,9 +521,9 @@ function findNumberGardenOverlayLevels(levels) {
     .sort((a, b) => a.levelNum - b.levelNum);
 
   return worldLevels
-    .map((level, index) => ({
+    .map((level) => ({
       ...level,
-      node: slotMap.get(level.slot) ?? slots[index] ?? null,
+      node: slotMap.get(level.slot) ?? null,
     }))
     .filter((level) => !!level.node);
 }
@@ -542,19 +542,21 @@ function hasSharedLevelSelectOverlay(cat, world) {
 }
 
 function getOverlayLevelStatus(cat, level, levelsInWorld) {
-  const isCompleted = saveManager.isLevelCompleted(cat.id, level.levelNum);
-  const isUnlocked = saveManager.isLevelUnlocked(cat.id, level.levelNum);
+  const isCompleted = saveManager.isLevelCompleted(cat.id, level);
+  const isUnlocked = saveManager.isLevelUnlocked(cat.id, level);
   const firstUnlockedIncomplete = levelsInWorld.find(item =>
-    saveManager.isLevelUnlocked(cat.id, item.levelNum) && !saveManager.isLevelCompleted(cat.id, item.levelNum)
+    saveManager.isLevelUnlocked(cat.id, item) && !saveManager.isLevelCompleted(cat.id, item)
   );
-  const isCurrent = firstUnlockedIncomplete?.levelNum === level.levelNum;
+  const isCurrent = firstUnlockedIncomplete?.levelId === level.levelId;
+  const levelIndex = levelsInWorld.findIndex((item) => item.levelId === level.levelId);
+  const previous = levelIndex > 0 ? levelsInWorld[levelIndex - 1] : null;
 
   return {
     isCompleted,
     isUnlocked,
     isCurrent,
     isLocked: !isUnlocked,
-    unlockCondition: getUnlockRequirementText(level.levelNum).replace(' to unlock', ''),
+    unlockCondition: previous ? `Complete Level ${previous.levelNum}` : getUnlockRequirementText(level.levelNum).replace(' to unlock', ''),
   };
 }
 
@@ -581,13 +583,13 @@ function levelNodeHtml(cat, level, levelsInWorld) {
     status.isCompleted && 'hub-overlay-node--completed',
     status.isCurrent && 'hub-overlay-node--current',
     status.isLocked && 'hub-overlay-node--locked',
-    _selectedOverlayLevel?.levelNum === level.levelNum && 'hub-overlay-node--selected',
+    _selectedOverlayLevel?.levelId === level.levelId && 'hub-overlay-node--selected',
   ].filter(Boolean).join(' ');
 
   return `
     <button
       class="${classes}"
-      data-levelnum="${level.levelNum}"
+      data-levelid="${level.levelId}"
       style="${getLevelNodeStyle(level.node)}"
       type="button"
       aria-label="Level ${level.levelNum}"
@@ -601,7 +603,7 @@ function levelNodeHtml(cat, level, levelsInWorld) {
 }
 
 function renderLevelInfoBubble(cat, level, levelsInWorld) {
-  if (!_selectedOverlayLevel || _selectedOverlayLevel.levelNum !== level.levelNum) {
+  if (!_selectedOverlayLevel || _selectedOverlayLevel.levelId !== level.levelId) {
     return '';
   }
 
@@ -749,8 +751,8 @@ function renderNumberGardenLevelOverlay(overlay, cat, levels) {
     return;
   }
 
-  if (_preferredLevelNum !== null) {
-    _selectedOverlayLevel = levelEntries.find(level => level.levelNum === _preferredLevelNum) ?? _selectedOverlayLevel;
+  if (_preferredLevelId !== null) {
+    _selectedOverlayLevel = levelEntries.find(level => level.levelId === _preferredLevelId) ?? _selectedOverlayLevel;
   }
 
   if (!_selectedOverlayLevel && isFirstEntry) {
@@ -759,7 +761,7 @@ function renderNumberGardenLevelOverlay(overlay, cat, levels) {
       ?? levelEntries[0];
   }
 
-  const selectedLevel = levelEntries.find(level => level.levelNum === _selectedOverlayLevel?.levelNum) ?? null;
+  const selectedLevel = levelEntries.find(level => level.levelId === _selectedOverlayLevel?.levelId) ?? null;
   _screen = 'numbergardenoverlay-initialized';
 
   overlay.innerHTML = `
@@ -783,8 +785,8 @@ function renderNumberGardenLevelOverlay(overlay, cat, levels) {
   overlay.querySelectorAll('.hub-overlay-node').forEach((button) => {
     button.addEventListener('click', (event) => {
       event.stopPropagation();
-      const levelNum = parseInt(button.dataset.levelnum, 10);
-      _selectedOverlayLevel = levelEntries.find(level => level.levelNum === levelNum) ?? _selectedOverlayLevel;
+      const levelId = button.dataset.levelid;
+      _selectedOverlayLevel = levelEntries.find(level => level.levelId === levelId) ?? _selectedOverlayLevel;
       renderNumberGardenLevelOverlay(overlay, cat, levels);
     });
   });
@@ -811,7 +813,7 @@ function renderNumberGardenLevelOverlay(overlay, cat, levels) {
         category: cat.id,
         totalLevels: levels.length,
       };
-      _preferredLevelNum = selectedLevel.levelNum;
+      _preferredLevelId = selectedLevel.levelId;
       closeHub();
       gameManager.startGame(cat.gameId, levelConfig);
     });
@@ -825,14 +827,14 @@ function renderLevelMap(overlay, levels) {
   // Auto-select: first unlocked (adventure) or first level (arcade)
   if (!_selectedLevel) {
     _selectedLevel = isAdventure
-      ? (levels.find(l => saveManager.isLevelUnlocked(cat.id, l.levelNum)) ?? levels[0])
+      ? (levels.find(l => saveManager.isLevelUnlocked(cat.id, l)) ?? levels[0])
       : levels[0];
   }
 
   const nodesHtml = levels.map(lvl => {
-    const completed = saveManager.isLevelCompleted(cat.id, lvl.levelNum);
-    const unlocked  = !isAdventure || saveManager.isLevelUnlocked(cat.id, lvl.levelNum);
-    const selected  = _selectedLevel?.levelNum === lvl.levelNum;
+    const completed = saveManager.isLevelCompleted(cat.id, lvl);
+    const unlocked  = !isAdventure || saveManager.isLevelUnlocked(cat.id, lvl);
+    const selected  = _selectedLevel?.levelId === lvl.levelId;
 
     let cls = 'hub-level-node';
     if (completed)      cls += ' hub-level-node--completed';
@@ -841,7 +843,7 @@ function renderLevelMap(overlay, levels) {
     if (selected)       cls += ' hub-level-node--selected';
 
     const label = completed ? '✓' : !unlocked ? '🔒' : lvl.levelNum;
-    return `<div class="${cls}" data-levelnum="${lvl.levelNum}" data-locked="${unlocked ? 'false' : 'true'}">${label}</div>`;
+    return `<div class="${cls}" data-levelid="${lvl.levelId}" data-locked="${unlocked ? 'false' : 'true'}">${label}</div>`;
   }).join('');
 
   overlay.innerHTML = `
@@ -864,8 +866,8 @@ function renderLevelMap(overlay, levels) {
 
   overlay.querySelectorAll('.hub-level-node').forEach(node => {
     node.addEventListener('click', () => {
-      const levelNum = parseInt(node.dataset.levelnum);
-      _selectedLevel = levels.find(l => l.levelNum === levelNum);
+      const levelId = node.dataset.levelid;
+      _selectedLevel = levels.find(l => l.levelId === levelId);
 
       // Update selection highlight
       overlay.querySelectorAll('.hub-level-node').forEach(n => n.classList.remove('hub-level-node--selected'));
@@ -893,8 +895,8 @@ function goalText(lvl) {
 }
 
 function levelInfoHtml(lvl, cat) {
-  const completed = saveManager.isLevelCompleted(cat.id, lvl.levelNum);
-  const unlocked = saveManager.isLevelUnlocked(cat.id, lvl.levelNum);
+  const completed = saveManager.isLevelCompleted(cat.id, lvl);
+  const unlocked = saveManager.isLevelUnlocked(cat.id, lvl);
   const levelWithCategory = { ...lvl, category: cat.id };
   const bonusText = formatBonusPreview(levelWithCategory);
   const hasBonuses = getBonusTiers(levelWithCategory).length > 0;
@@ -921,7 +923,7 @@ function attachPlayButton(overlay, cat, isAdventure, levels) {
   if (!btn) return;
   btn.addEventListener('click', () => {
     if (!_selectedLevel) return;
-    if (isAdventure && !saveManager.isLevelUnlocked(cat.id, _selectedLevel.levelNum)) {
+    if (isAdventure && !saveManager.isLevelUnlocked(cat.id, _selectedLevel)) {
       return;
     }
     const levelConfig = {

@@ -1,8 +1,8 @@
 [
   {
+    "levelId": "main_1",
     "levelNum": 1,
     "label": "Vowel Garden",
-    "subType": "stream",
     "modeId": "vowels",
     "timeLimit": 60,
     "fallSpeed": 1,
@@ -24,9 +24,9 @@
     ]
   },
   {
+    "levelId": "main_2",
     "levelNum": 2,
     "label": "More Vowels",
-    "subType": "stream",
     "modeId": "vowels",
     "timeLimit": 55,
     "fallSpeed": 1.1,
@@ -48,9 +48,9 @@
     ]
   },
   {
+    "levelId": "main_3",
     "levelNum": 3,
     "label": "Consonant Trail",
-    "subType": "stream",
     "modeId": "consonants",
     "timeLimit": 55,
     "fallSpeed": 1.1,
@@ -72,9 +72,9 @@
     ]
   },
   {
+    "levelId": "main_4",
     "levelNum": 4,
     "label": "Animal Friends",
-    "subType": "stream",
     "modeId": "categoryCatch",
     "category": "animals",
     "timeLimit": 60,
@@ -97,9 +97,9 @@
     ]
   },
   {
+    "levelId": "main_5",
     "levelNum": 5,
     "label": "Fruit Basket",
-    "subType": "stream",
     "modeId": "categoryCatch",
     "category": "fruits",
     "timeLimit": 55,
@@ -122,9 +122,9 @@
     ]
   },
   {
+    "levelId": "main_6",
     "levelNum": 6,
     "label": "Finish the Sentence",
-    "subType": "choiceRound",
     "modeId": "sentenceCompletion",
     "timeLimit": 60,
     "fallSpeed": 1,
@@ -146,9 +146,9 @@
     ]
   },
   {
+    "levelId": "main_7",
     "levelNum": 7,
     "label": "Letters in DOG",
-    "subType": "stream",
     "modeId": "lettersInWord",
     "targetWord": "DOG",
     "timeLimit": 45,
@@ -171,9 +171,9 @@
     ]
   },
   {
+    "levelId": "main_8",
     "levelNum": 8,
     "label": "Opposites!",
-    "subType": "choiceRound",
     "modeId": "opposites",
     "timeLimit": 55,
     "fallSpeed": 1.1,
@@ -195,9 +195,9 @@
     ]
   },
   {
+    "levelId": "main_9",
     "levelNum": 9,
     "label": "Flying Things",
-    "subType": "stream",
     "modeId": "categoryCatch",
     "category": "flyingThings",
     "timeLimit": 50,
@@ -220,9 +220,9 @@
     ]
   },
   {
+    "levelId": "main_10",
     "levelNum": 10,
     "label": "Word Wizard",
-    "subType": "choiceRound",
     "modeId": "synonyms",
     "timeLimit": 50,
     "fallSpeed": 1.2,

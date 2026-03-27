@@ -1,10 +1,10 @@
 [
   {
+    "levelId": "fraction_forest_8",
     "levelNum": 8,
     "slot": 1,
     "worldId": "fraction_forest",
     "label": "Garden",
-    "subType": "answer",
     "modeId": "answer_mixed",
     "timeLimit": 45,
     "operation": "mixed",
