@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "geometry_yard",
     "label": "Orchard",
-    "modeId": "collect_odd",
+    "modeId": "math_collect_odd_basic",
     "timeLimit": 40,
     "numberRange": [
       1,
@@ -33,7 +33,7 @@
     "slot": 2,
     "worldId": "geometry_yard",
     "label": "Grand Garden",
-    "modeId": "collect_mult3",
+    "modeId": "math_collect_multiples_of_3",
     "timeLimit": 40,
     "numberRange": [
       1,

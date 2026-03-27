@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "subtraction_patch",
     "label": "Odd Garden",
-    "modeId": "collect_odd",
+    "modeId": "math_collect_odd_basic",
     "timeLimit": 55,
     "numberRange": [
       1,

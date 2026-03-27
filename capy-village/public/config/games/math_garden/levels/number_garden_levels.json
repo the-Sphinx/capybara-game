@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "number_garden",
     "label": "Odd Harvest",
-    "modeId": "collect_odd",
+    "modeId": "math_collect_odd_basic",
     "timeLimit": 60,
     "numberRange": [
       1,
@@ -33,7 +33,7 @@
     "slot": 2,
     "worldId": "number_garden",
     "label": "Even Harvest",
-    "modeId": "collect_even",
+    "modeId": "math_collect_even_basic",
     "timeLimit": 50,
     "numberRange": [
       1,
@@ -61,7 +61,7 @@
     "slot": 3,
     "worldId": "number_garden",
     "label": "Odd Harvest 2",
-    "modeId": "collect_odd",
+    "modeId": "math_collect_odd_basic",
     "timeLimit": 45,
     "numberRange": [
       10,
@@ -89,7 +89,7 @@
     "slot": 4,
     "worldId": "number_garden",
     "label": "Even Harvest 2",
-    "modeId": "collect_even",
+    "modeId": "math_collect_even_basic",
     "timeLimit": 40,
     "numberRange": [
       10,

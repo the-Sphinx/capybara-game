@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "fraction_forest",
     "label": "Garden",
-    "modeId": "answer_mixed",
+    "modeId": "math_answer_mixed_basic",
     "timeLimit": 45,
     "operation": "mixed",
     "numberRange": [

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capy-village/src/config/games/schemas/watermelon_catch.modes.schema.json",
+  "title": "Watermelon Catch Modes",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "type", "title", "prompt", "params"],
+    "properties": {
+      "id": { "type": "string", "minLength": 1 },
+      "type": { "const": "watermelon.collection.classic" },
+      "title": { "type": "string", "minLength": 1 },
+      "prompt": { "type": "string", "minLength": 1 },
+      "params": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["itemValues", "timeBonuses", "bombPenalty"],
+        "properties": {
+          "itemValues": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["face", "slice", "gold", "silver"],
+            "properties": {
+              "face": { "type": "number" },
+              "slice": { "type": "number" },
+              "gold": { "type": "number" },
+              "silver": { "type": "number" }
+            }
+          },
+          "timeBonuses": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hourglass", "clock"],
+            "properties": {
+              "hourglass": { "type": "number" },
+              "clock": { "type": "number" }
+            }
+          },
+          "bombPenalty": { "type": "number" },
+          "fallSpeedMult": { "type": "number" },
+          "spawnRateMult": { "type": "number" },
+          "wrongPenalty": { "type": "number", "minimum": 0 },
+          "wrongFeedback": { "type": "string" },
+          "specialItems": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "hourglass": { "type": "boolean" },
+              "clock": { "type": "boolean" },
+              "bomb": { "type": "boolean" },
+              "gold": { "type": "boolean" },
+              "silver": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

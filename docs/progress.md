@@ -663,10 +663,16 @@
 - Added explicit reusable mode families under `capy-village/src/games/modes/` for `collection`, `answer`, `stream`, and `choice_round`.
 - Converted Math Garden, Language Grove, and Watermelon Catch into thin adapters over that shared shell plus per-game runtime providers.
 - Added per-game `modes.json` files under `capy-village/public/config/games/*/modes.json`.
+- Replaced the loose mode recipe shape with typed `type + params` recipes backed by a central registry in `capy-village/src/games/modeRegistry.js`.
+- Renamed legacy mode ids like `collect_odd`, `answer_add`, and `classic` to explicit authored recipe ids.
+- Added JSON schema files for each game's `modes.json` under `capy-village/src/config/games/schemas/`.
+- Added `docs/minigame_mode_authoring.md` so supported mode types and valid params are discoverable without reading runtime code.
 - Added stable `levelId` fields to adventure level JSON and switched hub/save progression to use level IDs instead of bare `levelNum`.
 - Reset minigame progression in `SaveManager` migration `v4` so world-aware progress no longer collides across Math worlds.
 - Removed authored `subType` from level JSON; handler family is now derived from the selected mode recipe.
 - Simplified Math level-slot selection so the shared `level_select.json` only uses explicit `slot` mapping and no longer falls back to ordered placement.
+- Added `modeId` explicitly to Watermelon adventure levels so all three games now resolve gameplay through the same typed recipe path.
+- Made `itemCount` a real typed stream param in Language Grove instead of a dead authored field.
 
 ### Verification
 - Ran `npm run build` successfully in `capy-village`.
@@ -674,3 +680,4 @@
 ### Follow-up Watchpoints
 - The new engine shell preserves the shared HUD/timer/reward flow, but gameplay behavior should still be spot-checked in-browser for Math, Language, and Watermelon after the refactor.
 - `main.js` still preloads a fixed set of current minigame ids; future dynamic game discovery would be a separate cleanup.
+- The registry validates configs at runtime load, but the new schema files are currently authoring aids rather than automatically enforced by a separate schema toolchain.

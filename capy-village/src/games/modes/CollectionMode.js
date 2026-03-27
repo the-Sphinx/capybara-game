@@ -1,34 +1,23 @@
-export class CollectionModeHandler {
-  constructor({
-    selector = '.wmc-item',
-    getSpawnDelay,
-    createEntity,
-    onEntityClick,
-    onEntityMiss,
-  }) {
-    this.selector = selector;
-    this.getSpawnDelay = getSpawnDelay;
-    this.createEntity = createEntity;
-    this.onEntityClick = onEntityClick;
-    this.onEntityMiss = onEntityMiss;
+import { BaseMode } from './BaseMode.js';
 
-    this.shell = null;
-    this.playArea = null;
+export class CollectionMode extends BaseMode {
+  constructor(shell, modeDefinition, selector = '.wmc-item') {
+    super(shell, modeDefinition);
+    this.selector = selector;
     this.items = [];
     this.spawnTimer = 0;
     this.spawnDelay = 1;
     this.onClick = null;
   }
 
-  attach(playArea, shell) {
-    this.playArea = playArea;
-    this.shell = shell;
+  attach(playArea) {
+    super.attach(playArea);
     this.onClick = (event) => {
       const element = event.target.closest(this.selector);
       if (!element) return;
       const index = this.items.findIndex((item) => item.el === element);
       if (index === -1) return;
-      this.onEntityClick(this.items[index], index, event, this);
+      this.onEntityClick(this.items[index], index, event);
     };
     this.playArea.addEventListener('mousedown', this.onClick);
   }
@@ -37,6 +26,18 @@ export class CollectionModeHandler {
     this.spawnTimer = 0;
     this.spawnDelay = this.getSpawnDelay();
   }
+
+  getSpawnDelay() {
+    return 1;
+  }
+
+  createEntity() {
+    throw new Error('createEntity() must be implemented by collection mode subclasses');
+  }
+
+  onEntityClick() {}
+
+  onEntityMiss() {}
 
   addEntity(entity) {
     this.items.push(entity);
@@ -54,8 +55,9 @@ export class CollectionModeHandler {
 
   tick(delta) {
     this.spawnTimer += delta;
-    if (this.spawnTimer >= this.spawnDelay) {
-      const entity = this.createEntity(this);
+    const maxItems = this.mode?.params?.itemCount ?? Number.POSITIVE_INFINITY;
+    if (this.spawnTimer >= this.spawnDelay && this.items.length < maxItems) {
+      const entity = this.createEntity();
       if (entity) {
         this.addEntity(entity);
       }
@@ -71,7 +73,7 @@ export class CollectionModeHandler {
       if (item.y > areaHeight) {
         this.items.splice(index, 1);
         item.el.remove();
-        this.onEntityMiss?.(item, this);
+        this.onEntityMiss(item);
       }
     }
   }
@@ -86,8 +88,7 @@ export class CollectionModeHandler {
       this.playArea.removeEventListener('mousedown', this.onClick);
     }
     this.clear();
-    this.playArea = null;
-    this.shell = null;
     this.onClick = null;
+    super.destroy();
   }
 }

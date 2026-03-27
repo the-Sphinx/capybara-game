@@ -174,3 +174,33 @@ The next strong follow-up would be extending Math’s `worlds/<worldId>.json` co
 
 ### Verification
 - Ran `npm run build` successfully in `capy-village`.
+
+## 14. Typed Mode Registry And Authoring Contract
+
+### What Changed
+- Added a typed mode registry in `capy-village/src/games/modeRegistry.js` so authored recipes now declare a single explicit `type` instead of loose `family + ad hoc keys`.
+- Replaced legacy recipe ids with explicit authored ids across Math Garden, Language Grove, and Watermelon Catch.
+- Refactored game runtime handlers into explicit class-backed mode implementations:
+  - `MathDivisibilityCollectionMode`
+  - `MathOperationAnswerMode`
+  - `LanguageLettersStreamMode`
+  - `LanguageCategoryStreamMode`
+  - `LanguageSentenceChoiceMode`
+  - `LanguageOppositesChoiceMode`
+  - `LanguageSynonymsChoiceMode`
+  - `LanguageRiddleChoiceMode`
+  - `WatermelonClassicCollectionMode`
+- Added authoring schema files:
+  - `capy-village/src/config/games/schemas/math_garden.modes.schema.json`
+  - `capy-village/src/config/games/schemas/language_grove.modes.schema.json`
+  - `capy-village/src/config/games/schemas/watermelon_catch.modes.schema.json`
+- Added `docs/minigame_mode_authoring.md` documenting the valid types, params, and level override keys.
+
+### Reviewer Focus
+- Confirm all level JSON now references the new typed recipe ids rather than the old short ids.
+- Confirm `GameManager` normalizes and validates both mode definitions and level override keys through `modeRegistry.js`.
+- Confirm mode authoring is now discoverable through the schema files and authoring doc rather than hidden in runtime branching.
+- Confirm Language Grove's authored `itemCount` now aligns with runtime behavior instead of being ignored.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village` after the typed-registry refactor.

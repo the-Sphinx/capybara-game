@@ -1,35 +1,24 @@
-export class AnswerModeHandler {
-  constructor({
-    selector = '.mg-tile',
-    createRound,
-    onCorrect,
-    onWrong,
-    onCorrectMiss,
-  }) {
-    this.selector = selector;
-    this.createRound = createRound;
-    this.onCorrect = onCorrect;
-    this.onWrong = onWrong;
-    this.onCorrectMiss = onCorrectMiss;
+import { BaseMode } from './BaseMode.js';
 
-    this.shell = null;
-    this.playArea = null;
+export class AnswerMode extends BaseMode {
+  constructor(shell, modeDefinition, selector = '.mg-tile') {
+    super(shell, modeDefinition);
+    this.selector = selector;
     this.tiles = [];
     this.onClick = null;
   }
 
-  attach(playArea, shell) {
-    this.playArea = playArea;
-    this.shell = shell;
+  attach(playArea) {
+    super.attach(playArea);
     this.onClick = (event) => {
       const element = event.target.closest(this.selector);
       if (!element) return;
       const tile = this.tiles.find((item) => item.el === element);
       if (!tile) return;
       if (tile.isCorrect) {
-        this.onCorrect(tile, event, this);
+        this.onCorrect(tile, event);
       } else {
-        this.onWrong(tile, event, this);
+        this.onWrong(tile, event);
       }
     };
     this.playArea.addEventListener('mousedown', this.onClick);
@@ -39,9 +28,19 @@ export class AnswerModeHandler {
     this.spawnRound();
   }
 
+  createRound() {
+    throw new Error('createRound() must be implemented by answer mode subclasses');
+  }
+
+  onCorrect() {}
+
+  onWrong() {}
+
+  onCorrectMiss() {}
+
   spawnRound() {
     this.clear();
-    const round = this.createRound(this);
+    const round = this.createRound();
     if (!round) return;
     this.shell.setCenterText(round.promptText ?? '');
     this.tiles = round.entities ?? [];
@@ -63,14 +62,12 @@ export class AnswerModeHandler {
       if (tile.y > areaHeight) {
         this.tiles.splice(index, 1);
         tile.el.remove();
-        if (tile.isCorrect) {
-          correctFell = true;
-        }
+        if (tile.isCorrect) correctFell = true;
       }
     }
 
     if (correctFell) {
-      this.onCorrectMiss?.(this);
+      this.onCorrectMiss();
       this.spawnRound();
     }
   }
@@ -80,8 +77,7 @@ export class AnswerModeHandler {
       this.playArea.removeEventListener('mousedown', this.onClick);
     }
     this.clear();
-    this.playArea = null;
-    this.shell = null;
     this.onClick = null;
+    super.destroy();
   }
 }

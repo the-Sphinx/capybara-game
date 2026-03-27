@@ -1,5 +1,11 @@
 import { gameState }   from '../state.js';
 import { saveManager } from '../SaveManager.js';
+import {
+  createModeHandler,
+  normalizeLevelDefinitions,
+  normalizeModeDefinitions,
+  resolveModeForLevel,
+} from './modeRegistry.js';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -64,16 +70,13 @@ class GameManager {
       fetchJson(joinConfigPath(gameId, 'modes.json')),
     ]);
 
-    const modeMap = new Map((modes ?? []).map((mode) => [mode.id, mode]));
+    const normalizedModes = normalizeModeDefinitions(gameId, modes);
+    const modeMap = new Map(normalizedModes.map((mode) => [mode.id, mode]));
     const levels = [];
     for (const world of worldSelectConfig?.worlds ?? []) {
       const worldId = world.id;
       const adventureLevels = await fetchJson(joinConfigPath(gameId, `levels/${worldId}_levels.json`));
-      levels.push(...(adventureLevels ?? []).map((level) => ({
-        worldId,
-        levelId: level.levelId ?? `${worldId}_${level.levelNum}`,
-        ...level,
-      })));
+      levels.push(...normalizeLevelDefinitions(gameId, adventureLevels, modeMap, worldId));
     }
 
     const arcadeModeIds = arcadeConfig?.modeIds
@@ -85,7 +88,7 @@ class GameManager {
     return {
       gameId,
       levels,
-      modes,
+      modes: normalizedModes,
       modeMap,
       arcadeConfig: {
         ...arcadeConfig,
@@ -120,6 +123,35 @@ class GameManager {
     return this._gameConfigs.get(gameId)?.modeMap?.get(modeId) ?? null;
   }
 
+  resolveModeForLevel(gameId, levelRef) {
+    const level = typeof levelRef === 'string'
+      ? this.getLevelById(gameId, levelRef)
+      : levelRef;
+    if (!level) return null;
+    return resolveModeForLevel(this.getModeConfig(gameId, level.modeId), level);
+  }
+
+  createModeHandler(gameId, shell) {
+    return createModeHandler(shell, shell.mode);
+  }
+
+  resolveLaunchConfig(gameId, launchConfig) {
+    if (!launchConfig || launchConfig.mode === 'arcade') {
+      return launchConfig;
+    }
+    const sourceLevel = launchConfig.levelId
+      ? (this.getLevelById(gameId, launchConfig.levelId) ?? launchConfig)
+      : launchConfig;
+    const resolvedMode = this.resolveModeForLevel(gameId, sourceLevel);
+    return {
+      ...sourceLevel,
+      ...launchConfig,
+      levelId: sourceLevel.levelId,
+      worldId: sourceLevel.worldId,
+      resolvedMode,
+    };
+  }
+
   getModes(gameId) {
     return this._gameConfigs.get(gameId)?.modes ?? [];
   }
@@ -149,7 +181,7 @@ class GameManager {
 
     gameState.modalOpen = true;
 
-    const game = factory(levelConfig);
+    const game = factory(this.resolveLaunchConfig(gameId, levelConfig));
     game._onFinish = (result) => this.endGame(result);
     this._activeGame = game;
 

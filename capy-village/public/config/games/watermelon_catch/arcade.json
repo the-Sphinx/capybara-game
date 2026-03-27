@@ -1,6 +1,6 @@
 {
-  "modeIds": ["classic"],
+  "modeIds": ["watermelon_classic"],
   "arcadeWeights": {
-    "classic": 1
+    "watermelon_classic": 1
   }
 }

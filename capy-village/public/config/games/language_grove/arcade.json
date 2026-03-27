@@ -1,21 +1,22 @@
 {
   "modeIds": [
-    "vowels",
-    "consonants",
-    "categoryCatch_animals",
-    "categoryCatch_foods",
-    "sentenceCompletion",
-    "opposites",
-    "synonyms",
-    "riddle"
+    "language_letters_vowels",
+    "language_letters_consonants",
+    "language_category_animals",
+    "language_category_foods",
+    "language_sentence_completion",
+    "language_opposites",
+    "language_synonyms",
+    "language_riddle"
   ],
   "arcadeWeights": {
-    "vowels": 2,
-    "consonants": 2,
-    "categoryCatch": 5,
-    "sentenceCompletion": 2,
-    "opposites": 2,
-    "synonyms": 2,
-    "riddle": 1
+    "language_letters_vowels": 2,
+    "language_letters_consonants": 2,
+    "language_category_animals": 3,
+    "language_category_foods": 2,
+    "language_sentence_completion": 2,
+    "language_opposites": 2,
+    "language_synonyms": 2,
+    "language_riddle": 1
   }
 }

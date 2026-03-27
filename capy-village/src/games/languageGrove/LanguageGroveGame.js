@@ -1,5 +1,5 @@
 import { EngineGame } from '../engine/EngineGame.js';
-import { createLanguageHandler } from './modeRuntime.js';
+import { gameManager } from '../GameManager.js';
 
 const ASSET_BASE = import.meta.env.BASE_URL + 'games/watermelon/';
 
@@ -30,6 +30,6 @@ export class LanguageGroveGame extends EngineGame {
   }
 
   createHandler() {
-    return createLanguageHandler(this);
+    return gameManager.createModeHandler(this.gameId, this);
   }
 }

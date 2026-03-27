@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "multiplication_meadow",
     "label": "Triple Vines",
-    "modeId": "collect_mult3",
+    "modeId": "math_collect_multiples_of_3",
     "timeLimit": 50,
     "numberRange": [
       1,

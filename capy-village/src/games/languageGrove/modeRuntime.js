@@ -1,6 +1,6 @@
 import { soundManager } from '../../audio/SoundManager.js';
-import { StreamModeHandler } from '../modes/stream.js';
-import { ChoiceRoundModeHandler } from '../modes/choice_round.js';
+import { StreamMode } from '../modes/StreamMode.js';
+import { ChoiceRoundMode } from '../modes/ChoiceRoundMode.js';
 import {
   VOWELS, CONSONANTS, ALL_LETTERS,
   CATEGORIES,
@@ -43,191 +43,212 @@ const nextOpposite = makeRotator(OPPOSITES);
 const nextSynonym = makeRotator(SYNONYMS);
 const nextRiddle = makeRotator(RIDDLES);
 
-function buildStreamPool(mode, levelConfig) {
-  switch (mode.id) {
-    case 'vowels':
+class LanguageBaseStreamMode extends StreamMode {
+  getSpawnDelay() {
+    return randBetween(0.7, 1.2);
+  }
+
+  getFallSpeed() {
+    return (this.mode.params.fallSpeed ?? 1.0) * SPEED_BASE;
+  }
+
+  buildPool() {
+    return { correct: VOWELS, incorrect: CONSONANTS };
+  }
+
+  createEntity() {
+    const pool = this.buildPool();
+    const isCorrect = Math.random() < 0.4;
+    const label = isCorrect ? randFrom(pool.correct) : randFrom(pool.incorrect);
+    const color = isCorrect
+      ? randFrom(['#27ae60', '#16a085', '#2980b9'])
+      : randFrom(['#e74c3c', '#c0392b', '#8e44ad']);
+    const el = document.createElement('div');
+    el.className = 'mg-tile lg-item lg-tile';
+    el.textContent = label;
+    el.style.background = color;
+    const areaWidth = this.playArea.clientWidth || 600;
+    el.style.left = `${randBetween(8, Math.max(8, areaWidth - 100))}px`;
+    el.style.top = '-72px';
+    this.playArea.appendChild(el);
+    soundManager.play('pop');
+    return {
+      el,
+      label,
+      isCorrect,
+      y: -72,
+      speed: randBetween(this.getFallSpeed() * 0.85, this.getFallSpeed() * 1.15),
+    };
+  }
+
+  onEntityClick(item, index, event) {
+    const points = this.mode.params.pointsPerCorrect ?? 5;
+    if (item.isCorrect) {
+      item.el.classList.add('mg-tile--pop');
+      item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
+      this.items.splice(index, 1);
+      this.shell.addCatch();
+      this.shell.addScore(points);
+      this.shell.bumpCombo();
+      this.shell.maybeShowGoalComplete();
+      this.shell.showFeedback(event, `+${points} ✓`, 'correct');
+      soundManager.play('correct');
+      return;
+    }
+
+    this.shell.addWrongClick();
+    this.shell.resetCombo();
+    const penalty = this.mode.params.wrongPenalty ?? 0;
+    if (penalty > 0) {
+      this.shell.subtractScore(penalty * points);
+    }
+    item.el.classList.add('mg-tile--wrong');
+    item.el.addEventListener('animationend', () => item.el.classList.remove('mg-tile--wrong'), { once: true });
+    this.shell.showFeedback(event, 'Wrong!', 'wrong');
+    soundManager.play('wrong');
+  }
+
+  onEntityMiss(item) {
+    if (item.isCorrect) {
+      this.shell.addMiss();
+      this.shell.resetCombo();
+    }
+  }
+}
+
+export class LanguageLettersStreamMode extends LanguageBaseStreamMode {
+  buildPool() {
+    if (this.mode.params.letterSet === 'vowels') {
       return { correct: VOWELS, incorrect: CONSONANTS };
-    case 'consonants':
+    }
+    if (this.mode.params.letterSet === 'consonants') {
       return { correct: CONSONANTS, incorrect: VOWELS };
-    case 'categoryCatch_animals':
-    case 'categoryCatch_foods':
-    case 'categoryCatch': {
-      const categoryKey = levelConfig?.category ?? mode.category;
-      const correct = CATEGORIES[categoryKey]?.words ?? [];
-      const incorrect = [];
-      for (const [key, category] of Object.entries(CATEGORIES)) {
-        if (key !== categoryKey) {
-          incorrect.push(...category.words);
-        }
+    }
+    const word = this.mode.params.targetWord ?? 'DOG';
+    const correct = [...new Set(word.split(''))];
+    const incorrect = ALL_LETTERS.filter((letter) => !correct.includes(letter));
+    return { correct, incorrect };
+  }
+}
+
+export class LanguageCategoryStreamMode extends LanguageBaseStreamMode {
+  buildPool() {
+    const categoryKey = this.mode.params.category;
+    const correct = CATEGORIES[categoryKey]?.words ?? [];
+    const incorrect = [];
+    for (const [key, category] of Object.entries(CATEGORIES)) {
+      if (key !== categoryKey) {
+        incorrect.push(...category.words);
       }
-      return { correct, incorrect };
     }
-    case 'lettersInWord': {
-      const word = levelConfig?.targetWord ?? mode.targetWord ?? 'DOG';
-      const correct = [...new Set(word.split(''))];
-      const incorrect = ALL_LETTERS.filter((letter) => !correct.includes(letter));
-      return { correct, incorrect };
-    }
-    default:
-      return { correct: VOWELS, incorrect: CONSONANTS };
+    return { correct, incorrect };
   }
 }
 
-function pickPrompt(mode) {
-  switch (mode.id) {
-    case 'sentenceCompletion':
-      return nextSentence();
-    case 'opposites':
-      return nextOpposite();
-    case 'synonyms':
-      return nextSynonym();
-    case 'riddle':
-      return nextRiddle();
-    default:
-      return nextSentence();
-  }
-}
-
-function buildPromptDisplay(mode, prompt) {
-  switch (mode.id) {
-    case 'sentenceCompletion':
-      return prompt.stem;
-    case 'opposites':
-      return `Opposite of: ${prompt.prompt}`;
-    case 'synonyms':
-      return `Similar to: ${prompt.prompt}`;
-    case 'riddle':
-      return prompt.text.replace(/\n/g, ' · ');
-    default:
-      return mode.prompt ?? '';
-  }
-}
-
-export function createLanguageHandler(shell) {
-  const levelConfig = shell.levelConfig;
-  const mode = shell.mode;
-  const fallSpeed = (levelConfig?.fallSpeed ?? mode.fallSpeed ?? 1.0) * SPEED_BASE;
-
-  if (mode.family === 'choice_round') {
-    return new ChoiceRoundModeHandler({
-      createRound(handler) {
-        const prompt = pickPrompt(mode);
-        const answerCount = levelConfig?.answerCount ?? mode.answerCount ?? 3;
-        const answers = shuffle([prompt.correct, ...shuffle(prompt.distractors).slice(0, answerCount - 1)]);
-        const areaWidth = handler.playArea.clientWidth || 600;
-        const entities = answers.map((answer, index) => {
-          const el = document.createElement('div');
-          el.className = 'mg-tile lg-tile';
-          el.textContent = answer;
-          el.style.left = `${randBetween(8, Math.max(8, areaWidth - 120))}px`;
-          el.style.top = `${-TILE_SIZE - index * 30}px`;
-          el.style.background = TILE_COLORS[index % TILE_COLORS.length];
-          handler.playArea.appendChild(el);
-          return {
-            el,
-            value: answer,
-            isCorrect: answer === prompt.correct,
-            y: -TILE_SIZE - index * 30,
-            speed: randBetween(fallSpeed * 0.85, fallSpeed * 1.1),
-          };
-        });
-        return {
-          promptText: buildPromptDisplay(mode, prompt),
-          entities,
-        };
-      },
-      onCorrect(tile, event, handler) {
-        const points = mode.pointsPerCorrect ?? 10;
-        tile.el.classList.add('mg-tile--pop');
-        tile.el.addEventListener('animationend', () => tile.el.remove(), { once: true });
-        shell.addCorrect();
-        shell.addScore(points);
-        shell.bumpCombo();
-        shell.maybeShowGoalComplete();
-        shell.showFeedback(event, `+${points} ✓`, 'correct');
-        soundManager.play('correct');
-        handler.tiles.forEach((item) => {
-          if (item !== tile) {
-            item.el.remove();
-          }
-        });
-        handler.tiles = [];
-        handler.spawnRound();
-      },
-      onWrong(tile, event) {
-        shell.addWrongClick();
-        shell.resetCombo();
-        tile.el.classList.add('mg-tile--wrong');
-        tile.el.addEventListener('animationend', () => tile.el.classList.remove('mg-tile--wrong'), { once: true });
-        shell.showFeedback(event, 'Wrong!', 'wrong');
-        soundManager.play('wrong');
-      },
-      onCorrectMiss() {
-        shell.addMiss();
-        shell.resetCombo();
-      },
-    });
+class LanguageBaseChoiceMode extends ChoiceRoundMode {
+  getFallSpeed() {
+    return (this.mode.params.fallSpeed ?? 1.0) * SPEED_BASE;
   }
 
-  return new StreamModeHandler({
-    selector: '.lg-item',
-    getSpawnDelay() {
-      return randBetween(0.7, 1.2);
-    },
-    createEntity(handler) {
-      const pool = buildStreamPool(mode, levelConfig);
-      const isCorrect = Math.random() < 0.4;
-      const label = isCorrect ? randFrom(pool.correct) : randFrom(pool.incorrect);
-      const color = isCorrect
-        ? randFrom(['#27ae60', '#16a085', '#2980b9'])
-        : randFrom(['#e74c3c', '#c0392b', '#8e44ad']);
+  pickPrompt() {
+    return nextSentence();
+  }
+
+  buildPromptDisplay(prompt) {
+    return prompt.stem ?? '';
+  }
+
+  createRound() {
+    const prompt = this.pickPrompt();
+    const answerCount = this.mode.params.answerCount ?? 3;
+    const answers = shuffle([prompt.correct, ...shuffle(prompt.distractors).slice(0, answerCount - 1)]);
+    const areaWidth = this.playArea.clientWidth || 600;
+    const entities = answers.map((answer, index) => {
       const el = document.createElement('div');
-      el.className = 'mg-tile lg-item lg-tile';
-      el.textContent = label;
-      el.style.background = color;
-      const areaWidth = handler.playArea.clientWidth || 600;
-      el.style.left = `${randBetween(8, Math.max(8, areaWidth - 100))}px`;
-      el.style.top = '-72px';
-      handler.playArea.appendChild(el);
-      soundManager.play('pop');
+      el.className = 'mg-tile lg-tile';
+      el.textContent = answer;
+      el.style.left = `${randBetween(8, Math.max(8, areaWidth - 120))}px`;
+      el.style.top = `${-TILE_SIZE - index * 30}px`;
+      el.style.background = TILE_COLORS[index % TILE_COLORS.length];
+      this.playArea.appendChild(el);
       return {
         el,
-        label,
-        isCorrect,
-        y: -72,
-        speed: randBetween(fallSpeed * 0.85, fallSpeed * 1.15),
+        value: answer,
+        isCorrect: answer === prompt.correct,
+        y: -TILE_SIZE - index * 30,
+        speed: randBetween(this.getFallSpeed() * 0.85, this.getFallSpeed() * 1.1),
       };
-    },
-    onEntityClick(item, index, event, handler) {
-      const points = mode.pointsPerCorrect ?? 5;
-      if (item.isCorrect) {
-        item.el.classList.add('mg-tile--pop');
-        item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
-        handler.items.splice(index, 1);
-        shell.addCatch();
-        shell.addScore(points);
-        shell.bumpCombo();
-        shell.maybeShowGoalComplete();
-        shell.showFeedback(event, `+${points} ✓`, 'correct');
-        soundManager.play('correct');
-      } else {
-        shell.addWrongClick();
-        shell.resetCombo();
-        const penalty = mode.wrongPenalty ?? 0;
-        if (penalty > 0) {
-          shell.subtractScore(penalty * points);
-        }
-        item.el.classList.add('mg-tile--wrong');
-        item.el.addEventListener('animationend', () => item.el.classList.remove('mg-tile--wrong'), { once: true });
-        shell.showFeedback(event, 'Wrong!', 'wrong');
-        soundManager.play('wrong');
-      }
-    },
-    onEntityMiss(item) {
-      if (item.isCorrect) {
-        shell.addMiss();
-        shell.resetCombo();
-      }
-    },
-  });
+    });
+    return {
+      promptText: this.buildPromptDisplay(prompt),
+      entities,
+    };
+  }
+
+  onCorrect(tile, event) {
+    const points = this.mode.params.pointsPerCorrect ?? 10;
+    tile.el.classList.add('mg-tile--pop');
+    tile.el.addEventListener('animationend', () => tile.el.remove(), { once: true });
+    this.shell.addCorrect();
+    this.shell.addScore(points);
+    this.shell.bumpCombo();
+    this.shell.maybeShowGoalComplete();
+    this.shell.showFeedback(event, `+${points} ✓`, 'correct');
+    soundManager.play('correct');
+    this.tiles.forEach((item) => {
+      if (item !== tile) item.el.remove();
+    });
+    this.tiles = [];
+    this.spawnRound();
+  }
+
+  onWrong(tile, event) {
+    this.shell.addWrongClick();
+    this.shell.resetCombo();
+    tile.el.classList.add('mg-tile--wrong');
+    tile.el.addEventListener('animationend', () => tile.el.classList.remove('mg-tile--wrong'), { once: true });
+    this.shell.showFeedback(event, 'Wrong!', 'wrong');
+    soundManager.play('wrong');
+  }
+
+  onCorrectMiss() {
+    this.shell.addMiss();
+    this.shell.resetCombo();
+  }
+}
+
+export class LanguageSentenceChoiceMode extends LanguageBaseChoiceMode {
+  pickPrompt() {
+    return nextSentence();
+  }
+}
+
+export class LanguageOppositesChoiceMode extends LanguageBaseChoiceMode {
+  pickPrompt() {
+    return nextOpposite();
+  }
+
+  buildPromptDisplay(prompt) {
+    return `Opposite of: ${prompt.prompt}`;
+  }
+}
+
+export class LanguageSynonymsChoiceMode extends LanguageBaseChoiceMode {
+  pickPrompt() {
+    return nextSynonym();
+  }
+
+  buildPromptDisplay(prompt) {
+    return `Similar to: ${prompt.prompt}`;
+  }
+}
+
+export class LanguageRiddleChoiceMode extends LanguageBaseChoiceMode {
+  pickPrompt() {
+    return nextRiddle();
+  }
+
+  buildPromptDisplay(prompt) {
+    return prompt.text.replace(/\n/g, ' · ');
+  }
 }

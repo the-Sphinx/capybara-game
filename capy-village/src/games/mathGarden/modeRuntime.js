@@ -1,6 +1,6 @@
 import { soundManager } from '../../audio/SoundManager.js';
-import { CollectionModeHandler } from '../modes/collection.js';
-import { AnswerModeHandler } from '../modes/answer.js';
+import { CollectionMode } from '../modes/CollectionMode.js';
+import { AnswerMode } from '../modes/AnswerMode.js';
 
 const WMC_BASE = import.meta.env.BASE_URL + 'games/watermelon/';
 
@@ -57,186 +57,164 @@ function shuffle(arr) {
   return copy;
 }
 
-function resolveIsCorrect(spec) {
-  if (!spec) return () => true;
-  if (spec.type === 'mod_equals') {
-    return (value) => value % spec.mod === spec.result;
-  }
-  return () => false;
-}
+export class MathOperationAnswerMode extends AnswerMode {
+  createRound() {
+    const params = this.mode.params;
+    const operation = params.operation ?? 'mixed';
+    const operations = operation === 'addition'
+      ? ['+']
+      : operation === 'subtraction'
+        ? ['-']
+        : ['+', '-'];
+    const op = randFrom(operations);
+    const [min, max] = params.numberRange ?? [1, 10];
 
-function levelOrModeValue(levelConfig, mode, key, fallback) {
-  return levelConfig?.[key] ?? mode?.[key] ?? fallback;
-}
-
-function generateEquation(levelConfig, mode) {
-  const operation = levelOrModeValue(levelConfig, mode, 'operation', 'mixed');
-  const ops = operation === 'addition'
-    ? ['+']
-    : operation === 'subtraction'
-      ? ['-']
-      : ['+', '-'];
-  const op = randFrom(ops);
-  const [min, max] = levelOrModeValue(levelConfig, mode, 'numberRange', [1, 10]);
-  let a;
-  let b;
-  let answer;
-
-  if (op === '+') {
-    a = randInt(min, max);
-    b = randInt(min, max);
-    answer = a + b;
-  } else {
-    a = randInt(min, max);
-    b = randInt(min, a);
-    if (b < min) {
-      b = min;
+    let a;
+    let b;
+    let answer;
+    if (op === '+') {
+      a = randInt(min, max);
+      b = randInt(min, max);
+      answer = a + b;
+    } else {
+      a = randInt(min, max);
+      b = randInt(min, a);
+      if (b < min) b = min;
+      answer = a - b;
     }
-    answer = a - b;
-  }
 
-  return { answer, display: `${a} ${op} ${b} = ?` };
-}
-
-function generateAnswers(levelConfig, mode, equation) {
-  const answerCount = levelOrModeValue(levelConfig, mode, 'answerCount', 3);
-  const wrongs = new Set();
-  for (const offset of [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6]) {
-    const candidate = equation.answer + offset;
-    if (candidate >= 0 && candidate !== equation.answer) {
-      wrongs.add(candidate);
-      if (wrongs.size === answerCount - 1) {
-        break;
-      }
-    }
-  }
-  return shuffle([equation.answer, ...wrongs]);
-}
-
-export function createMathHandler(shell) {
-  const levelConfig = shell.levelConfig;
-  const mode = shell.mode;
-
-  if (mode.family === 'answer') {
-    return new AnswerModeHandler({
-      createRound(handler) {
-        const equation = generateEquation(levelConfig, mode);
-        const answers = generateAnswers(levelConfig, mode, equation);
-        const areaWidth = shell.playArea.clientWidth || 600;
-        const entities = answers.map((answer, index) => {
-          const el = document.createElement('div');
-          el.className = 'mg-tile';
-          el.textContent = answer;
-          el.style.left = `${randBetween(8, areaWidth - TILE_SIZE - 8)}px`;
-          el.style.top = `-${TILE_SIZE}px`;
-          el.style.background = TILE_COLORS[index % TILE_COLORS.length];
-          handler.playArea.appendChild(el);
-          return {
-            el,
-            value: answer,
-            isCorrect: answer === equation.answer,
-            y: -TILE_SIZE,
-            speed: randBetween(SPEED_MIN, SPEED_MAX),
-          };
-        });
-        return {
-          promptText: equation.display,
-          entities,
-        };
-      },
-      onCorrect(tile, event, handler) {
-        const points = mode.pointsPerCorrect ?? 10;
-        tile.el.classList.add('mg-tile--pop');
-        tile.el.addEventListener('animationend', () => tile.el.remove(), { once: true });
-        shell.addCorrect();
-        shell.addScore(points);
-        shell.bumpCombo();
-        shell.maybeShowGoalComplete();
-        shell.showFeedback(event, `+${points} ✓`, 'correct');
-        soundManager.play('correct');
-        handler.tiles.forEach((item) => {
-          if (item !== tile) {
-            item.el.remove();
-          }
-        });
-        handler.tiles = [];
-        handler.spawnRound();
-      },
-      onWrong(tile, event) {
-        shell.addWrongClick();
-        shell.resetCombo();
-        tile.el.classList.add('mg-tile--wrong');
-        tile.el.addEventListener('animationend', () => tile.el.classList.remove('mg-tile--wrong'), { once: true });
-        shell.showFeedback(event, mode.wrongFeedback ?? 'Wrong!', 'wrong');
-        soundManager.play('wrong');
-      },
-      onCorrectMiss() {
-        shell.addMiss();
-        shell.resetCombo();
-      },
-    });
-  }
-
-  const isCorrect = resolveIsCorrect(mode.isCorrect);
-  return new CollectionModeHandler({
-    selector: '.wmc-item',
-    getSpawnDelay() {
-      return randBetween(0.8, 1.4);
-    },
-    createEntity(handler) {
-      const areaWidth = handler.playArea.clientWidth || 600;
-      const [min, max] = levelOrModeValue(levelConfig, mode, 'numberRange', [1, 20]);
-      const value = Math.floor(randBetween(min, max + 1));
-      const variants = NUMBER_SPRITES[value] ?? NUMBER_SPRITES[1];
-      const el = document.createElement('img');
-      el.className = 'wmc-item';
-      el.src = WMC_BASE + randFrom(variants);
-      el.draggable = false;
-      el.style.left = `${randBetween(8, areaWidth - ITEM_SIZE - 8)}px`;
-      el.style.top = `-${ITEM_SIZE}px`;
-      handler.playArea.appendChild(el);
-      soundManager.play('pop');
+    const equationText = `${a} ${op} ${b} = ?`;
+    const answers = this._generateAnswers(answer, params.answerCount ?? 3);
+    const areaWidth = this.playArea.clientWidth || 600;
+    const entities = answers.map((value, index) => {
+      const el = document.createElement('div');
+      el.className = 'mg-tile';
+      el.textContent = value;
+      el.style.left = `${randBetween(8, areaWidth - TILE_SIZE - 8)}px`;
+      el.style.top = `-${TILE_SIZE}px`;
+      el.style.background = TILE_COLORS[index % TILE_COLORS.length];
+      this.playArea.appendChild(el);
       return {
         el,
         value,
-        isCorrect: isCorrect(value),
-        y: -ITEM_SIZE,
-        speed: randBetween(COL_SPD_MIN, COL_SPD_MAX),
+        isCorrect: value === answer,
+        y: -TILE_SIZE,
+        speed: randBetween(SPEED_MIN, SPEED_MAX),
       };
-    },
-    onEntityClick(item, index, event, handler) {
-      const points = mode.pointsPerCorrect ?? 2;
-      if (item.isCorrect) {
-        item.el.classList.add('wmc-item--pop');
-        item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
-        handler.items.splice(index, 1);
-        shell.addCatch();
-        shell.addScore(points);
-        shell.bumpCombo();
-        shell.maybeShowGoalComplete();
-        shell.showFeedback(event, `+${points}`, 'correct');
-        soundManager.play('correct');
-      } else {
-        shell.addWrongClick();
-        shell.resetCombo();
-        const penalty = mode.wrongPenalty ?? 0;
-        if (penalty > 0) {
-          shell.subtractScore(penalty * points);
-        }
-        item.el.classList.add('wmc-item--wrong');
-        item.el.addEventListener('animationend', () => item.el.classList.remove('wmc-item--wrong'), { once: true });
-        const text = penalty > 0
-          ? `${mode.wrongFeedback ?? 'Wrong!'} -${penalty * points}`
-          : (mode.wrongFeedback ?? 'Wrong!');
-        shell.showFeedback(event, text, 'wrong');
-        soundManager.play('wrong');
+    });
+    return {
+      promptText: equationText,
+      entities,
+    };
+  }
+
+  _generateAnswers(answer, answerCount) {
+    const wrongs = new Set();
+    for (const offset of [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6]) {
+      const candidate = answer + offset;
+      if (candidate >= 0 && candidate !== answer) {
+        wrongs.add(candidate);
+        if (wrongs.size === answerCount - 1) break;
       }
-    },
-    onEntityMiss(item) {
-      if (item.isCorrect) {
-        shell.addMiss();
-        shell.resetCombo();
-      }
-    },
-  });
+    }
+    return shuffle([answer, ...wrongs]);
+  }
+
+  onCorrect(tile, event) {
+    const points = this.mode.params.pointsPerCorrect ?? 10;
+    tile.el.classList.add('mg-tile--pop');
+    tile.el.addEventListener('animationend', () => tile.el.remove(), { once: true });
+    this.shell.addCorrect();
+    this.shell.addScore(points);
+    this.shell.bumpCombo();
+    this.shell.maybeShowGoalComplete();
+    this.shell.showFeedback(event, `+${points} ✓`, 'correct');
+    soundManager.play('correct');
+    this.tiles.forEach((item) => {
+      if (item !== tile) item.el.remove();
+    });
+    this.tiles = [];
+    this.spawnRound();
+  }
+
+  onWrong(tile, event) {
+    this.shell.addWrongClick();
+    this.shell.resetCombo();
+    tile.el.classList.add('mg-tile--wrong');
+    tile.el.addEventListener('animationend', () => tile.el.classList.remove('mg-tile--wrong'), { once: true });
+    this.shell.showFeedback(event, this.mode.params.wrongFeedback ?? 'Wrong!', 'wrong');
+    soundManager.play('wrong');
+  }
+
+  onCorrectMiss() {
+    this.shell.addMiss();
+    this.shell.resetCombo();
+  }
+}
+
+export class MathDivisibilityCollectionMode extends CollectionMode {
+  getSpawnDelay() {
+    return randBetween(0.8, 1.4);
+  }
+
+  createEntity() {
+    const areaWidth = this.playArea.clientWidth || 600;
+    const [min, max] = this.mode.params.numberRange ?? [1, 20];
+    const value = Math.floor(randBetween(min, max + 1));
+    const variants = NUMBER_SPRITES[value] ?? NUMBER_SPRITES[1];
+    const el = document.createElement('img');
+    el.className = 'wmc-item';
+    el.src = WMC_BASE + randFrom(variants);
+    el.draggable = false;
+    el.style.left = `${randBetween(8, areaWidth - ITEM_SIZE - 8)}px`;
+    el.style.top = `-${ITEM_SIZE}px`;
+    this.playArea.appendChild(el);
+    soundManager.play('pop');
+    const divisor = this.mode.params.divisor;
+    const remainder = this.mode.params.remainder ?? 0;
+    return {
+      el,
+      value,
+      isCorrect: value % divisor === remainder,
+      y: -ITEM_SIZE,
+      speed: randBetween(COL_SPD_MIN, COL_SPD_MAX),
+    };
+  }
+
+  onEntityClick(item, index, event) {
+    const points = this.mode.params.pointsPerCorrect ?? 2;
+    if (item.isCorrect) {
+      item.el.classList.add('wmc-item--pop');
+      item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
+      this.items.splice(index, 1);
+      this.shell.addCatch();
+      this.shell.addScore(points);
+      this.shell.bumpCombo();
+      this.shell.maybeShowGoalComplete();
+      this.shell.showFeedback(event, `+${points}`, 'correct');
+      soundManager.play('correct');
+      return;
+    }
+
+    this.shell.addWrongClick();
+    this.shell.resetCombo();
+    const penalty = this.mode.params.wrongPenalty ?? 0;
+    if (penalty > 0) {
+      this.shell.subtractScore(penalty * points);
+    }
+    item.el.classList.add('wmc-item--wrong');
+    item.el.addEventListener('animationend', () => item.el.classList.remove('wmc-item--wrong'), { once: true });
+    const text = penalty > 0
+      ? `${this.mode.params.wrongFeedback ?? 'Wrong!'} -${penalty * points}`
+      : (this.mode.params.wrongFeedback ?? 'Wrong!');
+    this.shell.showFeedback(event, text, 'wrong');
+    soundManager.play('wrong');
+  }
+
+  onEntityMiss(item) {
+    if (item.isCorrect) {
+      this.shell.addMiss();
+      this.shell.resetCombo();
+    }
+  }
 }

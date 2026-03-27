@@ -1,5 +1,5 @@
 import { EngineGame } from '../engine/EngineGame.js';
-import { createMathHandler } from './modeRuntime.js';
+import { gameManager } from '../GameManager.js';
 
 const ASSET_BASE = import.meta.env.BASE_URL + 'games/watermelon/';
 
@@ -25,7 +25,7 @@ export class MathGardenGame extends EngineGame {
       };
     }
 
-    const operation = this.levelConfig?.operation ?? this.mode?.operation;
+    const operation = this.mode?.params?.operation;
     const opLabel = operation === 'addition'
       ? 'Addition'
       : operation === 'subtraction'
@@ -45,6 +45,6 @@ export class MathGardenGame extends EngineGame {
   }
 
   createHandler() {
-    return createMathHandler(this);
+    return gameManager.createModeHandler(this.gameId, this);
   }
 }

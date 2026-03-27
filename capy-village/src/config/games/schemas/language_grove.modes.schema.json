@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capy-village/src/config/games/schemas/language_grove.modes.schema.json",
+  "title": "Language Grove Modes",
+  "type": "array",
+  "items": {
+    "oneOf": [
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "title", "prompt", "params"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": { "const": "language.stream.letters" },
+          "title": { "type": "string", "minLength": 1 },
+          "prompt": { "type": "string", "minLength": 1 },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["letterSet", "fallSpeed", "pointsPerCorrect", "wrongPenalty"],
+            "properties": {
+              "letterSet": {
+                "type": "string",
+                "enum": ["vowels", "consonants", "word_letters"]
+              },
+              "targetWord": { "type": "string" },
+              "fallSpeed": { "type": "number" },
+              "itemCount": { "type": "integer", "minimum": 1 },
+              "pointsPerCorrect": { "type": "number" },
+              "wrongPenalty": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "title", "prompt", "params"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": { "const": "language.stream.category" },
+          "title": { "type": "string", "minLength": 1 },
+          "prompt": { "type": "string", "minLength": 1 },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["category", "fallSpeed", "pointsPerCorrect", "wrongPenalty"],
+            "properties": {
+              "category": { "type": "string", "minLength": 1 },
+              "fallSpeed": { "type": "number" },
+              "itemCount": { "type": "integer", "minimum": 1 },
+              "pointsPerCorrect": { "type": "number" },
+              "wrongPenalty": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "title", "prompt", "params"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": {
+            "enum": [
+              "language.choice.sentence_completion",
+              "language.choice.opposites",
+              "language.choice.synonyms",
+              "language.choice.riddle"
+            ]
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "prompt": { "type": "string", "minLength": 1 },
+          "params": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fallSpeed", "answerCount", "pointsPerCorrect", "wrongPenalty"],
+            "properties": {
+              "fallSpeed": { "type": "number" },
+              "answerCount": { "type": "integer", "minimum": 2 },
+              "pointsPerCorrect": { "type": "number" },
+              "wrongPenalty": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

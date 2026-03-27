@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "addition_field",
     "label": "Seedling",
-    "modeId": "answer_add",
+    "modeId": "math_answer_addition_basic",
     "timeLimit": 60,
     "operation": "addition",
     "numberRange": [
@@ -35,7 +35,7 @@
     "slot": 2,
     "worldId": "addition_field",
     "label": "Flowering",
-    "modeId": "answer_mixed",
+    "modeId": "math_answer_mixed_basic",
     "timeLimit": 50,
     "operation": "mixed",
     "numberRange": [

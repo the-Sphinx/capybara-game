@@ -1,104 +1,129 @@
 [
   {
-    "id": "vowels",
-    "family": "stream",
+    "id": "language_letters_vowels",
+    "type": "language.stream.letters",
     "title": "Vowel Catch",
     "prompt": "Catch the Vowels!",
-    "fallSpeed": 1,
-    "itemCount": 5,
-    "pointsPerCorrect": 5,
-    "wrongPenalty": 1
+    "params": {
+      "letterSet": "vowels",
+      "fallSpeed": 1,
+      "itemCount": 5,
+      "pointsPerCorrect": 5,
+      "wrongPenalty": 1
+    }
   },
   {
-    "id": "consonants",
-    "family": "stream",
+    "id": "language_letters_consonants",
+    "type": "language.stream.letters",
     "title": "Consonant Catch",
     "prompt": "Catch the Consonants!",
-    "fallSpeed": 1,
-    "itemCount": 5,
-    "pointsPerCorrect": 5,
-    "wrongPenalty": 1
+    "params": {
+      "letterSet": "consonants",
+      "fallSpeed": 1,
+      "itemCount": 5,
+      "pointsPerCorrect": 5,
+      "wrongPenalty": 1
+    }
   },
   {
-    "id": "categoryCatch",
-    "family": "stream",
+    "id": "language_category_stream",
+    "type": "language.stream.category",
     "title": "Category Catch",
     "prompt": "Catch the matching words!",
-    "fallSpeed": 1,
-    "itemCount": 5,
-    "pointsPerCorrect": 8,
-    "wrongPenalty": 1
+    "params": {
+      "category": "animals",
+      "fallSpeed": 1,
+      "itemCount": 5,
+      "pointsPerCorrect": 8,
+      "wrongPenalty": 1
+    }
   },
   {
-    "id": "categoryCatch_animals",
-    "family": "stream",
+    "id": "language_category_animals",
+    "type": "language.stream.category",
     "title": "Animal Words",
     "prompt": "Catch: ANIMALS",
-    "category": "animals",
-    "fallSpeed": 1,
-    "itemCount": 5,
-    "pointsPerCorrect": 8,
-    "wrongPenalty": 1
+    "params": {
+      "category": "animals",
+      "fallSpeed": 1,
+      "itemCount": 5,
+      "pointsPerCorrect": 8,
+      "wrongPenalty": 1
+    }
   },
   {
-    "id": "categoryCatch_foods",
-    "family": "stream",
+    "id": "language_category_foods",
+    "type": "language.stream.category",
     "title": "Food Words",
     "prompt": "Catch: FOODS",
-    "category": "foods",
-    "fallSpeed": 1,
-    "itemCount": 5,
-    "pointsPerCorrect": 8,
-    "wrongPenalty": 1
+    "params": {
+      "category": "foods",
+      "fallSpeed": 1,
+      "itemCount": 5,
+      "pointsPerCorrect": 8,
+      "wrongPenalty": 1
+    }
   },
   {
-    "id": "lettersInWord",
-    "family": "stream",
+    "id": "language_letters_target_word",
+    "type": "language.stream.letters",
     "title": "Letters In Word",
     "prompt": "Catch the matching letters!",
-    "fallSpeed": 1,
-    "itemCount": 5,
-    "pointsPerCorrect": 8,
-    "wrongPenalty": 1
+    "params": {
+      "letterSet": "word_letters",
+      "targetWord": "DOG",
+      "fallSpeed": 1,
+      "itemCount": 5,
+      "pointsPerCorrect": 8,
+      "wrongPenalty": 1
+    }
   },
   {
-    "id": "sentenceCompletion",
-    "family": "choice_round",
+    "id": "language_sentence_completion",
+    "type": "language.choice.sentence_completion",
     "title": "Sentence Finish",
     "prompt": "Finish the sentence!",
-    "fallSpeed": 1,
-    "answerCount": 3,
-    "pointsPerCorrect": 10,
-    "wrongPenalty": 0
+    "params": {
+      "fallSpeed": 1,
+      "answerCount": 3,
+      "pointsPerCorrect": 10,
+      "wrongPenalty": 0
+    }
   },
   {
-    "id": "opposites",
-    "family": "choice_round",
+    "id": "language_opposites",
+    "type": "language.choice.opposites",
     "title": "Opposites",
     "prompt": "Catch the opposite word!",
-    "fallSpeed": 1,
-    "answerCount": 4,
-    "pointsPerCorrect": 10,
-    "wrongPenalty": 0
+    "params": {
+      "fallSpeed": 1,
+      "answerCount": 4,
+      "pointsPerCorrect": 10,
+      "wrongPenalty": 0
+    }
   },
   {
-    "id": "synonyms",
-    "family": "choice_round",
+    "id": "language_synonyms",
+    "type": "language.choice.synonyms",
     "title": "Synonyms",
     "prompt": "Catch the similar word!",
-    "fallSpeed": 1,
-    "answerCount": 4,
-    "pointsPerCorrect": 10,
-    "wrongPenalty": 0
+    "params": {
+      "fallSpeed": 1,
+      "answerCount": 4,
+      "pointsPerCorrect": 10,
+      "wrongPenalty": 0
+    }
   },
   {
-    "id": "riddle",
-    "family": "choice_round",
+    "id": "language_riddle",
+    "type": "language.choice.riddle",
     "title": "Riddle Catch",
     "prompt": "Catch the answer!",
-    "fallSpeed": 0.9,
-    "answerCount": 4,
-    "pointsPerCorrect": 15,
-    "wrongPenalty": 0
+    "params": {
+      "fallSpeed": 0.9,
+      "answerCount": 4,
+      "pointsPerCorrect": 15,
+      "wrongPenalty": 0
+    }
   }
 ]

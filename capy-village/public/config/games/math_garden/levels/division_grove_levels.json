@@ -5,7 +5,7 @@
     "slot": 1,
     "worldId": "division_grove",
     "label": "High Five",
-    "modeId": "collect_mult5",
+    "modeId": "math_collect_multiples_of_5",
     "timeLimit": 45,
     "numberRange": [
       1,

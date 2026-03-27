@@ -85,7 +85,7 @@ export class EngineGame extends BaseGame {
       const modes = arcadeConfig.modes ?? [];
       return weightedPick(modes, arcadeConfig.arcadeWeights ?? {});
     }
-    return gameManager.getModeConfig(this.gameId, this._levelConfig.modeId);
+    return this._levelConfig?.resolvedMode ?? gameManager.resolveModeForLevel(this.gameId, this._levelConfig);
   }
 
   get mode() {
@@ -223,7 +223,7 @@ export class EngineGame extends BaseGame {
     container.querySelector('#game-finish-btn').addEventListener('click', () => this.quitGame());
 
     this._handler = this.createHandler();
-    this._handler.attach(this._playArea, this);
+    this._handler.attach(this._playArea);
 
     if (isAdventure) {
       this._showLevelBanner();
