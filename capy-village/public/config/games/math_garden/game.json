@@ -208,6 +208,57 @@
         "wrongFeedback": "Not ÷4!"
       }
     },
+    "collect_divisible_by_6": {
+      "kind": "collect_numbers",
+      "title": "Six in Step",
+      "prompt": "Catch numbers divisible by 6!",
+      "rules": {
+        "matcher": "divisible_by",
+        "divisor": 6,
+        "remainder": 0,
+        "numberRange": [6, 48],
+        "itemCount": 7
+      },
+      "scoring": {
+        "pointsPerCorrect": 6,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷6!"
+      }
+    },
+    "collect_divisible_by_8": {
+      "kind": "collect_numbers",
+      "title": "Eight Together",
+      "prompt": "Catch numbers divisible by 8!",
+      "rules": {
+        "matcher": "divisible_by",
+        "divisor": 8,
+        "remainder": 0,
+        "numberRange": [8, 64],
+        "itemCount": 7
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷8!"
+      }
+    },
+    "collect_divisible_by_10": {
+      "kind": "collect_numbers",
+      "title": "Perfect Tens",
+      "prompt": "Catch numbers divisible by 10!",
+      "rules": {
+        "matcher": "divisible_by",
+        "divisor": 10,
+        "remainder": 0,
+        "numberRange": [10, 80],
+        "itemCount": 7
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷10!"
+      }
+    },
     "collect_custom_rule": {
       "kind": "collect_numbers",
       "title": "Number Rule Catch",

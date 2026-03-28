@@ -1,38 +1,29 @@
 {
   "id": "division_grove",
-  "title": "Mixed Mastery",
-  "subtitle": "All skills together",
-  "unlockRequirementText": "Complete Add & Subtract",
+  "title": "Division Grove",
+  "subtitle": "Sharing and precision",
+  "unlockRequirementText": "Complete Multiplication Meadow",
   "signBox": { "x": 0.2424, "y": 0.7447, "w": 0.1057, "h": 0.0644 },
   "levels": [
     {
       "levelId": "division_grove_1",
       "levelNum": 1,
       "slot": 1,
-      "label": "Even or Prime",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 54,
-      "goal": { "type": "catchCount", "value": 6 },
-      "clearReward": 14,
-      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 12, "reward": 6 }],
+      "label": "Share by Two",
+      "recipeId": "collect_multiples_of_2",
+      "timeLimit": 56,
+      "goal": { "type": "catchCount", "value": 5 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 11, "reward": 6 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 20],
-          "itemCount": 7,
-          "spawnDelayRange": [0.8, 1.15],
-          "fallSpeedRange": [90, 135],
-          "phases": [
-            {
-              "prompt": "Catch numbers that are even or prime!",
-              "matcher": {
-                "type": "any_of",
-                "rules": [
-                  { "type": "even" },
-                  { "type": "prime" }
-                ]
-              }
-            }
-          ]
+          "numberRange": [2, 18],
+          "itemCount": 5,
+          "spawnDelayRange": [1.0, 1.35],
+          "fallSpeedRange": [85, 125]
+        },
+        "scoring": {
+          "wrongPenalty": 1
         }
       }
     },
@@ -40,30 +31,21 @@
       "levelId": "division_grove_2",
       "levelNum": 2,
       "slot": 2,
-      "label": "Pattern Mix",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 7 },
-      "clearReward": 18,
-      "bonusTiers": [{ "threshold": 10, "reward": 4 }, { "threshold": 13, "reward": 6 }],
+      "label": "Fives Review",
+      "recipeId": "collect_multiples_of_5",
+      "timeLimit": 54,
+      "goal": { "type": "catchCount", "value": 6 },
+      "clearReward": 22,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 12, "reward": 6 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 24],
-          "itemCount": 7,
-          "spawnDelayRange": [0.75, 1.05],
-          "fallSpeedRange": [95, 145],
-          "phases": [
-            {
-              "prompt": "Catch numbers that are even or multiples of 3!",
-              "matcher": {
-                "type": "any_of",
-                "rules": [
-                  { "type": "even" },
-                  { "type": "divisible_by", "divisor": 3 }
-                ]
-              }
-            }
-          ]
+          "numberRange": [5, 40],
+          "itemCount": 6,
+          "spawnDelayRange": [0.95, 1.25],
+          "fallSpeedRange": [90, 135]
+        },
+        "scoring": {
+          "wrongPenalty": 1
         }
       }
     },
@@ -71,17 +53,21 @@
       "levelId": "division_grove_3",
       "levelNum": 3,
       "slot": 3,
-      "label": "Sum Sprint",
-      "recipeId": "addition_basic",
-      "timeLimit": 46,
-      "goal": { "type": "correctAnswers", "value": 7 },
-      "clearReward": 22,
-      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 11, "reward": 7 }],
+      "label": "Thirds Focus",
+      "recipeId": "collect_multiples_of_3",
+      "timeLimit": 50,
+      "goal": { "type": "catchCount", "value": 6 },
+      "clearReward": 25,
+      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 12, "reward": 7 }],
       "overrides": {
         "rules": {
-          "leftRange": [2, 12],
-          "rightRange": [0, 8],
-          "answerCount": 4
+          "numberRange": [3, 30],
+          "itemCount": 6,
+          "spawnDelayRange": [0.85, 1.15],
+          "fallSpeedRange": [100, 145]
+        },
+        "scoring": {
+          "wrongPenalty": 1
         }
       }
     },
@@ -89,16 +75,21 @@
       "levelId": "division_grove_4",
       "levelNum": 4,
       "slot": 4,
-      "label": "Brain Blend",
-      "recipeId": "mixed_equations",
-      "timeLimit": 44,
-      "goal": { "type": "correctAnswers", "value": 7 },
-      "clearReward": 26,
-      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 11, "reward": 7 }],
+      "label": "Sixes Stream",
+      "recipeId": "collect_divisible_by_6",
+      "timeLimit": 48,
+      "goal": { "type": "catchCount", "value": 7 },
+      "clearReward": 29,
+      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 13, "reward": 7 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 12],
-          "answerCount": 4
+          "numberRange": [6, 42],
+          "itemCount": 7,
+          "spawnDelayRange": [0.8, 1.1],
+          "fallSpeedRange": [105, 155]
+        },
+        "scoring": {
+          "wrongPenalty": 1
         }
       }
     },
@@ -106,27 +97,21 @@
       "levelId": "division_grove_5",
       "levelNum": 5,
       "slot": 5,
-      "label": "Not Even",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 42,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 30,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
+      "label": "Perfect Tens",
+      "recipeId": "collect_divisible_by_10",
+      "timeLimit": 46,
+      "goal": { "type": "catchCount", "value": 7 },
+      "clearReward": 33,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 13, "reward": 8 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 24],
-          "itemCount": 8,
-          "spawnDelayRange": [0.65, 0.95],
-          "fallSpeedRange": [110, 170],
-          "phases": [
-            {
-              "prompt": "Catch numbers that are not even!",
-              "matcher": {
-                "type": "not",
-                "rule": { "type": "even" }
-              }
-            }
-          ]
+          "numberRange": [10, 60],
+          "itemCount": 7,
+          "spawnDelayRange": [0.75, 1.05],
+          "fallSpeedRange": [110, 160]
+        },
+        "scoring": {
+          "wrongPenalty": 1
         }
       }
     },
@@ -134,30 +119,22 @@
       "levelId": "division_grove_6",
       "levelNum": 6,
       "slot": 6,
-      "label": "Speed Catch",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 38,
-      "goal": { "type": "catchCount", "value": 9 },
-      "clearReward": 35,
-      "bonusTiers": [{ "threshold": 12, "reward": 6 }, { "threshold": 15, "reward": 8 }],
+      "label": "Eights Challenge",
+      "recipeId": "collect_divisible_by_8",
+      "timeLimit": 42,
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 38,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 30],
-          "itemCount": 9,
-          "spawnDelayRange": [0.4, 0.65],
-          "fallSpeedRange": [130, 205],
-          "phases": [
-            {
-              "prompt": "Catch numbers that are prime or divisible by 4!",
-              "matcher": {
-                "type": "any_of",
-                "rules": [
-                  { "type": "prime" },
-                  { "type": "divisible_by", "divisor": 4 }
-                ]
-              }
-            }
-          ]
+          "numberRange": [8, 64],
+          "itemCount": 8,
+          "spawnDelayRange": [0.65, 0.95],
+          "fallSpeedRange": [115, 175]
+        },
+        "scoring": {
+          "wrongPenalty": 2,
+          "wrongFeedback": "Only equal shares!"
         }
       }
     },
@@ -165,34 +142,22 @@
       "levelId": "division_grove_7",
       "levelNum": 7,
       "slot": 7,
-      "label": "Switch Garden",
-      "recipeId": "collect_custom_rule",
+      "label": "Dense Divisors",
+      "recipeId": "collect_divisible_by_6",
       "timeLimit": 40,
-      "goal": { "type": "catchCount", "value": 9 },
-      "clearReward": 40,
-      "bonusTiers": [{ "threshold": 12, "reward": 6 }, { "threshold": 15, "reward": 8 }],
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 42,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 30],
+          "numberRange": [6, 54],
           "itemCount": 9,
-          "spawnDelayRange": [0.55, 0.8],
-          "fallSpeedRange": [120, 185],
-          "phases": [
-            {
-              "prompt": "Catch even numbers!",
-              "matcher": { "type": "even" }
-            },
-            {
-              "switchAfterCaught": 3,
-              "prompt": "Now catch prime numbers!",
-              "matcher": { "type": "prime" }
-            },
-            {
-              "switchAfterCaught": 6,
-              "prompt": "Now catch multiples of 3!",
-              "matcher": { "type": "divisible_by", "divisor": 3 }
-            }
-          ]
+          "spawnDelayRange": [0.55, 0.85],
+          "fallSpeedRange": [120, 180]
+        },
+        "scoring": {
+          "wrongPenalty": 2,
+          "wrongFeedback": "Check divisibility!"
         }
       }
     },
@@ -200,21 +165,22 @@
       "levelId": "division_grove_8",
       "levelNum": 8,
       "slot": 8,
-      "label": "Precision Path",
-      "recipeId": "mixed_equations",
-      "timeLimit": 40,
-      "goal": { "type": "correctAnswers", "value": 9 },
-      "clearReward": 44,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
+      "label": "Fast Divisors",
+      "recipeId": "collect_divisible_by_10",
+      "timeLimit": 36,
+      "goal": { "type": "catchCount", "value": 9 },
+      "clearReward": 47,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }],
       "overrides": {
         "rules": {
-          "leftRange": [4, 18],
-          "rightRange": [1, 10],
-          "answerCount": 5
+          "numberRange": [10, 70],
+          "itemCount": 9,
+          "spawnDelayRange": [0.45, 0.7],
+          "fallSpeedRange": [130, 195]
         },
         "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Accuracy matters!"
+          "wrongPenalty": 2,
+          "wrongFeedback": "Stay precise!"
         }
       }
     },
@@ -222,37 +188,22 @@
       "levelId": "division_grove_9",
       "levelNum": 9,
       "slot": 9,
-      "label": "Chaos Catch",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 36,
-      "goal": { "type": "catchCount", "value": 10 },
-      "clearReward": 48,
-      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 16, "reward": 10 }],
+      "label": "Accuracy Grove",
+      "recipeId": "collect_divisible_by_8",
+      "timeLimit": 35,
+      "goal": { "type": "catchCount", "value": 9 },
+      "clearReward": 52,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 36],
-          "itemCount": 10,
-          "spawnDelayRange": [0.4, 0.65],
-          "fallSpeedRange": [135, 210],
-          "phases": [
-            {
-              "prompt": "Catch odd numbers!",
-              "matcher": { "type": "odd" }
-            },
-            {
-              "switchAfterCaught": 3,
-              "prompt": "Now catch numbers divisible by 5!",
-              "matcher": { "type": "divisible_by", "divisor": 5 }
-            },
-            {
-              "switchAfterCaught": 7,
-              "prompt": "Now catch numbers that are not prime!",
-              "matcher": {
-                "type": "not",
-                "rule": { "type": "prime" }
-              }
-            }
-          ]
+          "numberRange": [8, 72],
+          "itemCount": 9,
+          "spawnDelayRange": [0.45, 0.7],
+          "fallSpeedRange": [130, 200]
+        },
+        "scoring": {
+          "wrongPenalty": 2,
+          "wrongFeedback": "Exact thinking only!"
         }
       }
     },
@@ -260,49 +211,22 @@
       "levelId": "division_grove_10",
       "levelNum": 10,
       "slot": 10,
-      "label": "Final Boss",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 34,
-      "goal": { "type": "catchCount", "value": 11 },
-      "clearReward": 58,
-      "bonusTiers": [{ "threshold": 14, "reward": 8 }, { "threshold": 17, "reward": 10 }],
+      "label": "Division Boss",
+      "recipeId": "collect_divisible_by_10",
+      "timeLimit": 32,
+      "goal": { "type": "catchCount", "value": 10 },
+      "clearReward": 60,
+      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 16, "reward": 10 }],
       "overrides": {
         "rules": {
-          "numberRange": [1, 40],
+          "numberRange": [10, 80],
           "itemCount": 10,
           "spawnDelayRange": [0.35, 0.55],
-          "fallSpeedRange": [145, 220],
-          "phases": [
-            {
-              "prompt": "Catch even or prime numbers!",
-              "matcher": {
-                "type": "any_of",
-                "rules": [
-                  { "type": "even" },
-                  { "type": "prime" }
-                ]
-              }
-            },
-            {
-              "switchAfterCaught": 4,
-              "prompt": "Now catch multiples of 3 or 5!",
-              "matcher": {
-                "type": "any_of",
-                "rules": [
-                  { "type": "divisible_by", "divisor": 3 },
-                  { "type": "divisible_by", "divisor": 5 }
-                ]
-              }
-            },
-            {
-              "switchAfterCaught": 8,
-              "prompt": "Finish with numbers that are not even!",
-              "matcher": {
-                "type": "not",
-                "rule": { "type": "even" }
-              }
-            }
-          ]
+          "fallSpeedRange": [140, 210]
+        },
+        "scoring": {
+          "wrongPenalty": 2,
+          "wrongFeedback": "Master the sharing rule!"
         }
       }
     }

@@ -794,3 +794,25 @@
 ### Verification
 - Ran `npm run generate:authoring` successfully in `capy-village`.
 - Ran `npm run build` successfully in `capy-village`.
+
+### Completed
+- Realigned Math Garden world content to the actual current world themes from `docs/tasks/math_garden_world_aligned_redesign_instructions.md`.
+- Kept `number_garden` unchanged.
+- Rebuilt `addition_field` as a pure addition `answer_equation` progression with 10 levels.
+- Rebuilt `subtraction_patch` as a pure subtraction `answer_equation` progression with 10 levels.
+- Rebuilt `multiplication_meadow` as a divisibility-pattern `collect_numbers` progression using multiples of `2`, `3`, `4`, and `5`.
+- Rebuilt `division_grove` as a more exacting divisibility progression using divisors `2`, `3`, `5`, `6`, `8`, and `10`.
+- Added reusable divisibility recipes to `capy-village/public/config/games/math_garden/game.json` for:
+  - `collect_divisible_by_6`
+  - `collect_divisible_by_8`
+  - `collect_divisible_by_10`
+- Emptied unsupported worlds:
+  - `geometry_yard`
+  - `fraction_forest`
+  so they no longer present misleading fake content.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village`.
+- Confirmed:
+  - `addition_field`, `subtraction_patch`, `multiplication_meadow`, and `division_grove` each have 10 levels
+  - `geometry_yard` and `fraction_forest` each have 0 levels

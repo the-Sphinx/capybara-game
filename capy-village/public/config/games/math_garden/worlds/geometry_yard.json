@@ -2,32 +2,7 @@
   "id": "geometry_yard",
   "title": "Geometry Yard",
   "subtitle": "Shapes and space",
-  "unlockRequirementText": "Complete Mixed Mastery",
+  "unlockRequirementText": "Complete Division Grove",
   "signBox": { "x": 0.7438, "y": 0.7474, "w": 0.1068, "h": 0.0618 },
-  "levels": [
-    {
-      "levelId": "geometry_yard_9",
-      "levelNum": 9,
-      "slot": 1,
-      "label": "Orchard",
-      "recipeId": "collect_odd_basic",
-      "timeLimit": 40,
-      "goal": { "type": "catchCount", "value": 10 },
-      "clearReward": 50,
-      "bonusTiers": [{ "threshold": 14, "reward": 20 }, { "threshold": 18, "reward": 25 }],
-      "overrides": { "rules": { "numberRange": [1, 25] } }
-    },
-    {
-      "levelId": "geometry_yard_10",
-      "levelNum": 10,
-      "slot": 2,
-      "label": "Grand Garden",
-      "recipeId": "collect_multiples_of_3",
-      "timeLimit": 40,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 60,
-      "bonusTiers": [{ "threshold": 12, "reward": 24 }, { "threshold": 16, "reward": 30 }],
-      "overrides": { "rules": { "numberRange": [1, 30] } }
-    }
-  ]
+  "levels": []
 }

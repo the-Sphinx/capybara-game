@@ -68,6 +68,36 @@
 - Ran `npm run generate:authoring` successfully in `capy-village`.
 - Ran `npm run build` successfully in `capy-village`.
 
+## 17. Math Garden World-Aligned Redesign
+
+### What Changed
+- Left `number_garden` unchanged as instructed.
+- Replaced the mismatched redesign content in the active Math worlds with world-aligned progressions:
+  - `addition_field` now uses only `answer_equation` with `operation: "addition"`
+  - `subtraction_patch` now uses only `answer_equation` with `operation: "subtraction"`
+  - `multiplication_meadow` now uses only divisibility-based `collect_numbers`
+  - `division_grove` now also uses divisibility-based `collect_numbers`, but with tighter timing, higher penalties, and harder divisors
+- Added new reusable divisibility recipes in `capy-village/public/config/games/math_garden/game.json`:
+  - `collect_divisible_by_6`
+  - `collect_divisible_by_8`
+  - `collect_divisible_by_10`
+- Emptied unsupported worlds so they no longer mis-teach unrelated concepts:
+  - `capy-village/public/config/games/math_garden/worlds/geometry_yard.json`
+  - `capy-village/public/config/games/math_garden/worlds/fraction_forest.json`
+
+### Reviewer Focus
+- Confirm `number_garden` was not modified by this pass.
+- Confirm `addition_field` contains no collect-mode or mixed-operation levels.
+- Confirm `subtraction_patch` contains no odd/even, prime, or divisibility collection levels.
+- Confirm `multiplication_meadow` and `division_grove` both use divisibility collection, but with clearly different pacing and penalty feel.
+- Confirm empty `geometry_yard` and `fraction_forest` worlds do not cause hub regressions and are preferable to misleading placeholder gameplay.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village`.
+- Confirmed via config sanity check:
+  - `addition_field`, `subtraction_patch`, `multiplication_meadow`, and `division_grove` each have 10 levels
+  - `geometry_yard` and `fraction_forest` each have 0 levels
+
 ## 1. Task Summary
 - Task name: Published minigame config restructure
 - Date: 2026-03-26
