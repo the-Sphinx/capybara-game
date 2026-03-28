@@ -1,5 +1,33 @@
 # REVIEW BUNDLE
 
+## 0. Final Fix Follow-Up
+
+### What Changed
+- Implemented the final authoring-contract cleanup after the plugin-manifest refactor.
+- Tightened `capy-village/src/games/plugins/pluginUtils.js` so authored manifest validation now reports path-specific errors and validates:
+- top-level defaults
+- world-select metadata
+- level-select slot layout
+- arcade config shape
+- world sign/click boxes
+- level goals, rewards, and bonus tiers
+- Fixed resolved recipe normalization so runtime handlers always receive the descriptor metadata needed to instantiate the correct handler class.
+- Removed the leftover local handler-map pattern from game plugins by attaching runtime handler classes directly to descriptors.
+- Strengthened generated schema output under `capy-village/src/config/games/schemas/*.game.schema.json` so top-level sections and recipe fields are concretely typed rather than left as placeholder objects.
+- Regenerated `docs/minigame_mode_authoring.md` so it now documents the current single `game.json` structure, core concepts, and concrete recipe/level examples.
+- Added the expected script alias:
+- `npm run generate:authoring`
+
+### Reviewer Focus
+- Confirm the generated `math_garden.game.schema.json` now includes explicit enums like `matcher: even|odd|prime|divisible_by` and typed arrays/numbers for Math recipe fields.
+- Confirm plugin runtime creation no longer depends on a separate per-plugin mini-registry and instead derives handler classes from the resolved descriptor.
+- Confirm `docs/minigame_mode_authoring.md` now matches the current `game.json` authoring model rather than older split-file terminology.
+- Confirm runtime validation errors are now specific enough to tell authors exactly which manifest path is invalid.
+
+### Verification
+- Ran `npm run generate:authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.
+
 ## 1. Task Summary
 - Task name: Published minigame config restructure
 - Date: 2026-03-26

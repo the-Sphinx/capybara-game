@@ -1,8 +1,8 @@
-import { normalizeGameManifest } from '../pluginUtils.js';
+import { attachRuntimeHandler, normalizeGameManifest } from '../pluginUtils.js';
 import { classicCollectMode } from './classicCollect.mode.js';
 import { WatermelonClassicCollectionMode } from '../../watermelonCatch/modeRuntime.js';
 
-const modeDescriptors = [classicCollectMode];
+const modeDescriptors = [attachRuntimeHandler(classicCollectMode, WatermelonClassicCollectionMode)];
 
 export const watermelonCatchPlugin = {
   gameId: 'watermelon_catch',
@@ -11,6 +11,7 @@ export const watermelonCatchPlugin = {
     return normalizeGameManifest(this, manifest);
   },
   createHandler(shell, resolvedRecipe) {
-    return new WatermelonClassicCollectionMode(shell, resolvedRecipe);
+    const HandlerClass = resolvedRecipe.descriptor?.handlerClass;
+    return new HandlerClass(shell, resolvedRecipe);
   },
 };

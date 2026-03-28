@@ -13,16 +13,129 @@
       "const": "language_grove"
     },
     "defaults": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "recipeId": {
+          "type": "string"
+        },
+        "timeLimit": {
+          "type": "number"
+        },
+        "goal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        "clearReward": {
+          "type": "number"
+        },
+        "bonusTiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "threshold",
+              "reward"
+            ],
+            "properties": {
+              "threshold": {
+                "type": "number"
+              },
+              "reward": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
     },
     "worldSelect": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "backgroundPath": {
+          "type": "string"
+        },
+        "levelSelectBackgroundPath": {
+          "type": "string"
+        }
+      }
     },
     "levelSelect": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "backgroundPath": {
+          "type": "string"
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "slot",
+              "x",
+              "y",
+              "r"
+            ],
+            "properties": {
+              "slot": {
+                "type": "number"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "r": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
     },
     "arcade": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "recipeIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weights": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
     },
     "recipes": {
       "type": "object",
@@ -56,10 +169,23 @@
                   "fallSpeed"
                 ],
                 "properties": {
-                  "letterSet": {},
-                  "fallSpeed": {},
-                  "targetWord": {},
-                  "itemCount": {}
+                  "letterSet": {
+                    "type": "string",
+                    "enum": [
+                      "vowels",
+                      "consonants",
+                      "word_letters"
+                    ]
+                  },
+                  "fallSpeed": {
+                    "type": "number"
+                  },
+                  "targetWord": {
+                    "type": "string"
+                  },
+                  "itemCount": {
+                    "type": "number"
+                  }
                 }
               },
               "scoring": {
@@ -70,8 +196,12 @@
                   "wrongPenalty"
                 ],
                 "properties": {
-                  "pointsPerCorrect": {},
-                  "wrongPenalty": {}
+                  "pointsPerCorrect": {
+                    "type": "number"
+                  },
+                  "wrongPenalty": {
+                    "type": "number"
+                  }
                 }
               }
             }
@@ -104,9 +234,15 @@
                   "fallSpeed"
                 ],
                 "properties": {
-                  "category": {},
-                  "fallSpeed": {},
-                  "itemCount": {}
+                  "category": {
+                    "type": "string"
+                  },
+                  "fallSpeed": {
+                    "type": "number"
+                  },
+                  "itemCount": {
+                    "type": "number"
+                  }
                 }
               },
               "scoring": {
@@ -117,8 +253,12 @@
                   "wrongPenalty"
                 ],
                 "properties": {
-                  "pointsPerCorrect": {},
-                  "wrongPenalty": {}
+                  "pointsPerCorrect": {
+                    "type": "number"
+                  },
+                  "wrongPenalty": {
+                    "type": "number"
+                  }
                 }
               }
             }
@@ -152,9 +292,21 @@
                   "answerCount"
                 ],
                 "properties": {
-                  "promptSet": {},
-                  "fallSpeed": {},
-                  "answerCount": {}
+                  "promptSet": {
+                    "type": "string",
+                    "enum": [
+                      "sentence_completion",
+                      "opposites",
+                      "synonyms",
+                      "riddle"
+                    ]
+                  },
+                  "fallSpeed": {
+                    "type": "number"
+                  },
+                  "answerCount": {
+                    "type": "number"
+                  }
                 }
               },
               "scoring": {
@@ -165,8 +317,12 @@
                   "wrongPenalty"
                 ],
                 "properties": {
-                  "pointsPerCorrect": {},
-                  "wrongPenalty": {}
+                  "pointsPerCorrect": {
+                    "type": "number"
+                  },
+                  "wrongPenalty": {
+                    "type": "number"
+                  }
                 }
               }
             }
@@ -198,18 +354,184 @@
             "type": "string"
           },
           "signBox": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "x",
+              "y",
+              "w",
+              "h"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "w": {
+                "type": "number"
+              },
+              "h": {
+                "type": "number"
+              }
+            }
           },
           "clickBox": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "x",
+              "y",
+              "w",
+              "h"
+            ],
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "w": {
+                "type": "number"
+              },
+              "h": {
+                "type": "number"
+              }
+            }
           },
           "defaults": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "recipeId": {
+                "type": "string"
+              },
+              "timeLimit": {
+                "type": "number"
+              },
+              "goal": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "type",
+                  "value"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "number"
+                  }
+                }
+              },
+              "clearReward": {
+                "type": "number"
+              },
+              "bonusTiers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "threshold",
+                    "reward"
+                  ],
+                  "properties": {
+                    "threshold": {
+                      "type": "number"
+                    },
+                    "reward": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
           },
           "levels": {
             "type": "array",
             "items": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "levelId",
+                "levelNum",
+                "label",
+                "recipeId"
+              ],
+              "properties": {
+                "levelId": {
+                  "type": "string"
+                },
+                "levelNum": {
+                  "type": "number"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "slot": {
+                  "type": "number"
+                },
+                "recipeId": {
+                  "type": "string"
+                },
+                "timeLimit": {
+                  "type": "number"
+                },
+                "goal": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "type",
+                    "value"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "clearReward": {
+                  "type": "number"
+                },
+                "bonusTiers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "threshold",
+                      "reward"
+                    ],
+                    "properties": {
+                      "threshold": {
+                        "type": "number"
+                      },
+                      "reward": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "overrides": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "rules": {
+                      "type": "object"
+                    },
+                    "scoring": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
             }
           }
         }

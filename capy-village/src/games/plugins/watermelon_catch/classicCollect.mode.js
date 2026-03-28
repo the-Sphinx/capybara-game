@@ -31,9 +31,21 @@ export const classicCollectMode = defineModeDescriptor({
     },
     overrideable: ['wrongPenalty', 'wrongFeedback'],
   },
-  validateRecipe({ id, rules }) {
+  ruleSchemas: {
+    itemValues: { "type": "object" },
+    timeBonuses: { "type": "object" },
+    bombPenalty: { "type": "number" },
+    fallSpeedMult: { "type": "number" },
+    spawnRateMult: { "type": "number" },
+    specialItems: { "type": "object" }
+  },
+  scoringSchemas: {
+    wrongPenalty: { "type": "number" },
+    wrongFeedback: { "type": "string" }
+  },
+  validateRecipe({ path, rules, fail }) {
     if (typeof rules.itemValues !== 'object' || typeof rules.timeBonuses !== 'object') {
-      throw new Error(`Recipe "${id}" requires itemValues and timeBonuses objects`);
+      fail(path, 'requires itemValues and timeBonuses objects');
     }
   },
   resolve({ recipe, rules, scoring }) {

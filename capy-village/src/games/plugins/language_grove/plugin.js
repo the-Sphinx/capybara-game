@@ -1,4 +1,4 @@
-import { normalizeGameManifest } from '../pluginUtils.js';
+import { attachRuntimeHandler, normalizeGameManifest } from '../pluginUtils.js';
 import { collectLettersMode } from './collectLetters.mode.js';
 import { collectCategoryWordsMode } from './collectCategoryWords.mode.js';
 import { choicePromptMode } from './choicePrompt.mode.js';
@@ -8,12 +8,11 @@ import {
   LanguageChoicePromptMode,
 } from '../../languageGrove/modeRuntime.js';
 
-const modeDescriptors = [collectLettersMode, collectCategoryWordsMode, choicePromptMode];
-const handlerMap = {
-  collect_letters: LanguageLettersCollectMode,
-  collect_category_words: LanguageCategoryCollectMode,
-  choice_prompt: LanguageChoicePromptMode,
-};
+const modeDescriptors = [
+  attachRuntimeHandler(collectLettersMode, LanguageLettersCollectMode),
+  attachRuntimeHandler(collectCategoryWordsMode, LanguageCategoryCollectMode),
+  attachRuntimeHandler(choicePromptMode, LanguageChoicePromptMode),
+];
 
 export const languageGrovePlugin = {
   gameId: 'language_grove',
@@ -22,7 +21,7 @@ export const languageGrovePlugin = {
     return normalizeGameManifest(this, manifest);
   },
   createHandler(shell, resolvedRecipe) {
-    const HandlerClass = handlerMap[resolvedRecipe.kind];
+    const HandlerClass = resolvedRecipe.descriptor?.handlerClass;
     return new HandlerClass(shell, resolvedRecipe);
   },
 };

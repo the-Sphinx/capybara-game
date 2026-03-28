@@ -18,12 +18,25 @@ export const collectLettersMode = defineModeDescriptor({
     defaults: {},
     overrideable: ['pointsPerCorrect', 'wrongPenalty'],
   },
-  validateRecipe({ id, rules }) {
+  ruleSchemas: {
+    letterSet: {
+      "type": "string",
+      "enum": ["vowels", "consonants", "word_letters"]
+    },
+    targetWord: { "type": "string" },
+    fallSpeed: { "type": "number" },
+    itemCount: { "type": "number" }
+  },
+  scoringSchemas: {
+    pointsPerCorrect: { "type": "number" },
+    wrongPenalty: { "type": "number" }
+  },
+  validateRecipe({ path, rules, fail }) {
     if (!['vowels', 'consonants', 'word_letters'].includes(rules.letterSet)) {
-      throw new Error(`Recipe "${id}" letterSet must be vowels, consonants, or word_letters`);
+      fail(`${path}.rules.letterSet`, `expected one of ["vowels","consonants","word_letters"], got "${rules.letterSet}"`);
     }
     if (rules.letterSet === 'word_letters' && typeof rules.targetWord !== 'string') {
-      throw new Error(`Recipe "${id}" requires targetWord for word_letters`);
+      fail(`${path}.rules.targetWord`, 'must be provided when letterSet is "word_letters"');
     }
   },
   resolve({ recipe, rules, scoring }) {

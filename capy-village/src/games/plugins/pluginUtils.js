@@ -2,13 +2,17 @@ function keySet(list = []) {
   return new Set(list);
 }
 
+function fail(path, message) {
+  throw new Error(`${path}: ${message}`);
+}
+
 function validateKeys(target, allowedKeys, context) {
   if (!target || typeof target !== 'object' || Array.isArray(target)) {
-    throw new Error(`${context} must be an object`);
+    fail(context, 'must be an object');
   }
   for (const key of Object.keys(target)) {
     if (!allowedKeys.has(key)) {
-      throw new Error(`${context} has unsupported key "${key}"`);
+      fail(`${context}.${key}`, 'unsupported key');
     }
   }
 }
@@ -53,27 +57,139 @@ export function defineModeDescriptor(descriptor) {
       defaults: descriptor.scoring?.defaults ?? {},
       overrideable: descriptor.scoring?.overrideable ?? [],
     },
+    ruleSchemas: descriptor.ruleSchemas ?? {},
+    scoringSchemas: descriptor.scoringSchemas ?? {},
     docs: descriptor.docs ?? {},
     ...descriptor,
   });
+}
+
+export function attachRuntimeHandler(descriptor, handlerClass) {
+  return Object.freeze({
+    ...descriptor,
+    handlerClass,
+  });
+}
+
+function validateGoal(goal, path) {
+  if (goal == null) return;
+  if (!goal || typeof goal !== 'object' || Array.isArray(goal)) {
+    fail(path, 'must be an object');
+  }
+  validateKeys(goal, keySet(['type', 'value']), path);
+  if (typeof goal.type !== 'string' || !goal.type) {
+    fail(`${path}.type`, 'must be a non-empty string');
+  }
+  if (!Number.isFinite(goal.value)) {
+    fail(`${path}.value`, 'must be a number');
+  }
+}
+
+function validateBonusTiers(bonusTiers, path) {
+  if (bonusTiers == null) return;
+  if (!Array.isArray(bonusTiers)) {
+    fail(path, 'must be an array');
+  }
+  bonusTiers.forEach((tier, index) => {
+    const tierPath = `${path}[${index}]`;
+    if (!tier || typeof tier !== 'object' || Array.isArray(tier)) {
+      fail(tierPath, 'must be an object');
+    }
+    validateKeys(tier, keySet(['threshold', 'reward']), tierPath);
+    if (!Number.isFinite(tier.threshold)) {
+      fail(`${tierPath}.threshold`, 'must be a number');
+    }
+    if (!Number.isFinite(tier.reward)) {
+      fail(`${tierPath}.reward`, 'must be a number');
+    }
+  });
+}
+
+function validateDefaultBlock(block, path) {
+  if (block == null) return;
+  validateKeys(block, keySet(['recipeId', 'timeLimit', 'goal', 'clearReward', 'bonusTiers']), path);
+  if ('recipeId' in block && (typeof block.recipeId !== 'string' || !block.recipeId)) {
+    fail(`${path}.recipeId`, 'must be a non-empty string');
+  }
+  if ('timeLimit' in block && !Number.isFinite(block.timeLimit)) {
+    fail(`${path}.timeLimit`, 'must be a number');
+  }
+  if ('clearReward' in block && !Number.isFinite(block.clearReward)) {
+    fail(`${path}.clearReward`, 'must be a number');
+  }
+  validateGoal(block.goal, `${path}.goal`);
+  validateBonusTiers(block.bonusTiers, `${path}.bonusTiers`);
+}
+
+function validateBox(box, path) {
+  if (box == null) return;
+  if (!box || typeof box !== 'object' || Array.isArray(box)) {
+    fail(path, 'must be an object');
+  }
+  validateKeys(box, keySet(['x', 'y', 'w', 'h']), path);
+  for (const key of ['x', 'y', 'w', 'h']) {
+    if (!Number.isFinite(box[key])) {
+      fail(`${path}.${key}`, 'must be a number');
+    }
+  }
+}
+
+function validateWorldSelect(worldSelect, path) {
+  if (worldSelect == null) return;
+  validateKeys(worldSelect, keySet(['enabled', 'backgroundPath', 'levelSelectBackgroundPath']), path);
+  if ('enabled' in worldSelect && typeof worldSelect.enabled !== 'boolean') {
+    fail(`${path}.enabled`, 'must be a boolean');
+  }
+  if ('backgroundPath' in worldSelect && typeof worldSelect.backgroundPath !== 'string') {
+    fail(`${path}.backgroundPath`, 'must be a string');
+  }
+  if ('levelSelectBackgroundPath' in worldSelect && typeof worldSelect.levelSelectBackgroundPath !== 'string') {
+    fail(`${path}.levelSelectBackgroundPath`, 'must be a string');
+  }
+}
+
+function validateLevelSelect(levelSelect, path) {
+  if (levelSelect == null) return;
+  validateKeys(levelSelect, keySet(['enabled', 'backgroundPath', 'slots']), path);
+  if ('enabled' in levelSelect && typeof levelSelect.enabled !== 'boolean') {
+    fail(`${path}.enabled`, 'must be a boolean');
+  }
+  if ('backgroundPath' in levelSelect && typeof levelSelect.backgroundPath !== 'string') {
+    fail(`${path}.backgroundPath`, 'must be a string');
+  }
+  if ('slots' in levelSelect) {
+    if (!Array.isArray(levelSelect.slots)) {
+      fail(`${path}.slots`, 'must be an array');
+    }
+    levelSelect.slots.forEach((slot, index) => {
+      const slotPath = `${path}.slots[${index}]`;
+      validateKeys(slot, keySet(['slot', 'x', 'y', 'r']), slotPath);
+      for (const key of ['slot', 'x', 'y', 'r']) {
+        if (!Number.isFinite(slot[key])) {
+          fail(`${slotPath}.${key}`, 'must be a number');
+        }
+      }
+    });
+  }
 }
 
 function normalizeRecipe(plugin, recipeId, recipe, descriptorMap) {
   if (!recipe || typeof recipe !== 'object' || Array.isArray(recipe)) {
     throw new Error(`Recipe "${recipeId}" must be an object`);
   }
-  validateKeys(recipe, keySet(['kind', 'title', 'prompt', 'rules', 'scoring']), `Recipe "${recipeId}"`);
+  const recipePath = `recipes.${recipeId}`;
+  validateKeys(recipe, keySet(['kind', 'title', 'prompt', 'rules', 'scoring']), recipePath);
   if (typeof recipe.kind !== 'string' || !recipe.kind) {
-    throw new Error(`Recipe "${recipeId}" is missing kind`);
+    fail(`${recipePath}.kind`, 'must be a non-empty string');
   }
 
   const descriptor = descriptorMap.get(recipe.kind);
   if (!descriptor) {
-    throw new Error(`Recipe "${recipeId}" uses unknown kind "${recipe.kind}" for game "${plugin.gameId}"`);
+    fail(`${recipePath}.kind`, `expected one of [${[...descriptorMap.keys()].join(', ')}], got "${recipe.kind}"`);
   }
 
   if (typeof recipe.title !== 'string' || typeof recipe.prompt !== 'string') {
-    throw new Error(`Recipe "${recipeId}" must include title and prompt`);
+    fail(recipePath, 'must include title and prompt strings');
   }
 
   const rulesAllowed = keySet([...descriptor.rules.required, ...descriptor.rules.optional]);
@@ -81,21 +197,28 @@ function normalizeRecipe(plugin, recipeId, recipe, descriptorMap) {
   const rules = mergeNested(descriptor.rules.defaults, recipe.rules ?? {});
   const scoring = mergeNested(descriptor.scoring.defaults, recipe.scoring ?? {});
 
-  validateKeys(rules, rulesAllowed, `Recipe "${recipeId}" rules`);
-  validateKeys(scoring, scoringAllowed, `Recipe "${recipeId}" scoring`);
+  validateKeys(rules, rulesAllowed, `${recipePath}.rules`);
+  validateKeys(scoring, scoringAllowed, `${recipePath}.scoring`);
 
   for (const key of descriptor.rules.required) {
     if (!(key in rules)) {
-      throw new Error(`Recipe "${recipeId}" is missing required rule "${key}"`);
+      fail(`${recipePath}.rules.${key}`, 'missing required key');
     }
   }
   for (const key of descriptor.scoring.required) {
     if (!(key in scoring)) {
-      throw new Error(`Recipe "${recipeId}" is missing required scoring key "${key}"`);
+      fail(`${recipePath}.scoring.${key}`, 'missing required key');
     }
   }
 
-  descriptor.validateRecipe?.({ id: recipeId, rules, scoring, recipe });
+  descriptor.validateRecipe?.({
+    id: recipeId,
+    path: recipePath,
+    rules,
+    scoring,
+    recipe,
+    fail,
+  });
 
   return {
     id: recipeId,
@@ -110,37 +233,58 @@ function normalizeRecipe(plugin, recipeId, recipe, descriptorMap) {
 }
 
 function normalizeLevel(plugin, gameDefaults, world, level, recipeMap) {
+  const levelPath = `worlds.${world.id}.levels.${level?.levelId ?? level?.levelNum ?? 'unknown'}`;
   validateKeys(
     level,
     keySet(['levelId', 'levelNum', 'label', 'slot', 'recipeId', 'timeLimit', 'goal', 'clearReward', 'bonusTiers', 'overrides']),
-    `Level "${level?.levelId ?? level?.levelNum ?? 'unknown'}"`,
+    levelPath,
   );
+  if (typeof level?.levelId !== 'string' || !level.levelId) {
+    fail(`${levelPath}.levelId`, 'must be a non-empty string');
+  }
+  if (!Number.isFinite(level?.levelNum)) {
+    fail(`${levelPath}.levelNum`, 'must be a number');
+  }
+  if (typeof level?.label !== 'string' || !level.label) {
+    fail(`${levelPath}.label`, 'must be a non-empty string');
+  }
+  if ('slot' in level && !Number.isFinite(level.slot)) {
+    fail(`${levelPath}.slot`, 'must be a number');
+  }
 
   const merged = mergeLevelDefaults(gameDefaults, world.defaults ?? {}, level);
   const recipeId = merged.recipeId;
   if (typeof recipeId !== 'string' || !recipeId) {
-    throw new Error(`Level "${level?.levelId ?? level?.levelNum ?? 'unknown'}" is missing recipeId`);
+    fail(`${levelPath}.recipeId`, 'must be a non-empty string');
   }
   const recipe = recipeMap.get(recipeId);
   if (!recipe) {
-    throw new Error(`Level "${level?.levelId ?? level?.levelNum ?? 'unknown'}" references unknown recipeId "${recipeId}"`);
+    fail(`${levelPath}.recipeId`, `unknown recipeId "${recipeId}"`);
   }
 
   const descriptor = recipe.descriptor;
   const overrides = level.overrides ?? {};
-  validateKeys(overrides, keySet(['rules', 'scoring']), `Level "${level.levelId ?? level.levelNum}" overrides`);
+  validateKeys(overrides, keySet(['rules', 'scoring']), `${levelPath}.overrides`);
   const ruleOverrides = overrides.rules ?? {};
   const scoringOverrides = overrides.scoring ?? {};
   validateKeys(
     ruleOverrides,
     keySet(descriptor.rules.overrideable),
-    `Level "${level.levelId ?? level.levelNum}" rule overrides`,
+    `${levelPath}.overrides.rules`,
   );
   validateKeys(
     scoringOverrides,
     keySet(descriptor.scoring.overrideable),
-    `Level "${level.levelId ?? level.levelNum}" scoring overrides`,
+    `${levelPath}.overrides.scoring`,
   );
+  if ('timeLimit' in level && !Number.isFinite(level.timeLimit)) {
+    fail(`${levelPath}.timeLimit`, 'must be a number');
+  }
+  if ('clearReward' in level && !Number.isFinite(level.clearReward)) {
+    fail(`${levelPath}.clearReward`, 'must be a number');
+  }
+  validateGoal(level.goal, `${levelPath}.goal`);
+  validateBonusTiers(level.bonusTiers, `${levelPath}.bonusTiers`);
 
   const resolvedRecipe = descriptor.resolve({
     recipe,
@@ -149,6 +293,10 @@ function normalizeLevel(plugin, gameDefaults, world, level, recipeMap) {
     rules: mergeNested(recipe.rules, ruleOverrides),
     scoring: mergeNested(recipe.scoring, scoringOverrides),
   });
+  const normalizedResolvedRecipe = {
+    descriptor,
+    ...resolvedRecipe,
+  };
 
   return {
     levelId: level.levelId ?? `${world.id}_${level.levelNum}`,
@@ -165,7 +313,7 @@ function normalizeLevel(plugin, gameDefaults, world, level, recipeMap) {
       rules: ruleOverrides,
       scoring: scoringOverrides,
     },
-    resolvedRecipe,
+    resolvedRecipe: normalizedResolvedRecipe,
   };
 }
 
@@ -176,8 +324,11 @@ export function normalizeGameManifest(plugin, manifest) {
     `Game manifest "${plugin.gameId}"`,
   );
   if (manifest.id !== plugin.gameId) {
-    throw new Error(`Game manifest id "${manifest.id}" does not match plugin "${plugin.gameId}"`);
+    fail('id', `expected "${plugin.gameId}", got "${manifest.id}"`);
   }
+  validateDefaultBlock(manifest.defaults, 'defaults');
+  validateWorldSelect(manifest.worldSelect, 'worldSelect');
+  validateLevelSelect(manifest.levelSelect, 'levelSelect');
 
   const descriptorMap = new Map(plugin.modeDescriptors.map((descriptor) => [descriptor.kind, descriptor]));
   const recipeMap = new Map(
@@ -191,8 +342,23 @@ export function normalizeGameManifest(plugin, manifest) {
     validateKeys(
       world,
       keySet(['id', 'title', 'subtitle', 'unlockRequirementText', 'signBox', 'clickBox', 'defaults', 'levels']),
-      `World "${world?.id ?? 'unknown'}"`,
+      `worlds.${world?.id ?? 'unknown'}`,
     );
+    if (typeof world.id !== 'string' || !world.id) {
+      fail('worlds.id', 'must be a non-empty string');
+    }
+    if (typeof world.title !== 'string' || !world.title) {
+      fail(`worlds.${world.id}.title`, 'must be a non-empty string');
+    }
+    if ('subtitle' in world && typeof world.subtitle !== 'string') {
+      fail(`worlds.${world.id}.subtitle`, 'must be a string');
+    }
+    if ('unlockRequirementText' in world && typeof world.unlockRequirementText !== 'string') {
+      fail(`worlds.${world.id}.unlockRequirementText`, 'must be a string');
+    }
+    validateBox(world.signBox, `worlds.${world.id}.signBox`);
+    validateBox(world.clickBox, `worlds.${world.id}.clickBox`);
+    validateDefaultBlock(world.defaults, `worlds.${world.id}.defaults`);
     const levels = (world.levels ?? []).map((level) =>
       normalizeLevel(plugin, manifest.defaults ?? {}, world, level, recipeMap),
     );
@@ -230,6 +396,15 @@ export function normalizeGameManifest(plugin, manifest) {
 
 function normalizeArcade(arcade, recipeMap) {
   validateKeys(arcade, keySet(['enabled', 'recipeIds', 'weights']), 'Arcade config');
+  if ('enabled' in arcade && typeof arcade.enabled !== 'boolean') {
+    fail('Arcade config.enabled', 'must be a boolean');
+  }
+  if ('recipeIds' in arcade && !Array.isArray(arcade.recipeIds)) {
+    fail('Arcade config.recipeIds', 'must be an array');
+  }
+  if ('weights' in arcade && (!arcade.weights || typeof arcade.weights !== 'object' || Array.isArray(arcade.weights))) {
+    fail('Arcade config.weights', 'must be an object');
+  }
   const recipeIds = arcade.recipeIds ?? Object.keys(arcade.weights ?? {});
   return {
     enabled: arcade.enabled !== false,
@@ -240,14 +415,57 @@ function normalizeArcade(arcade, recipeMap) {
 }
 
 export function buildGameSchema(plugin) {
+  const goalSchema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['type', 'value'],
+    properties: {
+      type: { type: 'string' },
+      value: { type: 'number' },
+    },
+  };
+  const bonusTierSchema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['threshold', 'reward'],
+    properties: {
+      threshold: { type: 'number' },
+      reward: { type: 'number' },
+    },
+  };
+  const defaultsSchema = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      recipeId: { type: 'string' },
+      timeLimit: { type: 'number' },
+      goal: goalSchema,
+      clearReward: { type: 'number' },
+      bonusTiers: { type: 'array', items: bonusTierSchema },
+    },
+  };
+  const boxSchema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['x', 'y', 'w', 'h'],
+    properties: {
+      x: { type: 'number' },
+      y: { type: 'number' },
+      w: { type: 'number' },
+      h: { type: 'number' },
+    },
+  };
+  function typedField(fieldSchema = {}) {
+    return Object.keys(fieldSchema).length ? fieldSchema : { type: 'string' };
+  }
   const kindEntries = plugin.modeDescriptors.map((descriptor) => {
     const ruleProperties = {};
     const scoringProperties = {};
     for (const key of [...descriptor.rules.required, ...descriptor.rules.optional]) {
-      ruleProperties[key] = {};
+      ruleProperties[key] = typedField(descriptor.ruleSchemas[key]);
     }
     for (const key of [...descriptor.scoring.required, ...descriptor.scoring.optional]) {
-      scoringProperties[key] = {};
+      scoringProperties[key] = typedField(descriptor.scoringSchemas[key]);
     }
     return {
       type: 'object',
@@ -281,10 +499,53 @@ export function buildGameSchema(plugin) {
     required: ['id', 'recipes', 'worlds'],
     properties: {
       id: { const: plugin.gameId },
-      defaults: { type: 'object' },
-      worldSelect: { type: 'object' },
-      levelSelect: { type: 'object' },
-      arcade: { type: 'object' },
+      defaults: defaultsSchema,
+      worldSelect: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          enabled: { type: 'boolean' },
+          backgroundPath: { type: 'string' },
+          levelSelectBackgroundPath: { type: 'string' },
+        },
+      },
+      levelSelect: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          enabled: { type: 'boolean' },
+          backgroundPath: { type: 'string' },
+          slots: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['slot', 'x', 'y', 'r'],
+              properties: {
+                slot: { type: 'number' },
+                x: { type: 'number' },
+                y: { type: 'number' },
+                r: { type: 'number' },
+              },
+            },
+          },
+        },
+      },
+      arcade: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          enabled: { type: 'boolean' },
+          recipeIds: {
+            type: 'array',
+            items: { type: 'string' },
+          },
+          weights: {
+            type: 'object',
+            additionalProperties: { type: 'number' },
+          },
+        },
+      },
       recipes: {
         type: 'object',
         additionalProperties: {
@@ -302,10 +563,39 @@ export function buildGameSchema(plugin) {
             title: { type: 'string' },
             subtitle: { type: 'string' },
             unlockRequirementText: { type: 'string' },
-            signBox: { type: 'object' },
-            clickBox: { type: 'object' },
-            defaults: { type: 'object' },
-            levels: { type: 'array', items: { type: 'object' } },
+            signBox: boxSchema,
+            clickBox: boxSchema,
+            defaults: defaultsSchema,
+            levels: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['levelId', 'levelNum', 'label', 'recipeId'],
+                properties: {
+                  levelId: { type: 'string' },
+                  levelNum: { type: 'number' },
+                  label: { type: 'string' },
+                  slot: { type: 'number' },
+                  recipeId: { type: 'string' },
+                  timeLimit: { type: 'number' },
+                  goal: goalSchema,
+                  clearReward: { type: 'number' },
+                  bonusTiers: {
+                    type: 'array',
+                    items: bonusTierSchema,
+                  },
+                  overrides: {
+                    type: 'object',
+                    additionalProperties: false,
+                    properties: {
+                      rules: { type: 'object' },
+                      scoring: { type: 'object' },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -321,6 +611,27 @@ export function buildPluginDocs(plugin) {
     const optionalScoring = descriptor.scoring.optional.map((key) => `- \`${key}\``).join('\n') || '- none';
     const overrideRules = descriptor.rules.overrideable.map((key) => `- \`${key}\``).join('\n') || '- none';
     const overrideScoring = descriptor.scoring.overrideable.map((key) => `- \`${key}\``).join('\n') || '- none';
+    const ruleExtras = Object.entries(descriptor.ruleSchemas ?? {})
+      .filter(([, schema]) => Array.isArray(schema?.enum))
+      .map(([key, schema]) => `Allowed \`${key}\` values: ${schema.enum.map((value) => `\`${value}\``).join(', ')}`)
+      .join('\n');
+
+    const recipeExample = descriptor.docs.exampleRecipe
+      ? `Recipe example:
+\`\`\`json
+${JSON.stringify(descriptor.docs.exampleRecipe, null, 2)}
+\`\`\`
+`
+      : '';
+
+    const levelExample = descriptor.docs.exampleLevel
+      ? `Level example:
+\`\`\`json
+${JSON.stringify(descriptor.docs.exampleLevel, null, 2)}
+\`\`\`
+`
+      : '';
+
     return `## \`${descriptor.kind}\`
 
 ${descriptor.docs.summary ?? ''}
@@ -344,6 +655,11 @@ ${overrideRules}
 
 Level overrideable scoring keys:
 ${overrideScoring}
+
+${ruleExtras}
+
+${recipeExample}
+${levelExample}
 `;
   }).join('\n');
 
@@ -351,9 +667,13 @@ ${overrideScoring}
 
 This game is authored through a single \`game.json\` manifest.
 
-Recipes live under \`recipes\`.
-Levels reference recipes with \`recipeId\`.
-Level-specific tuning goes under \`overrides.rules\` and \`overrides.scoring\`.
+Core concepts:
+- \`recipes\` define reusable gameplay templates.
+- Each recipe declares a \`kind\`, plus \`rules\` and \`scoring\`.
+- \`worlds[].levels[]\` define progression and rewards.
+- Levels reference recipes with \`recipeId\`.
+- Level-specific tuning goes under \`overrides.rules\` and \`overrides.scoring\`.
+- \`defaults\` can be set at the game level or per world, then overridden per level.
 
 ${sections}`;
 }

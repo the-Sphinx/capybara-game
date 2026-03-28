@@ -1,5 +1,34 @@
 # Progress
 
+## 2026-03-28
+
+### Final Minigame Authoring Fix Pass
+- Implemented `docs/tasks/capy_final_fix_plan.md`.
+- Tightened plugin manifest validation so authored `game.json` files now fail with path-specific errors for bad keys and invalid nested values.
+- Added validation for:
+- `defaults`
+- `worldSelect`
+- `levelSelect`
+- `arcade`
+- world sign/click boxes
+- level goal and bonus tier blocks
+- level override containers
+- Fixed resolved recipe normalization so runtime handlers always receive the descriptor/handler metadata they need.
+- Removed the remaining mini-registry feel inside game plugins by attaching runtime handlers directly to descriptors and deriving the handler class from the resolved descriptor.
+- Strengthened generated game schemas under `capy-village/src/config/games/schemas/` so they now include real field typing for top-level manifest sections and concrete recipe enums/number/string shapes.
+- Regenerated `docs/minigame_mode_authoring.md` so it now matches the single `game.json` model, explains the core concepts, and includes concrete recipe/level examples for Math Garden authoring.
+- Added the expected script alias `npm run generate:authoring` alongside the existing generator command.
+
+### Self-Check
+- Verified `npm run generate:authoring` succeeds in `capy-village`.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed the generated `math_garden.game.schema.json` now contains explicit enums and typed fields for Math recipe authoring.
+- Confirmed the generated authoring doc now describes `recipes`, `recipeId`, `overrides.rules`, and `overrides.scoring` against the current `game.json` structure.
+
+### Known Risks
+- Level `overrides.rules` / `overrides.scoring` remain validated at runtime against the selected recipe kind, but the JSON schema cannot fully discriminate those override keys by `recipeId` without a much more complex generated cross-reference model.
+- This pass was build-verified and generator-verified, but not browser-verified.
+
 ## 2026-03-26
 
 ### Published Minigame Config Restructure

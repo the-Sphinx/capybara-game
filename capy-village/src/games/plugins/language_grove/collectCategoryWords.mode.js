@@ -18,9 +18,18 @@ export const collectCategoryWordsMode = defineModeDescriptor({
     defaults: {},
     overrideable: ['pointsPerCorrect', 'wrongPenalty'],
   },
-  validateRecipe({ id, rules }) {
+  ruleSchemas: {
+    category: { "type": "string" },
+    fallSpeed: { "type": "number" },
+    itemCount: { "type": "number" }
+  },
+  scoringSchemas: {
+    pointsPerCorrect: { "type": "number" },
+    wrongPenalty: { "type": "number" }
+  },
+  validateRecipe({ path, rules, fail }) {
     if (typeof rules.category !== 'string' || !rules.category) {
-      throw new Error(`Recipe "${id}" requires a category`);
+      fail(`${path}.rules.category`, 'must be a non-empty string');
     }
   },
   resolve({ recipe, rules, scoring }) {

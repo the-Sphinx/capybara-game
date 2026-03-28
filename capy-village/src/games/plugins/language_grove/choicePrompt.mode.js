@@ -18,9 +18,21 @@ export const choicePromptMode = defineModeDescriptor({
     defaults: {},
     overrideable: ['pointsPerCorrect', 'wrongPenalty'],
   },
-  validateRecipe({ id, rules }) {
+  ruleSchemas: {
+    promptSet: {
+      "type": "string",
+      "enum": ["sentence_completion", "opposites", "synonyms", "riddle"]
+    },
+    fallSpeed: { "type": "number" },
+    answerCount: { "type": "number" }
+  },
+  scoringSchemas: {
+    pointsPerCorrect: { "type": "number" },
+    wrongPenalty: { "type": "number" }
+  },
+  validateRecipe({ path, rules, fail }) {
     if (!['sentence_completion', 'opposites', 'synonyms', 'riddle'].includes(rules.promptSet)) {
-      throw new Error(`Recipe "${id}" promptSet is unsupported`);
+      fail(`${path}.rules.promptSet`, `expected one of ["sentence_completion","opposites","synonyms","riddle"], got "${rules.promptSet}"`);
     }
   },
   resolve({ recipe, rules, scoring }) {
