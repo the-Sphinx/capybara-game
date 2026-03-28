@@ -3,6 +3,7 @@
   "title": "Addition Field",
   "subtitle": "Add and grow",
   "unlockRequirementText": "Complete Number Garden",
+  "unlockAfterWorldId": "number_garden",
   "signBox": { "x": 0.3804, "y": 0.291, "w": 0.0845, "h": 0.0465 },
   "levels": [
     {

@@ -98,6 +98,16 @@ class SaveManager {
     return prog && levelId ? prog.completedLevelIds.includes(levelId) : false;
   }
 
+  unlockLevel(categoryId, levelRef) {
+    const prog = this._data.progress[categoryId];
+    const levelId = toLevelId(levelRef);
+    if (!prog || !levelId) return;
+    if (!prog.unlockedLevelIds.includes(levelId)) {
+      prog.unlockedLevelIds.push(levelId);
+      this.save();
+    }
+  }
+
   completeLevel(categoryId, levelRef, nextLevelRef = null) {
     const prog = this._data.progress[categoryId];
     const levelId = toLevelId(levelRef);

@@ -94,6 +94,14 @@ class GameManager {
     return this._gameConfigs.get(gameId)?.levels ?? [];
   }
 
+  getWorlds(gameId) {
+    return this._gameConfigs.get(gameId)?.worlds ?? [];
+  }
+
+  getWorldById(gameId, worldId) {
+    return this.getWorlds(gameId).find((world) => world.id === worldId) ?? null;
+  }
+
   getArcadeConfig(gameId) {
     return this._gameConfigs.get(gameId)?.arcade ?? null;
   }
@@ -152,11 +160,34 @@ class GameManager {
     const levels = this.getLevels(gameId);
     const current = this.getLevelById(gameId, levelId);
     if (!current) return null;
+    const worlds = this.getWorlds(gameId);
     const worldLevels = levels
       .filter((level) => level.worldId === current.worldId)
       .sort((a, b) => a.levelNum - b.levelNum);
     const index = worldLevels.findIndex((level) => level.levelId === levelId);
-    return index >= 0 ? (worldLevels[index + 1] ?? null) : null;
+    if (index < 0) return null;
+    const nextInWorld = worldLevels[index + 1] ?? null;
+    if (nextInWorld) {
+      return nextInWorld;
+    }
+
+    const currentWorldIndex = worlds.findIndex((world) => world.id === current.worldId);
+    if (currentWorldIndex === -1) return null;
+
+    const explicitUnlockTarget = worlds.find((world) =>
+      world.unlockAfterWorldId === current.worldId && (world.levels?.length ?? 0) > 0,
+    );
+    if (explicitUnlockTarget) {
+      return [...explicitUnlockTarget.levels].sort((a, b) => a.levelNum - b.levelNum)[0] ?? null;
+    }
+
+    for (let i = currentWorldIndex + 1; i < worlds.length; i += 1) {
+      const nextWorld = worlds[i];
+      if ((nextWorld.levels?.length ?? 0) > 0) {
+        return [...nextWorld.levels].sort((a, b) => a.levelNum - b.levelNum)[0] ?? null;
+      }
+    }
+    return null;
   }
 
   startGame(gameId, levelConfig = null) {

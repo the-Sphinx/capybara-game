@@ -3,6 +3,7 @@
   "title": "Division Grove",
   "subtitle": "Sharing and precision",
   "unlockRequirementText": "Complete Multiplication Meadow",
+  "unlockAfterWorldId": "multiplication_meadow",
   "signBox": { "x": 0.2424, "y": 0.7447, "w": 0.1057, "h": 0.0644 },
   "levels": [
     {

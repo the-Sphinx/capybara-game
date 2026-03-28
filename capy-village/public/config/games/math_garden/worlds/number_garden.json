@@ -3,6 +3,7 @@
   "title": "Even & Odd",
   "subtitle": "Learn parity",
   "unlockRequirementText": "",
+  "startsUnlocked": true,
   "signBox": { "x": 0.1828, "y": 0.3014, "w": 0.0901, "h": 0.0553 },
   "levels": [
     {

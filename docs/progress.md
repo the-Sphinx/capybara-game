@@ -816,3 +816,21 @@
 - Confirmed:
   - `addition_field`, `subtraction_patch`, `multiplication_meadow`, and `division_grove` each have 10 levels
   - `geometry_yard` and `fraction_forest` each have 0 levels
+
+### Completed
+- Fixed adventure progression so completing a level still unlocks the next level, and completing the final level of a world can now unlock the first level of the next world.
+- Added explicit world unlock config support in Math Garden world files:
+  - `startsUnlocked`
+  - `unlockAfterWorldId`
+- Added `saveManager.unlockLevel(...)` so progression rules can explicitly seed the first playable level of a newly unlocked world.
+- Updated hub world-lock computation to respect configured world unlock rules instead of relying only on whether some level in that world had already been unlocked as a side effect.
+- Added `GameManager.getWorlds(...)` / `getWorldById(...)` helpers and updated `getNextAdventureLevel(...)` so cross-world progression can resolve the first level of the next configured world.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village`.
+- Confirmed Math Garden unlock chain config:
+  - `number_garden` starts unlocked
+  - `addition_field` unlocks after `number_garden`
+  - `subtraction_patch` unlocks after `addition_field`
+  - `multiplication_meadow` unlocks after `subtraction_patch`
+  - `division_grove` unlocks after `multiplication_meadow`

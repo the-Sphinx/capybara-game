@@ -304,13 +304,31 @@ function loadAndRenderLevelMap(overlay) {
 }
 
 function buildMathWorldModels(cat, levels) {
-  const worldSelectConfig = gameManager.getWorldSelectConfig(cat.gameId);
-  const worlds = (worldSelectConfig?.worlds ?? []).map((world) => {
+  const configuredWorlds = gameManager.getWorlds(cat.gameId);
+
+  const isWorldCompleted = (worldId) => {
+    const world = configuredWorlds.find((entry) => entry.id === worldId);
+    if (!world || !world.levels?.length) return false;
+    return world.levels.every((level) => saveManager.isLevelCompleted(cat.id, level));
+  };
+
+  for (const world of configuredWorlds) {
+    const firstLevel = [...(world.levels ?? [])].sort((a, b) => a.levelNum - b.levelNum)[0] ?? null;
+    const ruleUnlock = world.startsUnlocked === true
+      || (typeof world.unlockAfterWorldId === 'string' && isWorldCompleted(world.unlockAfterWorldId));
+    if (ruleUnlock && firstLevel && !saveManager.isLevelUnlocked(cat.id, firstLevel)) {
+      saveManager.unlockLevel(cat.id, firstLevel);
+    }
+  }
+
+  const worlds = configuredWorlds.map((world) => {
     const worldLevels = levels.filter(level => level.worldId === world.id);
     const levelsTotal = worldLevels.length;
     const levelsCompleted = worldLevels.filter(level => saveManager.isLevelCompleted(cat.id, level)).length;
     const levelsUnlocked = worldLevels.filter(level => saveManager.isLevelUnlocked(cat.id, level)).length;
-    const isLocked = levelsTotal > 0 ? levelsUnlocked === 0 : true;
+    const ruleUnlock = world.startsUnlocked === true
+      || (typeof world.unlockAfterWorldId === 'string' && isWorldCompleted(world.unlockAfterWorldId));
+    const isLocked = levelsTotal > 0 ? (!ruleUnlock && levelsUnlocked === 0) : true;
     const isCompleted = levelsTotal > 0 && levelsCompleted === levelsTotal;
     const starsMax = 3;
     const starsEarned = levelsTotal > 0

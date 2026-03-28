@@ -98,6 +98,34 @@
   - `addition_field`, `subtraction_patch`, `multiplication_meadow`, and `division_grove` each have 10 levels
   - `geometry_yard` and `fraction_forest` each have 0 levels
 
+## 18. World Unlock Progression
+
+### What Changed
+- Fixed the user-progress gap where the save system stored stable `levelId`s correctly but world-to-world advancement stopped at the final level of each world.
+- Added explicit world unlock metadata in Math Garden world configs:
+  - `startsUnlocked`
+  - `unlockAfterWorldId`
+- Added `unlockLevel(...)` to `capy-village/src/SaveManager.js` so the app can explicitly seed the first level of a newly available world.
+- Updated `capy-village/src/games/GameManager.js` so `getNextAdventureLevel(...)` now:
+  - returns the next level inside the current world when available
+  - otherwise returns the first level of the configured next world in the unlock chain
+- Updated `capy-village/src/ui/HubModal.js` so world lock state respects configured world unlock rules instead of relying only on `unlockedLevelIds` side effects.
+
+### Reviewer Focus
+- Confirm clearing `*_10` in an active Math world now unlocks `*_1` of the next configured world.
+- Confirm the first world can be configured as initially open via `startsUnlocked: true`.
+- Confirm future worlds can be configured as locked/unlocked independently through world config rather than implicit hub text only.
+- Confirm older saves that had already completed prerequisite worlds will now get the first level of the next world unlocked when the hub rebuilds world models.
+
+### Verification
+- Ran `npm run build` successfully in `capy-village`.
+- Confirmed the current Math unlock chain:
+  - `number_garden` starts unlocked
+  - `addition_field` unlocks after `number_garden`
+  - `subtraction_patch` unlocks after `addition_field`
+  - `multiplication_meadow` unlocks after `subtraction_patch`
+  - `division_grove` unlocks after `multiplication_meadow`
+
 ## 1. Task Summary
 - Task name: Published minigame config restructure
 - Date: 2026-03-26

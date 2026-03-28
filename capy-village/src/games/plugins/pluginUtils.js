@@ -335,10 +335,10 @@ export function normalizeGameManifest(plugin, manifest) {
     ]),
   );
 
-  const worlds = (manifest.worlds ?? []).map((world) => {
+    const worlds = (manifest.worlds ?? []).map((world) => {
       validateKeys(
         world,
-        keySet(['id', 'title', 'subtitle', 'unlockRequirementText', 'signBox', 'clickBox', 'defaults', 'levels']),
+        keySet(['id', 'title', 'subtitle', 'unlockRequirementText', 'startsUnlocked', 'unlockAfterWorldId', 'signBox', 'clickBox', 'defaults', 'levels']),
       `worlds.${world?.id ?? 'unknown'}`,
     );
     if (typeof world.id !== 'string' || !world.id) {
@@ -352,6 +352,12 @@ export function normalizeGameManifest(plugin, manifest) {
     }
     if ('unlockRequirementText' in world && typeof world.unlockRequirementText !== 'string') {
       fail(`worlds.${world.id}.unlockRequirementText`, 'must be a string');
+    }
+    if ('startsUnlocked' in world && typeof world.startsUnlocked !== 'boolean') {
+      fail(`worlds.${world.id}.startsUnlocked`, 'must be a boolean');
+    }
+    if ('unlockAfterWorldId' in world && typeof world.unlockAfterWorldId !== 'string') {
+      fail(`worlds.${world.id}.unlockAfterWorldId`, 'must be a string');
     }
     validateBox(world.signBox, `worlds.${world.id}.signBox`);
     validateBox(world.clickBox, `worlds.${world.id}.clickBox`);
@@ -379,6 +385,8 @@ export function normalizeGameManifest(plugin, manifest) {
         title: world.title,
         subtitle: world.subtitle ?? '',
         unlockRequirementText: world.unlockRequirementText ?? '',
+        startsUnlocked: world.startsUnlocked === true,
+        unlockAfterWorldId: world.unlockAfterWorldId ?? null,
         signBox: world.signBox,
         clickBox: world.clickBox,
       })),
