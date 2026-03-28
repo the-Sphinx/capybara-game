@@ -2,6 +2,32 @@
 
 ## 0. Final Fix Follow-Up
 
+### Math Garden Five-World Progression Pass
+- Expanded Math Garden’s authored progression so the five core worlds now each contain 10 levels:
+- `number_garden`
+- `addition_field`
+- `subtraction_patch`
+- `multiplication_meadow`
+- `division_grove`
+- Added new Math recipes for:
+- number-property collection
+- addition progression
+- subtraction progression
+- multiplication tables and mixed multiplication
+- exact-division progression
+- Extended the `answer_equation` contract to support `multiplication` and `division`, plus lightweight authored rule fields for:
+- `fixedOperand`
+- `targetValue`
+- `leftRange`
+- `rightRange`
+- Updated the Math runtime so division levels generate exact whole-number equations and multiplication levels can express table-style/fixed-operand recipes.
+
+### Reviewer Focus
+- Confirm the five core Math world files now each have 10 levels using slots `1..10`.
+- Confirm the new recipe ids in `math_garden/game.json` stay world-themed and are not cross-topic.
+- Confirm `math_garden.game.schema.json` and `docs/minigame_mode_authoring.md` now expose the expanded `answer_equation` authoring surface.
+- Confirm untouched worlds `geometry_yard` and `fraction_forest` still reference valid recipes and remain unchanged.
+
 ### Config Structure Cleanup
 - Followed up by simplifying the authored config split:
 - `game.json` now contains shared game config plus `worldIds`

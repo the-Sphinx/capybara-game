@@ -6,27 +6,120 @@
   "signBox": { "x": 0.3804, "y": 0.291, "w": 0.0845, "h": 0.0465 },
   "levels": [
     {
-      "levelId": "addition_field_2",
-      "levelNum": 2,
+      "levelId": "addition_field_1",
+      "levelNum": 1,
       "slot": 1,
-      "label": "Seedling",
-      "recipeId": "addition_basic",
+      "label": "Tiny Sums",
+      "recipeId": "addition_easy",
       "timeLimit": 60,
       "goal": { "type": "correctAnswers", "value": 5 },
-      "clearReward": 20,
-      "bonusTiers": [{ "threshold": 9, "reward": 8 }, { "threshold": 13, "reward": 10 }]
+      "clearReward": 10,
+      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }]
+    },
+    {
+      "levelId": "addition_field_2",
+      "levelNum": 2,
+      "slot": 2,
+      "label": "Little Bridge",
+      "recipeId": "addition_easy",
+      "timeLimit": 58,
+      "goal": { "type": "correctAnswers", "value": 6 },
+      "clearReward": 12,
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }],
+      "overrides": { "rules": { "numberRange": [0, 6] } }
+    },
+    {
+      "levelId": "addition_field_3",
+      "levelNum": 3,
+      "slot": 3,
+      "label": "Make Ten Trail",
+      "recipeId": "addition_make_10",
+      "timeLimit": 56,
+      "goal": { "type": "correctAnswers", "value": 6 },
+      "clearReward": 15,
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }]
+    },
+    {
+      "levelId": "addition_field_4",
+      "levelNum": 4,
+      "slot": 4,
+      "label": "Growing Garden",
+      "recipeId": "addition_mid",
+      "timeLimit": 54,
+      "goal": { "type": "correctAnswers", "value": 7 },
+      "clearReward": 18,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 11, "reward": 6 }]
     },
     {
       "levelId": "addition_field_5",
       "levelNum": 5,
-      "slot": 2,
-      "label": "Flowering",
-      "recipeId": "mixed_equations",
+      "slot": 5,
+      "label": "Sum Steps",
+      "recipeId": "addition_mid",
       "timeLimit": 50,
-      "goal": { "type": "correctAnswers", "value": 7 },
-      "clearReward": 30,
-      "bonusTiers": [{ "threshold": 11, "reward": 12 }, { "threshold": 15, "reward": 15 }],
-      "overrides": { "rules": { "numberRange": [1, 10] } }
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 22,
+      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 12, "reward": 7 }],
+      "overrides": { "rules": { "numberRange": [0, 12], "answerCount": 4 } }
+    },
+    {
+      "levelId": "addition_field_6",
+      "levelNum": 6,
+      "slot": 6,
+      "label": "Teen Twirl",
+      "recipeId": "addition_teens",
+      "timeLimit": 48,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 26,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }]
+    },
+    {
+      "levelId": "addition_field_7",
+      "levelNum": 7,
+      "slot": 7,
+      "label": "Sum Sprint",
+      "recipeId": "addition_teens",
+      "timeLimit": 45,
+      "goal": { "type": "correctAnswers", "value": 9 },
+      "clearReward": 32,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
+      "overrides": { "rules": { "numberRange": [6, 18] } }
+    },
+    {
+      "levelId": "addition_field_8",
+      "levelNum": 8,
+      "slot": 8,
+      "label": "Big Additions",
+      "recipeId": "addition_two_digit_intro",
+      "timeLimit": 42,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 38,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }],
+      "overrides": { "rules": { "leftRange": [10, 20], "rightRange": [1, 5] } }
+    },
+    {
+      "levelId": "addition_field_9",
+      "levelNum": 9,
+      "slot": 9,
+      "label": "Tall Towers",
+      "recipeId": "addition_two_digit_intro",
+      "timeLimit": 40,
+      "goal": { "type": "correctAnswers", "value": 9 },
+      "clearReward": 46,
+      "bonusTiers": [{ "threshold": 11, "reward": 8 }, { "threshold": 13, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [12, 28], "rightRange": [2, 9] } }
+    },
+    {
+      "levelId": "addition_field_10",
+      "levelNum": 10,
+      "slot": 10,
+      "label": "Addition Bloom",
+      "recipeId": "addition_two_digit_intro",
+      "timeLimit": 38,
+      "goal": { "type": "correctAnswers", "value": 10 },
+      "clearReward": 55,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 14, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [15, 35], "rightRange": [3, 9] } }
     }
   ]
 }

@@ -10,48 +10,110 @@
       "levelNum": 1,
       "slot": 1,
       "label": "Odd Harvest",
-      "recipeId": "collect_odd_basic",
+      "recipeId": "collect_odd_easy",
       "timeLimit": 60,
       "goal": { "type": "catchCount", "value": 5 },
       "clearReward": 10,
-      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 13, "reward": 5 }],
-      "overrides": { "rules": { "numberRange": [1, 15] } }
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 11, "reward": 6 }]
     },
     {
       "levelId": "number_garden_2",
       "levelNum": 2,
       "slot": 2,
       "label": "Even Harvest",
-      "recipeId": "collect_even_basic",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 10,
-      "bonusTiers": [{ "threshold": 12, "reward": 5 }, { "threshold": 16, "reward": 5 }],
-      "overrides": { "rules": { "numberRange": [1, 15] } }
+      "recipeId": "collect_even_easy",
+      "timeLimit": 58,
+      "goal": { "type": "catchCount", "value": 6 },
+      "clearReward": 12,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 12, "reward": 6 }]
     },
     {
       "levelId": "number_garden_3",
       "levelNum": 3,
       "slot": 3,
-      "label": "Odd Harvest 2",
-      "recipeId": "collect_odd_basic",
-      "timeLimit": 45,
-      "goal": { "type": "catchCount", "value": 12 },
-      "clearReward": 10,
-      "bonusTiers": [{ "threshold": 16, "reward": 5 }, { "threshold": 20, "reward": 5 }],
-      "overrides": { "rules": { "numberRange": [10, 25] } }
+      "label": "Odd Trail",
+      "recipeId": "collect_odd_mid",
+      "timeLimit": 55,
+      "goal": { "type": "catchCount", "value": 7 },
+      "clearReward": 15,
+      "bonusTiers": [{ "threshold": 10, "reward": 4 }, { "threshold": 13, "reward": 6 }]
     },
     {
       "levelId": "number_garden_4",
       "levelNum": 4,
       "slot": 4,
-      "label": "Even Harvest 2",
-      "recipeId": "collect_even_basic",
+      "label": "Even Trail",
+      "recipeId": "collect_even_mid",
+      "timeLimit": 52,
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 18,
+      "bonusTiers": [{ "threshold": 11, "reward": 4 }, { "threshold": 14, "reward": 6 }]
+    },
+    {
+      "levelId": "number_garden_5",
+      "levelNum": 5,
+      "slot": 5,
+      "label": "Double Bloom",
+      "recipeId": "collect_multiples_of_2",
+      "timeLimit": 50,
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 11, "reward": 5 }, { "threshold": 14, "reward": 7 }]
+    },
+    {
+      "levelId": "number_garden_6",
+      "levelNum": 6,
+      "slot": 6,
+      "label": "Triple Blossoms",
+      "recipeId": "collect_multiples_of_3",
+      "timeLimit": 48,
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 24,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }]
+    },
+    {
+      "levelId": "number_garden_7",
+      "levelNum": 7,
+      "slot": 7,
+      "label": "Prime Sprouts",
+      "recipeId": "collect_prime_intro",
+      "timeLimit": 46,
+      "goal": { "type": "catchCount", "value": 7 },
+      "clearReward": 30,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 13, "reward": 8 }]
+    },
+    {
+      "levelId": "number_garden_8",
+      "levelNum": 8,
+      "slot": 8,
+      "label": "High Five Patch",
+      "recipeId": "collect_multiples_of_5",
+      "timeLimit": 44,
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 34,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }]
+    },
+    {
+      "levelId": "number_garden_9",
+      "levelNum": 9,
+      "slot": 9,
+      "label": "Prime Parade",
+      "recipeId": "collect_prime_mid",
       "timeLimit": 40,
-      "goal": { "type": "catchCount", "value": 14 },
-      "clearReward": 15,
-      "bonusTiers": [{ "threshold": 18, "reward": 6 }, { "threshold": 22, "reward": 8 }],
-      "overrides": { "rules": { "numberRange": [10, 25] } }
+      "goal": { "type": "catchCount", "value": 9 },
+      "clearReward": 42,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }]
+    },
+    {
+      "levelId": "number_garden_10",
+      "levelNum": 10,
+      "slot": 10,
+      "label": "Four at a Time",
+      "recipeId": "collect_divisible_by_4",
+      "timeLimit": 38,
+      "goal": { "type": "catchCount", "value": 9 },
+      "clearReward": 50,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }]
     }
   ]
 }

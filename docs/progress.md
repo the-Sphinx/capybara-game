@@ -2,6 +2,36 @@
 
 ## 2026-03-28
 
+### Math Garden Core Worlds Level Design Pass
+- Expanded Math Garden’s core progression to 10 levels each for:
+- `number_garden`
+- `addition_field`
+- `subtraction_patch`
+- `multiplication_meadow`
+- `division_grove`
+- Added a broader Math recipe catalog in `capy-village/public/config/games/math_garden/game.json` to support world-specific progression without reusing off-theme content.
+- Extended `answer_equation` so it now supports:
+- `multiplication`
+- `division`
+- Added lightweight authored rule support for:
+- `fixedOperand`
+- `targetValue`
+- `leftRange`
+- `rightRange`
+- Updated the Math runtime so:
+- multiplication can target table-style recipes cleanly
+- division generates only exact whole-number equations
+- addition recipes can support make-10 style authored targets
+- two-digit plus/minus one-digit progression can be authored with side-specific ranges
+- Left `geometry_yard` and `fraction_forest` unchanged.
+
+### Self-Check
+- Verified `npm run generate:authoring` succeeds in `capy-village`.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed all five core worlds now have exactly 10 levels.
+- Confirmed each of those worlds uses slots `1..10` exactly once.
+- Confirmed all authored Math level `recipeId` values resolve to existing recipes.
+
 ### Minigame Config Split Cleanup
 - Simplified the authored minigame config contract again.
 - Removed the duplicated `levelSelectBackgroundPath` from `worldSelect`; level-select art now lives only under `levelSelect.backgroundPath`.

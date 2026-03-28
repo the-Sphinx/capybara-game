@@ -48,6 +48,13 @@ function randBetween(a, b) {
   return a + Math.random() * (b - a);
 }
 
+function pickInt(range, fallbackMin, fallbackMax) {
+  if (Array.isArray(range) && range.length === 2) {
+    return randInt(range[0], range[1]);
+  }
+  return randInt(fallbackMin, fallbackMax);
+}
+
 function shuffle(arr) {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -73,22 +80,65 @@ export class MathEquationAnswerMode extends AnswerMode {
       ? ['+']
       : operation === 'subtraction'
         ? ['-']
+        : operation === 'multiplication'
+          ? ['×']
+          : operation === 'division'
+            ? ['÷']
         : ['+', '-'];
     const op = randFrom(operations);
     const [min, max] = rules.numberRange ?? [1, 10];
+    const leftRange = rules.leftRange ?? null;
+    const rightRange = rules.rightRange ?? null;
 
     let a;
     let b;
     let answer;
     if (op === '+') {
-      a = randInt(min, max);
-      b = randInt(min, max);
+      if (Number.isInteger(rules.targetValue)) {
+        const pairs = [];
+        const [leftMin, leftMax] = leftRange ?? [min, max];
+        const [rightMin, rightMax] = rightRange ?? [min, max];
+        for (let left = leftMin; left <= leftMax; left += 1) {
+          const right = rules.targetValue - left;
+          if (right >= rightMin && right <= rightMax) {
+            pairs.push([left, right]);
+          }
+        }
+        [a, b] = randFrom(pairs.length ? pairs : [[pickInt(leftRange, min, max), pickInt(rightRange, min, max)]]);
+      } else {
+        a = pickInt(leftRange, min, max);
+        b = pickInt(rightRange, min, max);
+      }
       answer = a + b;
     } else {
-      a = randInt(min, max);
-      b = randInt(min, a);
-      if (b < min) b = min;
-      answer = a - b;
+      if (op === '-') {
+        if (Number.isInteger(rules.targetValue)) {
+          const pairs = [];
+          const [leftMin, leftMax] = leftRange ?? [min, max];
+          const [rightMin, rightMax] = rightRange ?? [min, max];
+          for (let left = leftMin; left <= leftMax; left += 1) {
+            const right = left - rules.targetValue;
+            if (right >= rightMin && right <= rightMax && right <= left) {
+              pairs.push([left, right]);
+            }
+          }
+          [a, b] = randFrom(pairs.length ? pairs : [[pickInt(leftRange, min, max), Math.min(pickInt(rightRange, min, max), pickInt(leftRange, min, max))]]);
+        } else {
+          a = pickInt(leftRange, min, max);
+          const [rightMin, rightMax] = rightRange ?? [min, max];
+          b = randInt(rightMin, Math.min(rightMax, a));
+          if (b < rightMin) b = rightMin;
+        }
+        answer = a - b;
+      } else if (op === '×') {
+        a = Number.isInteger(rules.fixedOperand) ? rules.fixedOperand : pickInt(leftRange, min, max);
+        b = pickInt(rightRange, min, max);
+        answer = a * b;
+      } else {
+        b = Number.isInteger(rules.fixedOperand) ? rules.fixedOperand : randInt(Math.max(1, min), Math.max(1, max));
+        answer = pickInt(leftRange, min, max);
+        a = b * answer;
+      }
     }
 
     const equationText = `${a} ${op} ${b} = ?`;

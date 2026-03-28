@@ -6,15 +6,118 @@
   "signBox": { "x": 0.5025, "y": 0.5592, "w": 0.0941, "h": 0.0521 },
   "levels": [
     {
+      "levelId": "multiplication_meadow_1",
+      "levelNum": 1,
+      "slot": 1,
+      "label": "Double Blossoms",
+      "recipeId": "multiplication_2s",
+      "timeLimit": 60,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 12,
+      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }]
+    },
+    {
+      "levelId": "multiplication_meadow_2",
+      "levelNum": 2,
+      "slot": 2,
+      "label": "High Five Garden",
+      "recipeId": "multiplication_5s",
+      "timeLimit": 58,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 14,
+      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }]
+    },
+    {
+      "levelId": "multiplication_meadow_3",
+      "levelNum": 3,
+      "slot": 3,
+      "label": "Ten Tall Trees",
+      "recipeId": "multiplication_10s",
+      "timeLimit": 56,
+      "goal": { "type": "correctAnswers", "value": 6 },
+      "clearReward": 16,
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }]
+    },
+    {
+      "levelId": "multiplication_meadow_4",
+      "levelNum": 4,
+      "slot": 4,
+      "label": "Double Again",
+      "recipeId": "multiplication_2s",
+      "timeLimit": 52,
+      "goal": { "type": "correctAnswers", "value": 7 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 11, "reward": 6 }],
+      "overrides": { "rules": { "numberRange": [1, 8], "answerCount": 4 } }
+    },
+    {
+      "levelId": "multiplication_meadow_5",
+      "levelNum": 5,
+      "slot": 5,
+      "label": "Triple Trail",
+      "recipeId": "multiplication_3s",
+      "timeLimit": 50,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 24,
+      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 12, "reward": 7 }]
+    },
+    {
       "levelId": "multiplication_meadow_6",
       "levelNum": 6,
-      "slot": 1,
-      "label": "Triple Vines",
-      "recipeId": "collect_multiples_of_3",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 6 },
-      "clearReward": 30,
-      "bonusTiers": [{ "threshold": 10, "reward": 12 }, { "threshold": 14, "reward": 15 }]
+      "slot": 6,
+      "label": "Four Flower Row",
+      "recipeId": "multiplication_4s",
+      "timeLimit": 48,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 28,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }]
+    },
+    {
+      "levelId": "multiplication_meadow_7",
+      "levelNum": 7,
+      "slot": 7,
+      "label": "Meadow Mix",
+      "recipeId": "multiplication_mixed_easy",
+      "timeLimit": 45,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 32,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }]
+    },
+    {
+      "levelId": "multiplication_meadow_8",
+      "levelNum": 8,
+      "slot": 8,
+      "label": "Bigger Groups",
+      "recipeId": "multiplication_mixed_easy",
+      "timeLimit": 42,
+      "goal": { "type": "correctAnswers", "value": 9 },
+      "clearReward": 38,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
+      "overrides": { "rules": { "leftRange": [2, 6], "rightRange": [2, 6] } }
+    },
+    {
+      "levelId": "multiplication_meadow_9",
+      "levelNum": 9,
+      "slot": 9,
+      "label": "Math Meadow",
+      "recipeId": "multiplication_mixed_easy",
+      "timeLimit": 40,
+      "goal": { "type": "correctAnswers", "value": 10 },
+      "clearReward": 46,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 14, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [2, 8], "rightRange": [2, 7] } }
+    },
+    {
+      "levelId": "multiplication_meadow_10",
+      "levelNum": 10,
+      "slot": 10,
+      "label": "Times Champion",
+      "recipeId": "multiplication_mixed_easy",
+      "timeLimit": 38,
+      "goal": { "type": "correctAnswers", "value": 11 },
+      "clearReward": 55,
+      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 15, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [2, 9], "rightRange": [2, 8] } }
     }
   ]
 }

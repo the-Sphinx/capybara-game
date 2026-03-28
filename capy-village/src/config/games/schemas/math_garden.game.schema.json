@@ -255,6 +255,8 @@
                     "enum": [
                       "addition",
                       "subtraction",
+                      "multiplication",
+                      "division",
                       "mixed"
                     ]
                   },
@@ -268,6 +270,28 @@
                   },
                   "answerCount": {
                     "type": "number"
+                  },
+                  "fixedOperand": {
+                    "type": "number"
+                  },
+                  "targetValue": {
+                    "type": "number"
+                  },
+                  "leftRange": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "rightRange": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
                   }
                 }
               },

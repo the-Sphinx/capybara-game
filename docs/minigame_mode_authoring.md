@@ -130,7 +130,7 @@ Level example:
 
 ## `answer_equation`
 
-Tap the correct arithmetic answer for addition, subtraction, or mixed equations.
+Tap the correct arithmetic answer for addition, subtraction, multiplication, division, or mixed equations.
 
 Uses family: `answer`
 
@@ -140,7 +140,10 @@ Required rules:
 - `answerCount`
 
 Optional rules:
-- none
+- `fixedOperand`
+- `targetValue`
+- `leftRange`
+- `rightRange`
 
 Required scoring:
 - `pointsPerCorrect`
@@ -153,13 +156,17 @@ Level overrideable rule keys:
 - `operation`
 - `numberRange`
 - `answerCount`
+- `fixedOperand`
+- `targetValue`
+- `leftRange`
+- `rightRange`
 
 Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 - `wrongFeedback`
 
-Allowed `operation` values: `addition`, `subtraction`, `mixed`
+Allowed `operation` values: `addition`, `subtraction`, `multiplication`, `division`, `mixed`
 
 Recipe example:
 ```json
@@ -173,7 +180,8 @@ Recipe example:
       1,
       10
     ],
-    "answerCount": 3
+    "answerCount": 3,
+    "targetValue": 10
   },
   "scoring": {
     "pointsPerCorrect": 10,

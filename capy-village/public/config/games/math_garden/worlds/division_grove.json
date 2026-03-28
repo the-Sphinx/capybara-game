@@ -6,15 +6,118 @@
   "signBox": { "x": 0.2424, "y": 0.7447, "w": 0.1057, "h": 0.0644 },
   "levels": [
     {
+      "levelId": "division_grove_1",
+      "levelNum": 1,
+      "slot": 1,
+      "label": "Sharing Stream",
+      "recipeId": "division_by_2",
+      "timeLimit": 60,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 12,
+      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }]
+    },
+    {
+      "levelId": "division_grove_2",
+      "levelNum": 2,
+      "slot": 2,
+      "label": "High Five Share",
+      "recipeId": "division_by_5",
+      "timeLimit": 58,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 14,
+      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }]
+    },
+    {
+      "levelId": "division_grove_3",
+      "levelNum": 3,
+      "slot": 3,
+      "label": "Ten by Ten",
+      "recipeId": "division_by_10",
+      "timeLimit": 56,
+      "goal": { "type": "correctAnswers", "value": 6 },
+      "clearReward": 16,
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }]
+    },
+    {
+      "levelId": "division_grove_4",
+      "levelNum": 4,
+      "slot": 4,
+      "label": "Sharing More",
+      "recipeId": "division_by_2",
+      "timeLimit": 52,
+      "goal": { "type": "correctAnswers", "value": 7 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 11, "reward": 6 }],
+      "overrides": { "rules": { "numberRange": [1, 8], "answerCount": 4 } }
+    },
+    {
+      "levelId": "division_grove_5",
+      "levelNum": 5,
+      "slot": 5,
+      "label": "Thirds Trail",
+      "recipeId": "division_by_3",
+      "timeLimit": 50,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 24,
+      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 12, "reward": 7 }]
+    },
+    {
+      "levelId": "division_grove_6",
+      "levelNum": 6,
+      "slot": 6,
+      "label": "Four Friends",
+      "recipeId": "division_by_4",
+      "timeLimit": 48,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 28,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }]
+    },
+    {
       "levelId": "division_grove_7",
       "levelNum": 7,
-      "slot": 1,
-      "label": "High Five",
-      "recipeId": "collect_multiples_of_5",
+      "slot": 7,
+      "label": "Sharing Mix",
+      "recipeId": "division_mixed_easy",
       "timeLimit": 45,
-      "goal": { "type": "catchCount", "value": 5 },
-      "clearReward": 35,
-      "bonusTiers": [{ "threshold": 9, "reward": 14 }, { "threshold": 13, "reward": 18 }]
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 32,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }]
+    },
+    {
+      "levelId": "division_grove_8",
+      "levelNum": 8,
+      "slot": 8,
+      "label": "Even Shares",
+      "recipeId": "division_mixed_easy",
+      "timeLimit": 42,
+      "goal": { "type": "correctAnswers", "value": 9 },
+      "clearReward": 38,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
+      "overrides": { "rules": { "leftRange": [1, 6], "numberRange": [2, 5] } }
+    },
+    {
+      "levelId": "division_grove_9",
+      "levelNum": 9,
+      "slot": 9,
+      "label": "Quick Sharing",
+      "recipeId": "division_mixed_easy",
+      "timeLimit": 40,
+      "goal": { "type": "correctAnswers", "value": 10 },
+      "clearReward": 46,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 14, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [2, 7], "numberRange": [2, 5] } }
+    },
+    {
+      "levelId": "division_grove_10",
+      "levelNum": 10,
+      "slot": 10,
+      "label": "Division Champion",
+      "recipeId": "division_mixed_easy",
+      "timeLimit": 38,
+      "goal": { "type": "correctAnswers", "value": 11 },
+      "clearReward": 55,
+      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 15, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [2, 8], "numberRange": [2, 6] } }
     }
   ]
 }

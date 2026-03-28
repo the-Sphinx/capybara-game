@@ -4,7 +4,7 @@ export const answerEquationMode = defineModeDescriptor({
   kind: 'answer_equation',
   family: 'answer',
   docs: {
-    summary: 'Tap the correct arithmetic answer for addition, subtraction, or mixed equations.',
+    summary: 'Tap the correct arithmetic answer for addition, subtraction, multiplication, division, or mixed equations.',
     exampleRecipe: {
       kind: 'answer_equation',
       title: 'Addition Garden',
@@ -13,6 +13,7 @@ export const answerEquationMode = defineModeDescriptor({
         operation: 'addition',
         numberRange: [1, 10],
         answerCount: 3,
+        targetValue: 10,
       },
       scoring: {
         pointsPerCorrect: 10,
@@ -39,9 +40,9 @@ export const answerEquationMode = defineModeDescriptor({
   },
   rules: {
     required: ['operation', 'numberRange', 'answerCount'],
-    optional: [],
+    optional: ['fixedOperand', 'targetValue', 'leftRange', 'rightRange'],
     defaults: {},
-    overrideable: ['operation', 'numberRange', 'answerCount'],
+    overrideable: ['operation', 'numberRange', 'answerCount', 'fixedOperand', 'targetValue', 'leftRange', 'rightRange'],
   },
   scoring: {
     required: ['pointsPerCorrect', 'wrongPenalty'],
@@ -52,7 +53,7 @@ export const answerEquationMode = defineModeDescriptor({
   ruleSchemas: {
     operation: {
       "type": "string",
-      "enum": ["addition", "subtraction", "mixed"]
+      "enum": ["addition", "subtraction", "multiplication", "division", "mixed"]
     },
     numberRange: {
       "type": "array",
@@ -60,7 +61,21 @@ export const answerEquationMode = defineModeDescriptor({
       "maxItems": 2,
       "items": { "type": "number" }
     },
-    answerCount: { "type": "number" }
+    leftRange: {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    rightRange: {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    answerCount: { "type": "number" },
+    fixedOperand: { "type": "number" },
+    targetValue: { "type": "number" }
   },
   scoringSchemas: {
     pointsPerCorrect: { "type": "number" },
@@ -68,11 +83,26 @@ export const answerEquationMode = defineModeDescriptor({
     wrongFeedback: { "type": "string" }
   },
   validateRecipe({ path, rules, fail }) {
-    if (!['addition', 'subtraction', 'mixed'].includes(rules.operation)) {
-      fail(`${path}.rules.operation`, `expected one of ["addition","subtraction","mixed"], got "${rules.operation}"`);
+    if (!['addition', 'subtraction', 'multiplication', 'division', 'mixed'].includes(rules.operation)) {
+      fail(`${path}.rules.operation`, `expected one of ["addition","subtraction","multiplication","division","mixed"], got "${rules.operation}"`);
     }
     if (!Array.isArray(rules.numberRange) || rules.numberRange.length !== 2) {
       fail(`${path}.rules.numberRange`, 'must be a [min, max] pair');
+    }
+    if ('leftRange' in rules && (!Array.isArray(rules.leftRange) || rules.leftRange.length !== 2)) {
+      fail(`${path}.rules.leftRange`, 'must be a [min, max] pair');
+    }
+    if ('rightRange' in rules && (!Array.isArray(rules.rightRange) || rules.rightRange.length !== 2)) {
+      fail(`${path}.rules.rightRange`, 'must be a [min, max] pair');
+    }
+    if ('fixedOperand' in rules && (!Number.isInteger(rules.fixedOperand) || rules.fixedOperand <= 0)) {
+      fail(`${path}.rules.fixedOperand`, 'must be a positive integer');
+    }
+    if ('targetValue' in rules && !Number.isInteger(rules.targetValue)) {
+      fail(`${path}.rules.targetValue`, 'must be an integer');
+    }
+    if ((rules.operation === 'multiplication' || rules.operation === 'division') && 'targetValue' in rules) {
+      fail(`${path}.rules.targetValue`, 'is only supported for addition and subtraction recipes');
     }
   },
   resolve({ recipe, rules, scoring }) {

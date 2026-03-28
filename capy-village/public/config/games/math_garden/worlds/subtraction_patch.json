@@ -6,16 +6,120 @@
   "signBox": { "x": 0.2206, "y": 0.4837, "w": 0.093, "h": 0.0559 },
   "levels": [
     {
+      "levelId": "subtraction_patch_1",
+      "levelNum": 1,
+      "slot": 1,
+      "label": "Tiny Takeaways",
+      "recipeId": "subtraction_easy",
+      "timeLimit": 60,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 10,
+      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }]
+    },
+    {
+      "levelId": "subtraction_patch_2",
+      "levelNum": 2,
+      "slot": 2,
+      "label": "Backward Steps",
+      "recipeId": "subtraction_within_10",
+      "timeLimit": 58,
+      "goal": { "type": "correctAnswers", "value": 6 },
+      "clearReward": 12,
+      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }]
+    },
+    {
+      "levelId": "subtraction_patch_3",
+      "levelNum": 3,
+      "slot": 3,
+      "label": "From Ten Trail",
+      "recipeId": "subtraction_within_10",
+      "timeLimit": 55,
+      "goal": { "type": "correctAnswers", "value": 7 },
+      "clearReward": 15,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 11, "reward": 6 }],
+      "overrides": { "rules": { "leftRange": [6, 10], "rightRange": [0, 5] } }
+    },
+    {
       "levelId": "subtraction_patch_4",
       "levelNum": 4,
-      "slot": 1,
-      "label": "Odd Garden",
-      "recipeId": "collect_odd_basic",
-      "timeLimit": 55,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 25,
-      "bonusTiers": [{ "threshold": 12, "reward": 10 }, { "threshold": 16, "reward": 13 }],
-      "overrides": { "rules": { "numberRange": [1, 15] } }
+      "slot": 4,
+      "label": "Difference Path",
+      "recipeId": "subtraction_missing_gap_easy",
+      "timeLimit": 53,
+      "goal": { "type": "correctAnswers", "value": 7 },
+      "clearReward": 18,
+      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 11, "reward": 6 }]
+    },
+    {
+      "levelId": "subtraction_patch_5",
+      "levelNum": 5,
+      "slot": 5,
+      "label": "Teen Takeaways",
+      "recipeId": "subtraction_teens",
+      "timeLimit": 50,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 22,
+      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 12, "reward": 7 }]
+    },
+    {
+      "levelId": "subtraction_patch_6",
+      "levelNum": 6,
+      "slot": 6,
+      "label": "Take Away Trail",
+      "recipeId": "subtraction_teens",
+      "timeLimit": 48,
+      "goal": { "type": "correctAnswers", "value": 9 },
+      "clearReward": 26,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
+      "overrides": { "rules": { "leftRange": [8, 18], "rightRange": [1, 9] } }
+    },
+    {
+      "levelId": "subtraction_patch_7",
+      "levelNum": 7,
+      "slot": 7,
+      "label": "Big Takeaways",
+      "recipeId": "subtraction_two_digit_intro",
+      "timeLimit": 45,
+      "goal": { "type": "correctAnswers", "value": 8 },
+      "clearReward": 32,
+      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }],
+      "overrides": { "rules": { "leftRange": [10, 20], "rightRange": [1, 5] } }
+    },
+    {
+      "levelId": "subtraction_patch_8",
+      "levelNum": 8,
+      "slot": 8,
+      "label": "Step Down",
+      "recipeId": "subtraction_two_digit_intro",
+      "timeLimit": 42,
+      "goal": { "type": "correctAnswers", "value": 9 },
+      "clearReward": 38,
+      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
+      "overrides": { "rules": { "leftRange": [12, 24], "rightRange": [2, 8] } }
+    },
+    {
+      "levelId": "subtraction_patch_9",
+      "levelNum": 9,
+      "slot": 9,
+      "label": "Difference Dash",
+      "recipeId": "subtraction_two_digit_intro",
+      "timeLimit": 40,
+      "goal": { "type": "correctAnswers", "value": 10 },
+      "clearReward": 46,
+      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 14, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [15, 28], "rightRange": [3, 9] } }
+    },
+    {
+      "levelId": "subtraction_patch_10",
+      "levelNum": 10,
+      "slot": 10,
+      "label": "Subtraction Star",
+      "recipeId": "subtraction_two_digit_intro",
+      "timeLimit": 38,
+      "goal": { "type": "correctAnswers", "value": 11 },
+      "clearReward": 55,
+      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 15, "reward": 10 }],
+      "overrides": { "rules": { "leftRange": [18, 35], "rightRange": [4, 9] } }
     }
   ]
 }
