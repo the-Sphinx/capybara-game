@@ -60,6 +60,7 @@ export function defineModeDescriptor(descriptor) {
     ruleSchemas: descriptor.ruleSchemas ?? {},
     scoringSchemas: descriptor.scoringSchemas ?? {},
     docs: descriptor.docs ?? {},
+    editor: descriptor.editor ?? {},
     ...descriptor,
   });
 }

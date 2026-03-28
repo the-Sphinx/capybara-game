@@ -4,6 +4,7 @@
   "subtitle": "Groups and multiples",
   "unlockRequirementText": "Complete Subtraction Patch",
   "unlockAfterWorldId": "subtraction_patch",
+  "startsUnlocked": true,
   "signBox": { "x": 0.5025, "y": 0.5592, "w": 0.0941, "h": 0.0521 },
   "levels": [
     {

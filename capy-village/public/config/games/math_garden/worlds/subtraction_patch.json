@@ -4,6 +4,7 @@
   "subtitle": "Take away and compare",
   "unlockRequirementText": "Complete Addition Field",
   "unlockAfterWorldId": "addition_field",
+  "startsUnlocked": true,
   "signBox": { "x": 0.2206, "y": 0.4837, "w": 0.093, "h": 0.0559 },
   "levels": [
     {

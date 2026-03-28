@@ -4,6 +4,7 @@
   "subtitle": "Add and grow",
   "unlockRequirementText": "Complete Number Garden",
   "unlockAfterWorldId": "number_garden",
+  "startsUnlocked": true,
   "signBox": { "x": 0.3804, "y": 0.291, "w": 0.0845, "h": 0.0465 },
   "levels": [
     {
@@ -14,8 +15,8 @@
       "recipeId": "addition_basic",
       "timeLimit": 60,
       "goal": { "type": "correctAnswers", "value": 5 },
-      "clearReward": 12,
-      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }],
+      "clearReward": 10,
+      "bonusTiers": [{ "threshold": 10, "reward": 4 }, { "threshold": 15, "reward": 6 }],
       "overrides": {
         "rules": {
           "numberRange": [0, 5],
@@ -29,14 +30,14 @@
       "slot": 2,
       "label": "Sunny Steps",
       "recipeId": "addition_basic",
-      "timeLimit": 58,
-      "goal": { "type": "correctAnswers", "value": 6 },
+      "timeLimit": 50,
+      "goal": { "type": "correctAnswers", "value": 8 },
       "clearReward": 14,
-      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }],
+      "bonusTiers": [{ "threshold": 12, "reward": 4 }, { "threshold": 20, "reward": 6 }],
       "overrides": {
         "rules": {
-          "numberRange": [0, 6],
-          "answerCount": 3
+          "numberRange": [1, 8],
+          "answerCount": 4
         }
       }
     },

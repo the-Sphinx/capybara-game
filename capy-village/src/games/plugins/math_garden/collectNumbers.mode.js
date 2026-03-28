@@ -1,8 +1,129 @@
 import { defineModeDescriptor } from '../pluginUtils.js';
 
+function createSeededRandom(seed = 'math-collect') {
+  let state = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    state = (state * 33 + seed.charCodeAt(i)) >>> 0;
+  }
+  return () => {
+    state = (1664525 * state + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+}
+
+function randInt(random, min, max) {
+  return Math.floor(random() * (max - min + 1)) + min;
+}
+
+function isPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isPrime(value) {
+  if (value < 2) return false;
+  for (let divisor = 2; divisor * divisor <= value; divisor += 1) {
+    if (value % divisor === 0) return false;
+  }
+  return true;
+}
+
+function matchesRule(matcher, value, fallback = {}) {
+  if (typeof matcher === 'string') {
+    if (matcher === 'odd') return value % 2 === 1;
+    if (matcher === 'even') return value % 2 === 0;
+    if (matcher === 'prime') return isPrime(value);
+    if (matcher === 'divisible_by') return value % fallback.divisor === (fallback.remainder ?? 0);
+    return false;
+  }
+  if (!isPlainObject(matcher)) return false;
+  switch (matcher.type) {
+    case 'odd':
+      return value % 2 === 1;
+    case 'even':
+      return value % 2 === 0;
+    case 'prime':
+      return isPrime(value);
+    case 'divisible_by':
+      return value % matcher.divisor === (matcher.remainder ?? 0);
+    case 'less_than_or_equal':
+      return value <= matcher.value;
+    case 'greater_than_or_equal':
+      return value >= matcher.value;
+    case 'not':
+      return !matchesRule(matcher.rule, value, fallback);
+    case 'any_of':
+      return matcher.rules?.some((rule) => matchesRule(rule, value, fallback)) ?? false;
+    case 'all_of':
+      return matcher.rules?.every((rule) => matchesRule(rule, value, fallback)) ?? false;
+    default:
+      return false;
+  }
+}
+
+function buildCollectionPreview(resolvedRecipe, sampleCount = 12) {
+  const random = createSeededRandom(resolvedRecipe.id || resolvedRecipe.title || 'collect-preview');
+  const rules = resolvedRecipe.rules ?? {};
+  const phases = Array.isArray(rules.phases) && rules.phases.length > 0 ? rules.phases : [rules];
+  return {
+    type: 'collection',
+    title: resolvedRecipe.title,
+    prompt: resolvedRecipe.prompt,
+    phases: phases.map((phase, index) => {
+      const range = phase.numberRange ?? rules.numberRange ?? [1, 20];
+      const samples = Array.from({ length: sampleCount }, () => {
+        const value = randInt(random, range[0], range[1]);
+        return {
+          value,
+          match: matchesRule(phase.matcher ?? rules.matcher ?? 'even', value, phase),
+        };
+      });
+      return {
+        label: phase.prompt ?? (index === 0 ? resolvedRecipe.prompt : `Phase ${index + 1}`),
+        switchAfterCaught: phase.switchAfterCaught ?? null,
+        samples,
+      };
+    }),
+  };
+}
+
 export const collectNumbersMode = defineModeDescriptor({
   kind: 'collect_numbers',
   family: 'collection',
+  editor: {
+    label: 'Collect Numbers',
+    summary: 'Falling-number collection mode with matchers, phases, speed, and spawn tuning.',
+    ruleFields: [
+      {
+        key: 'matcher',
+        label: 'Matcher',
+        type: 'matcher',
+      },
+      { key: 'numberRange', label: 'Number Range', type: 'range', min: 0, max: 100, step: 1 },
+      { key: 'divisor', label: 'Divisor', type: 'number', min: 1, max: 20, step: 1, optional: true },
+      { key: 'remainder', label: 'Remainder', type: 'number', min: 0, max: 20, step: 1, optional: true },
+      { key: 'itemCount', label: 'Visible Item Count', type: 'number', min: 1, max: 20, step: 1, optional: true },
+      { key: 'spawnDelayRange', label: 'Spawn Delay Range', type: 'range', min: 0.1, max: 5, step: 0.05, optional: true },
+      { key: 'fallSpeedRange', label: 'Fall Speed Range', type: 'range', min: 20, max: 300, step: 5, optional: true },
+      { key: 'phases', label: 'Phases', type: 'phases', optional: true },
+    ],
+    scoringFields: [
+      { key: 'pointsPerCorrect', label: 'Points Per Correct', type: 'number', min: 0, max: 20, step: 1 },
+      { key: 'wrongPenalty', label: 'Wrong Penalty', type: 'number', min: 0, max: 10, step: 1 },
+      { key: 'wrongFeedback', label: 'Wrong Feedback', type: 'text', optional: true },
+    ],
+    matcherTypes: [
+      { value: 'odd', label: 'Odd' },
+      { value: 'even', label: 'Even' },
+      { value: 'prime', label: 'Prime' },
+      { value: 'divisible_by', label: 'Divisible By' },
+      { value: 'less_than_or_equal', label: 'Less Than Or Equal' },
+      { value: 'greater_than_or_equal', label: 'Greater Than Or Equal' },
+      { value: 'not', label: 'Not' },
+      { value: 'any_of', label: 'Any Of' },
+      { value: 'all_of', label: 'All Of' },
+    ],
+    preview: buildCollectionPreview,
+  },
   docs: {
     summary: 'Catch numbers that match a number rule like odd, even, prime, divisible-by, or authored rule combinations with phases.',
     exampleRecipe: {
