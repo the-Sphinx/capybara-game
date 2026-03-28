@@ -36,18 +36,21 @@ Core concepts:
 
 ## `collect_numbers`
 
-Catch numbers that match a number rule like odd, even, prime, or divisible-by.
+Catch numbers that match a number rule like odd, even, prime, divisible-by, or authored rule combinations with phases.
 
 Uses family: `collection`
 
 Required rules:
-- `matcher`
 - `numberRange`
 
 Optional rules:
+- `matcher`
 - `divisor`
 - `remainder`
 - `itemCount`
+- `spawnDelayRange`
+- `fallSpeedRange`
+- `phases`
 
 Required scoring:
 - `pointsPerCorrect`
@@ -62,25 +65,52 @@ Level overrideable rule keys:
 - `divisor`
 - `remainder`
 - `itemCount`
+- `spawnDelayRange`
+- `fallSpeedRange`
+- `phases`
 
 Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 - `wrongFeedback`
 
-Allowed `matcher` values: `even`, `odd`, `prime`, `divisible_by`
+
 
 Recipe example:
 ```json
 {
   "kind": "collect_numbers",
-  "title": "Collect Prime Numbers",
+  "title": "Prime Switch",
   "prompt": "Catch prime numbers!",
   "rules": {
-    "matcher": "prime",
+    "matcher": {
+      "type": "prime"
+    },
     "numberRange": [
       1,
       30
+    ],
+    "spawnDelayRange": [
+      0.8,
+      1.1
+    ],
+    "phases": [
+      {
+        "switchAfterCaught": 4,
+        "prompt": "Catch prime numbers!",
+        "matcher": {
+          "type": "prime"
+        }
+      },
+      {
+        "prompt": "Now catch numbers that are not prime!",
+        "matcher": {
+          "type": "not",
+          "rule": {
+            "type": "prime"
+          }
+        }
+      }
     ]
   },
   "scoring": {
@@ -121,7 +151,11 @@ Level example:
         1,
         40
       ],
-      "itemCount": 6
+      "itemCount": 6,
+      "spawnDelayRange": [
+        0.7,
+        1
+      ]
     }
   }
 }

@@ -72,6 +72,59 @@ function isPrime(value) {
   return true;
 }
 
+function isMatcherObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function mergeRules(base = {}, override = {}) {
+  return {
+    ...base,
+    ...override,
+  };
+}
+
+function matchesNumberRule(rule, value, fallbackRules = {}) {
+  if (typeof rule === 'string') {
+    switch (rule) {
+      case 'odd':
+        return value % 2 === 1;
+      case 'even':
+        return value % 2 === 0;
+      case 'prime':
+        return isPrime(value);
+      case 'divisible_by':
+        return value % fallbackRules.divisor === (fallbackRules.remainder ?? 0);
+      default:
+        return false;
+    }
+  }
+
+  if (!isMatcherObject(rule)) return false;
+
+  switch (rule.type) {
+    case 'odd':
+      return value % 2 === 1;
+    case 'even':
+      return value % 2 === 0;
+    case 'prime':
+      return isPrime(value);
+    case 'divisible_by':
+      return value % rule.divisor === (rule.remainder ?? 0);
+    case 'less_than_or_equal':
+      return value <= rule.value;
+    case 'greater_than_or_equal':
+      return value >= rule.value;
+    case 'not':
+      return !matchesNumberRule(rule.rule, value, fallbackRules);
+    case 'any_of':
+      return rule.rules.some((candidate) => matchesNumberRule(candidate, value, fallbackRules));
+    case 'all_of':
+      return rule.rules.every((candidate) => matchesNumberRule(candidate, value, fallbackRules));
+    default:
+      return false;
+  }
+}
+
 export class MathEquationAnswerMode extends AnswerMode {
   createRound() {
     const rules = this.mode.rules;
@@ -211,13 +264,49 @@ export class MathEquationAnswerMode extends AnswerMode {
 }
 
 export class MathNumberCollectMode extends CollectionMode {
+  begin() {
+    this.correctCollected = 0;
+    this.phaseIndex = 0;
+    this.applyPhase(0);
+    super.begin();
+  }
+
+  getActiveRules() {
+    const phases = Array.isArray(this.mode.rules.phases) ? this.mode.rules.phases : [];
+    const activePhase = phases[this.phaseIndex] ?? null;
+    return mergeRules(this.mode.rules, activePhase ?? {});
+  }
+
+  applyPhase(index) {
+    this.phaseIndex = index;
+    this.activeRules = this.getActiveRules();
+    const prompt = this.activeRules.prompt ?? this.mode.prompt ?? '';
+    this.shell.setCenterText(prompt);
+    this.clear();
+    this.spawnTimer = 0;
+    this.spawnDelay = this.getSpawnDelay();
+  }
+
+  maybeAdvancePhase() {
+    const phases = Array.isArray(this.mode.rules.phases) ? this.mode.rules.phases : [];
+    const nextPhase = phases[this.phaseIndex + 1];
+    if (!nextPhase) return;
+    const threshold = nextPhase.switchAfterCaught;
+    if (Number.isFinite(threshold) && this.correctCollected >= threshold) {
+      this.applyPhase(this.phaseIndex + 1);
+    }
+  }
+
   getSpawnDelay() {
-    return randBetween(0.8, 1.4);
+    const rules = this.activeRules ?? this.mode.rules;
+    const [minDelay, maxDelay] = rules.spawnDelayRange ?? [0.8, 1.4];
+    return randBetween(minDelay, maxDelay);
   }
 
   createEntity() {
     const areaWidth = this.playArea.clientWidth || 600;
-    const [min, max] = this.mode.rules.numberRange ?? [1, 20];
+    const rules = this.activeRules ?? this.mode.rules;
+    const [min, max] = rules.numberRange ?? [1, 20];
     const value = Math.floor(randBetween(min, max + 1));
     const variants = NUMBER_SPRITES[value] ?? NUMBER_SPRITES[1];
     const el = document.createElement('img');
@@ -233,29 +322,19 @@ export class MathNumberCollectMode extends CollectionMode {
       value,
       isCorrect: this.#matches(value),
       y: -ITEM_SIZE,
-      speed: randBetween(COL_SPD_MIN, COL_SPD_MAX),
+      speed: randBetween(...(rules.fallSpeedRange ?? [COL_SPD_MIN, COL_SPD_MAX])),
     };
   }
 
   #matches(value) {
-    const rules = this.mode.rules;
-    switch (rules.matcher) {
-      case 'odd':
-        return value % 2 === 1;
-      case 'even':
-        return value % 2 === 0;
-      case 'prime':
-        return isPrime(value);
-      case 'divisible_by':
-        return value % rules.divisor === (rules.remainder ?? 0);
-      default:
-        return false;
-    }
+    const rules = this.activeRules ?? this.mode.rules;
+    return matchesNumberRule(rules.matcher, value, rules);
   }
 
   onEntityClick(item, index, event) {
     const points = this.mode.scoring.pointsPerCorrect ?? 2;
-    if (item.isCorrect) {
+    const isCorrect = this.#matches(item.value);
+    if (isCorrect) {
       item.el.classList.add('wmc-item--pop');
       item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
       this.items.splice(index, 1);
@@ -265,6 +344,8 @@ export class MathNumberCollectMode extends CollectionMode {
       this.shell.maybeShowGoalComplete();
       this.shell.showFeedback(event, `+${points}`, 'correct');
       soundManager.play('correct');
+      this.correctCollected += 1;
+      this.maybeAdvancePhase();
       return;
     }
 
@@ -284,7 +365,7 @@ export class MathNumberCollectMode extends CollectionMode {
   }
 
   onEntityMiss(item) {
-    if (item.isCorrect) {
+    if (this.#matches(item.value)) {
       this.shell.addMiss();
       this.shell.resetCombo();
     }

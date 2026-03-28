@@ -771,3 +771,26 @@
 ### Verification
 - Ran `npm run generate:minigame-authoring` successfully in `capy-village`.
 - Ran `npm run build` successfully in `capy-village`.
+
+### Completed
+- Redesigned the five core Math Garden world paths around a clearer learning arc:
+  - `Even & Odd`
+  - `Multiples`
+  - `Prime Numbers`
+  - `Add & Subtract`
+  - `Mixed Mastery`
+- Reauthored those five world files so each now has 10 levels with more variation in pressure, pacing, and rule complexity instead of simple range-only escalation.
+- Extended `collect_numbers` authoring to support:
+  - matcher objects
+  - `not`, `any_of`, and `all_of` rule composition
+  - per-level `spawnDelayRange`
+  - per-level `fallSpeedRange`
+  - phased rule switches via `rules.phases`
+- Updated Math runtime so collection levels can change instructions mid-level, clear old falling items on rule switches, and honor authored spawn/fall-speed tuning.
+- Simplified Math recipe authoring by collapsing the large world-specific recipe catalog into a smaller reusable toolkit in `capy-village/public/config/games/math_garden/game.json`.
+- Fixed level info bubble placement for top-row nodes so the overlay can render below the stone instead of clipping off-screen.
+- Updated the generated Math authoring schema and `docs/minigame_mode_authoring.md` to reflect the richer `collect_numbers` contract.
+
+### Verification
+- Ran `npm run generate:authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.

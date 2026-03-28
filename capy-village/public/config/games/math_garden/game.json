@@ -56,13 +56,28 @@
       "prompt": "Tap the correct answer!",
       "rules": {
         "operation": "addition",
-        "numberRange": [1, 10],
+        "numberRange": [0, 10],
         "answerCount": 3
       },
       "scoring": {
         "pointsPerCorrect": 10,
         "wrongPenalty": 0,
-        "wrongFeedback": "Wrong!"
+        "wrongFeedback": "Try again!"
+      }
+    },
+    "subtraction_basic": {
+      "kind": "answer_equation",
+      "title": "Subtraction Garden",
+      "prompt": "Tap the correct answer!",
+      "rules": {
+        "operation": "subtraction",
+        "numberRange": [0, 10],
+        "answerCount": 3
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Try again!"
       }
     },
     "mixed_equations": {
@@ -71,13 +86,13 @@
       "prompt": "Tap the correct answer!",
       "rules": {
         "operation": "mixed",
-        "numberRange": [1, 15],
-        "answerCount": 3
+        "numberRange": [0, 15],
+        "answerCount": 4
       },
       "scoring": {
-        "pointsPerCorrect": 10,
+        "pointsPerCorrect": 12,
         "wrongPenalty": 0,
-        "wrongFeedback": "Wrong!"
+        "wrongFeedback": "Try again!"
       }
     },
     "collect_even_basic": {
@@ -86,7 +101,8 @@
       "prompt": "Catch even numbers!",
       "rules": {
         "matcher": "even",
-        "numberRange": [1, 20]
+        "numberRange": [1, 20],
+        "itemCount": 6
       },
       "scoring": {
         "pointsPerCorrect": 2,
@@ -100,92 +116,18 @@
       "prompt": "Catch odd numbers!",
       "rules": {
         "matcher": "odd",
-        "numberRange": [1, 20]
-      },
-      "scoring": {
-        "pointsPerCorrect": 2,
-        "wrongPenalty": 1,
-        "wrongFeedback": "Even!"
-      }
-    },
-    "collect_odd_easy": {
-      "kind": "collect_numbers",
-      "title": "Odd Harvest",
-      "prompt": "Catch odd numbers!",
-      "rules": {
-        "matcher": "odd",
-        "numberRange": [1, 10],
-        "itemCount": 5
-      },
-      "scoring": {
-        "pointsPerCorrect": 2,
-        "wrongPenalty": 1,
-        "wrongFeedback": "Even!"
-      }
-    },
-    "collect_even_easy": {
-      "kind": "collect_numbers",
-      "title": "Even Harvest",
-      "prompt": "Catch even numbers!",
-      "rules": {
-        "matcher": "even",
-        "numberRange": [1, 10],
-        "itemCount": 5
-      },
-      "scoring": {
-        "pointsPerCorrect": 2,
-        "wrongPenalty": 1,
-        "wrongFeedback": "Odd!"
-      }
-    },
-    "collect_odd_mid": {
-      "kind": "collect_numbers",
-      "title": "Odd Adventure",
-      "prompt": "Catch odd numbers!",
-      "rules": {
-        "matcher": "odd",
         "numberRange": [1, 20],
         "itemCount": 6
       },
       "scoring": {
-        "pointsPerCorrect": 3,
+        "pointsPerCorrect": 2,
         "wrongPenalty": 1,
         "wrongFeedback": "Even!"
       }
     },
-    "collect_even_mid": {
+    "collect_prime_basic": {
       "kind": "collect_numbers",
-      "title": "Even Adventure",
-      "prompt": "Catch even numbers!",
-      "rules": {
-        "matcher": "even",
-        "numberRange": [1, 20],
-        "itemCount": 6
-      },
-      "scoring": {
-        "pointsPerCorrect": 3,
-        "wrongPenalty": 1,
-        "wrongFeedback": "Odd!"
-      }
-    },
-    "collect_prime_intro": {
-      "kind": "collect_numbers",
-      "title": "Prime Sprouts",
-      "prompt": "Catch prime numbers!",
-      "rules": {
-        "matcher": "prime",
-        "numberRange": [1, 20],
-        "itemCount": 5
-      },
-      "scoring": {
-        "pointsPerCorrect": 4,
-        "wrongPenalty": 1,
-        "wrongFeedback": "Not prime!"
-      }
-    },
-    "collect_prime_mid": {
-      "kind": "collect_numbers",
-      "title": "Prime Parade",
+      "title": "Collect Prime Numbers",
       "prompt": "Catch prime numbers!",
       "rules": {
         "matcher": "prime",
@@ -193,7 +135,7 @@
         "itemCount": 6
       },
       "scoring": {
-        "pointsPerCorrect": 5,
+        "pointsPerCorrect": 4,
         "wrongPenalty": 1,
         "wrongFeedback": "Not prime!"
       }
@@ -266,354 +208,19 @@
         "wrongFeedback": "Not ÷4!"
       }
     },
-    "addition_easy": {
-      "kind": "answer_equation",
-      "title": "Little Sums",
-      "prompt": "Tap the correct answer!",
+    "collect_custom_rule": {
+      "kind": "collect_numbers",
+      "title": "Number Rule Catch",
+      "prompt": "Catch the right numbers!",
       "rules": {
-        "operation": "addition",
-        "numberRange": [0, 5],
-        "answerCount": 3
+        "matcher": "even",
+        "numberRange": [1, 20],
+        "itemCount": 6
       },
       "scoring": {
-        "pointsPerCorrect": 10,
-        "wrongPenalty": 0,
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
         "wrongFeedback": "Try again!"
-      }
-    },
-    "addition_mid": {
-      "kind": "answer_equation",
-      "title": "Growing Sums",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "addition",
-        "numberRange": [0, 10],
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 11,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "addition_make_10": {
-      "kind": "answer_equation",
-      "title": "Make Ten",
-      "prompt": "Find the pair that makes 10!",
-      "rules": {
-        "operation": "addition",
-        "numberRange": [0, 10],
-        "answerCount": 4,
-        "targetValue": 10
-      },
-      "scoring": {
-        "pointsPerCorrect": 12,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "addition_teens": {
-      "kind": "answer_equation",
-      "title": "Teen Sums",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "addition",
-        "numberRange": [5, 15],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 13,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "addition_two_digit_intro": {
-      "kind": "answer_equation",
-      "title": "Big Additions",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "addition",
-        "numberRange": [1, 9],
-        "leftRange": [10, 24],
-        "rightRange": [1, 9],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 15,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "subtraction_easy": {
-      "kind": "answer_equation",
-      "title": "Tiny Takeaways",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "subtraction",
-        "numberRange": [0, 5],
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 10,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "subtraction_within_10": {
-      "kind": "answer_equation",
-      "title": "Take Away Ten",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "subtraction",
-        "numberRange": [0, 10],
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 11,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "subtraction_teens": {
-      "kind": "answer_equation",
-      "title": "Teen Takeaways",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "subtraction",
-        "numberRange": [5, 15],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 13,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "subtraction_two_digit_intro": {
-      "kind": "answer_equation",
-      "title": "Big Takeaways",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "subtraction",
-        "numberRange": [1, 9],
-        "leftRange": [10, 24],
-        "rightRange": [1, 9],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 15,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "subtraction_missing_gap_easy": {
-      "kind": "answer_equation",
-      "title": "Find the Difference",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "subtraction",
-        "numberRange": [0, 10],
-        "leftRange": [6, 15],
-        "rightRange": [0, 9],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 12,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "multiplication_2s": {
-      "kind": "answer_equation",
-      "title": "Twos Table",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "multiplication",
-        "numberRange": [1, 5],
-        "fixedOperand": 2,
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 12,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "multiplication_5s": {
-      "kind": "answer_equation",
-      "title": "Fives Table",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "multiplication",
-        "numberRange": [1, 5],
-        "fixedOperand": 5,
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 12,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "multiplication_10s": {
-      "kind": "answer_equation",
-      "title": "Tens Table",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "multiplication",
-        "numberRange": [1, 5],
-        "fixedOperand": 10,
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 13,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "multiplication_3s": {
-      "kind": "answer_equation",
-      "title": "Threes Table",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "multiplication",
-        "numberRange": [1, 6],
-        "fixedOperand": 3,
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 14,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "multiplication_4s": {
-      "kind": "answer_equation",
-      "title": "Fours Table",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "multiplication",
-        "numberRange": [1, 6],
-        "fixedOperand": 4,
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 15,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "multiplication_mixed_easy": {
-      "kind": "answer_equation",
-      "title": "Meadow Mix",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "multiplication",
-        "numberRange": [2, 5],
-        "leftRange": [2, 5],
-        "rightRange": [1, 5],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 16,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "division_by_2": {
-      "kind": "answer_equation",
-      "title": "Sharing by 2",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "division",
-        "numberRange": [1, 5],
-        "fixedOperand": 2,
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 12,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "division_by_5": {
-      "kind": "answer_equation",
-      "title": "Sharing by 5",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "division",
-        "numberRange": [1, 5],
-        "fixedOperand": 5,
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 12,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "division_by_10": {
-      "kind": "answer_equation",
-      "title": "Sharing by 10",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "division",
-        "numberRange": [1, 5],
-        "fixedOperand": 10,
-        "answerCount": 3
-      },
-      "scoring": {
-        "pointsPerCorrect": 13,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Try again!"
-      }
-    },
-    "division_by_3": {
-      "kind": "answer_equation",
-      "title": "Sharing by 3",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "division",
-        "numberRange": [1, 6],
-        "fixedOperand": 3,
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 14,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "division_by_4": {
-      "kind": "answer_equation",
-      "title": "Sharing by 4",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "division",
-        "numberRange": [1, 6],
-        "fixedOperand": 4,
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 15,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
-      }
-    },
-    "division_mixed_easy": {
-      "kind": "answer_equation",
-      "title": "Sharing Mix",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "division",
-        "numberRange": [2, 5],
-        "leftRange": [1, 5],
-        "answerCount": 4
-      },
-      "scoring": {
-        "pointsPerCorrect": 16,
-        "wrongPenalty": 0,
-        "wrongFeedback": "Not quite!"
       }
     }
   }

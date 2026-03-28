@@ -569,10 +569,13 @@ function getLevelNodeStyle(node) {
 function getLevelBubblePosition(node) {
   const width = 0.24;
   const offsetX = node.bubbleOffsetX ?? 0;
-  const offsetY = node.bubbleOffsetY ?? -0.08;
   const x = Math.min(1 - width / 2 - 0.02, Math.max(width / 2 + 0.02, node.x + offsetX));
-  const y = Math.max(0.14, node.y + offsetY);
-  return { x, y };
+  const placeBelow = node.y < 0.34;
+  const baseOffsetY = node.bubbleOffsetY ?? (placeBelow ? 0.075 : -0.08);
+  const y = placeBelow
+    ? Math.min(0.78, node.y + baseOffsetY)
+    : Math.max(0.16, node.y + baseOffsetY);
+  return { x, y, placeBelow };
 }
 
 function levelNodeHtml(cat, level, levelsInWorld) {
@@ -612,9 +615,13 @@ function renderLevelInfoBubble(cat, level, levelsInWorld) {
   const bonusText = bonusTiers.length
     ? bonusTiers.map((tier) => `+${tier.reward}`).join(' / ')
     : 'No bonus';
+  const bubbleClasses = [
+    'hub-level-overlay-bubble',
+    position.placeBelow && 'hub-level-overlay-bubble--below',
+  ].filter(Boolean).join(' ');
 
   return `
-    <div class="hub-level-overlay-bubble" style="left:${position.x * 100}%;top:${position.y * 100}%">
+    <div class="${bubbleClasses}" style="left:${position.x * 100}%;top:${position.y * 100}%">
       <div class="hub-level-overlay-bubble__headline">Level ${level.levelNum} — ${level.label}</div>
       <div class="hub-level-overlay-bubble__desc">${goalText(level)}</div>
       <div class="hub-level-overlay-bubble__meta">💰 ${level.clearReward ?? 0} coins</div>

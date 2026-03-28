@@ -296,3 +296,40 @@ The next strong follow-up would be extending Math’s `worlds/<worldId>.json` co
 ### Verification
 - Ran `npm run generate:minigame-authoring` successfully in `capy-village`.
 - Ran `npm run build` successfully in `capy-village`.
+
+## 16. Math Garden Redesigned Core Levels
+
+### What Changed
+- Reworked the five active Math Garden worlds into a more varied teaching sequence with user-facing titles:
+  - `Even & Odd`
+  - `Multiples`
+  - `Prime Numbers`
+  - `Add & Subtract`
+  - `Mixed Mastery`
+- Reauthored the corresponding world configs under `capy-village/public/config/games/math_garden/worlds/` so each has 10 levels with stronger variation in:
+  - rule complexity
+  - speed
+  - distractor density
+  - mid-level instruction changes
+- Expanded `collect_numbers` authoring in `capy-village/src/games/plugins/math_garden/collectNumbers.mode.js` to support:
+  - composed matcher objects
+  - `not`
+  - `any_of`
+  - `all_of`
+  - authored `spawnDelayRange`
+  - authored `fallSpeedRange`
+  - authored phased rule switches via `rules.phases`
+- Updated `capy-village/src/games/mathGarden/modeRuntime.js` so collection levels can switch prompts/rules mid-level and refresh on-screen items cleanly when the active rule changes.
+- Collapsed the oversized Math recipe catalog in `capy-village/public/config/games/math_garden/game.json` into a smaller reusable toolkit that world levels customize via overrides.
+- Fixed top-row level overlays in `capy-village/src/ui/HubModal.js` and `capy-village/src/style.css` so the bubble can render below the node instead of clipping off-screen.
+
+### Reviewer Focus
+- Confirm the redesigned world titles and unlock text now match the visible progression path in the hub.
+- Confirm every collection level that uses `collect_custom_rule` includes a clear authored prompt via `rules.phases`.
+- Confirm phased collection levels switch instructions at the intended caught-count thresholds and clear old falling items on transition.
+- Confirm the new matcher composition rules (`not`, `any_of`, `all_of`) behave correctly for divisibility and prime-related challenges.
+- Confirm top-row level info bubbles no longer clip beyond the screen edge.
+
+### Verification
+- Ran `npm run generate:authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.

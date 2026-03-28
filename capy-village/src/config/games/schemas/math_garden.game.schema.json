@@ -168,19 +168,9 @@
                 "type": "object",
                 "additionalProperties": false,
                 "required": [
-                  "matcher",
                   "numberRange"
                 ],
                 "properties": {
-                  "matcher": {
-                    "type": "string",
-                    "enum": [
-                      "even",
-                      "odd",
-                      "prime",
-                      "divisible_by"
-                    ]
-                  },
                   "numberRange": {
                     "type": "array",
                     "minItems": 2,
@@ -188,6 +178,22 @@
                     "items": {
                       "type": "number"
                     }
+                  },
+                  "matcher": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "even",
+                          "odd",
+                          "prime",
+                          "divisible_by"
+                        ]
+                      },
+                      {
+                        "type": "object"
+                      }
+                    ]
                   },
                   "divisor": {
                     "type": "number"
@@ -197,6 +203,28 @@
                   },
                   "itemCount": {
                     "type": "number"
+                  },
+                  "spawnDelayRange": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "fallSpeedRange": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "phases": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
                   }
                 }
               },
