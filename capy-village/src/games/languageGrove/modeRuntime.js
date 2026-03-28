@@ -38,10 +38,12 @@ function makeRotator(arr) {
   };
 }
 
-const nextSentence = makeRotator(SENTENCES);
-const nextOpposite = makeRotator(OPPOSITES);
-const nextSynonym = makeRotator(SYNONYMS);
-const nextRiddle = makeRotator(RIDDLES);
+const promptPickers = {
+  sentence_completion: makeRotator(SENTENCES),
+  opposites: makeRotator(OPPOSITES),
+  synonyms: makeRotator(SYNONYMS),
+  riddle: makeRotator(RIDDLES),
+};
 
 class LanguageBaseStreamMode extends StreamMode {
   getSpawnDelay() {
@@ -49,7 +51,7 @@ class LanguageBaseStreamMode extends StreamMode {
   }
 
   getFallSpeed() {
-    return (this.mode.params.fallSpeed ?? 1.0) * SPEED_BASE;
+    return (this.mode.rules.fallSpeed ?? 1.0) * SPEED_BASE;
   }
 
   buildPool() {
@@ -82,7 +84,7 @@ class LanguageBaseStreamMode extends StreamMode {
   }
 
   onEntityClick(item, index, event) {
-    const points = this.mode.params.pointsPerCorrect ?? 5;
+    const points = this.mode.scoring.pointsPerCorrect ?? 5;
     if (item.isCorrect) {
       item.el.classList.add('mg-tile--pop');
       item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
@@ -98,7 +100,7 @@ class LanguageBaseStreamMode extends StreamMode {
 
     this.shell.addWrongClick();
     this.shell.resetCombo();
-    const penalty = this.mode.params.wrongPenalty ?? 0;
+    const penalty = this.mode.scoring.wrongPenalty ?? 0;
     if (penalty > 0) {
       this.shell.subtractScore(penalty * points);
     }
@@ -116,24 +118,24 @@ class LanguageBaseStreamMode extends StreamMode {
   }
 }
 
-export class LanguageLettersStreamMode extends LanguageBaseStreamMode {
+export class LanguageLettersCollectMode extends LanguageBaseStreamMode {
   buildPool() {
-    if (this.mode.params.letterSet === 'vowels') {
+    if (this.mode.rules.letterSet === 'vowels') {
       return { correct: VOWELS, incorrect: CONSONANTS };
     }
-    if (this.mode.params.letterSet === 'consonants') {
+    if (this.mode.rules.letterSet === 'consonants') {
       return { correct: CONSONANTS, incorrect: VOWELS };
     }
-    const word = this.mode.params.targetWord ?? 'DOG';
+    const word = this.mode.rules.targetWord ?? 'DOG';
     const correct = [...new Set(word.split(''))];
     const incorrect = ALL_LETTERS.filter((letter) => !correct.includes(letter));
     return { correct, incorrect };
   }
 }
 
-export class LanguageCategoryStreamMode extends LanguageBaseStreamMode {
+export class LanguageCategoryCollectMode extends LanguageBaseStreamMode {
   buildPool() {
-    const categoryKey = this.mode.params.category;
+    const categoryKey = this.mode.rules.category;
     const correct = CATEGORIES[categoryKey]?.words ?? [];
     const incorrect = [];
     for (const [key, category] of Object.entries(CATEGORIES)) {
@@ -145,22 +147,14 @@ export class LanguageCategoryStreamMode extends LanguageBaseStreamMode {
   }
 }
 
-class LanguageBaseChoiceMode extends ChoiceRoundMode {
+export class LanguageChoicePromptMode extends ChoiceRoundMode {
   getFallSpeed() {
-    return (this.mode.params.fallSpeed ?? 1.0) * SPEED_BASE;
-  }
-
-  pickPrompt() {
-    return nextSentence();
-  }
-
-  buildPromptDisplay(prompt) {
-    return prompt.stem ?? '';
+    return (this.mode.rules.fallSpeed ?? 1.0) * SPEED_BASE;
   }
 
   createRound() {
-    const prompt = this.pickPrompt();
-    const answerCount = this.mode.params.answerCount ?? 3;
+    const prompt = promptPickers[this.mode.rules.promptSet]?.() ?? promptPickers.sentence_completion();
+    const answerCount = this.mode.rules.answerCount ?? 3;
     const answers = shuffle([prompt.correct, ...shuffle(prompt.distractors).slice(0, answerCount - 1)]);
     const areaWidth = this.playArea.clientWidth || 600;
     const entities = answers.map((answer, index) => {
@@ -180,13 +174,26 @@ class LanguageBaseChoiceMode extends ChoiceRoundMode {
       };
     });
     return {
-      promptText: this.buildPromptDisplay(prompt),
+      promptText: this.#buildPromptText(prompt),
       entities,
     };
   }
 
+  #buildPromptText(prompt) {
+    switch (this.mode.rules.promptSet) {
+      case 'opposites':
+        return `Opposite of: ${prompt.prompt}`;
+      case 'synonyms':
+        return `Similar to: ${prompt.prompt}`;
+      case 'riddle':
+        return prompt.text.replace(/\n/g, ' · ');
+      default:
+        return prompt.stem ?? '';
+    }
+  }
+
   onCorrect(tile, event) {
-    const points = this.mode.params.pointsPerCorrect ?? 10;
+    const points = this.mode.scoring.pointsPerCorrect ?? 10;
     tile.el.classList.add('mg-tile--pop');
     tile.el.addEventListener('animationend', () => tile.el.remove(), { once: true });
     this.shell.addCorrect();
@@ -214,41 +221,5 @@ class LanguageBaseChoiceMode extends ChoiceRoundMode {
   onCorrectMiss() {
     this.shell.addMiss();
     this.shell.resetCombo();
-  }
-}
-
-export class LanguageSentenceChoiceMode extends LanguageBaseChoiceMode {
-  pickPrompt() {
-    return nextSentence();
-  }
-}
-
-export class LanguageOppositesChoiceMode extends LanguageBaseChoiceMode {
-  pickPrompt() {
-    return nextOpposite();
-  }
-
-  buildPromptDisplay(prompt) {
-    return `Opposite of: ${prompt.prompt}`;
-  }
-}
-
-export class LanguageSynonymsChoiceMode extends LanguageBaseChoiceMode {
-  pickPrompt() {
-    return nextSynonym();
-  }
-
-  buildPromptDisplay(prompt) {
-    return `Similar to: ${prompt.prompt}`;
-  }
-}
-
-export class LanguageRiddleChoiceMode extends LanguageBaseChoiceMode {
-  pickPrompt() {
-    return nextRiddle();
-  }
-
-  buildPromptDisplay(prompt) {
-    return prompt.text.replace(/\n/g, ' · ');
   }
 }

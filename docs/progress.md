@@ -681,3 +681,19 @@
 - The new engine shell preserves the shared HUD/timer/reward flow, but gameplay behavior should still be spot-checked in-browser for Math, Language, and Watermelon after the refactor.
 - `main.js` still preloads a fixed set of current minigame ids; future dynamic game discovery would be a separate cleanup.
 - The registry validates configs at runtime load, but the new schema files are currently authoring aids rather than automatically enforced by a separate schema toolchain.
+
+### Completed
+- Replaced the global `modeRegistry.js` path with explicit per-game plugins under `capy-village/src/games/plugins/`.
+- Moved minigame authoring from split `modes/world_select/level_select/levels/arcade` files to one `game.json` manifest per game under `capy-village/public/config/games/<gameId>/`.
+- Introduced colocated mode descriptors per game so author-facing kinds are now game-local concepts like `collect_numbers`, `answer_equation`, `collect_letters`, and `classic_collect`.
+- Kept the shared runtime class hierarchy, but moved game-specific handler wiring into each plugin instead of one central registry.
+- Added inheritance-aware manifest normalization with `defaults`, world-level defaults, and per-level `overrides.rules` / `overrides.scoring`.
+- Generalized Math number collection so future recipes like prime-number collection can be added in config only.
+- Added generated authoring artifacts:
+  - `docs/minigame_mode_authoring.md`
+  - `capy-village/src/config/games/schemas/*.game.schema.json`
+- Added `npm run generate:minigame-authoring` in `capy-village` to regenerate docs/schema from descriptor metadata.
+
+### Verification
+- Ran `npm run generate:minigame-authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.

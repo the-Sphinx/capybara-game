@@ -25,7 +25,7 @@ export class MathGardenGame extends EngineGame {
       };
     }
 
-    const operation = this.mode?.params?.operation;
+    const operation = this.mode?.rules?.operation;
     const opLabel = operation === 'addition'
       ? 'Addition'
       : operation === 'subtraction'

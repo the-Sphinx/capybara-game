@@ -1,0 +1,289 @@
+{
+  "id": "language_grove",
+  "worldSelect": {
+    "enabled": false
+  },
+  "levelSelect": {
+    "enabled": false
+  },
+  "arcade": {
+    "enabled": true,
+    "recipeIds": [
+      "vowel_catch",
+      "consonant_catch",
+      "animal_words",
+      "food_words",
+      "sentence_finish",
+      "opposites",
+      "synonyms",
+      "riddle_catch"
+    ],
+    "weights": {
+      "vowel_catch": 2,
+      "consonant_catch": 2,
+      "animal_words": 1,
+      "food_words": 1,
+      "sentence_finish": 1,
+      "opposites": 1,
+      "synonyms": 1,
+      "riddle_catch": 1
+    }
+  },
+  "recipes": {
+    "vowel_catch": {
+      "kind": "collect_letters",
+      "title": "Vowel Catch",
+      "prompt": "Catch the Vowels!",
+      "rules": {
+        "letterSet": "vowels",
+        "fallSpeed": 1,
+        "itemCount": 5
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1
+      }
+    },
+    "consonant_catch": {
+      "kind": "collect_letters",
+      "title": "Consonant Catch",
+      "prompt": "Catch the Consonants!",
+      "rules": {
+        "letterSet": "consonants",
+        "fallSpeed": 1,
+        "itemCount": 5
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1
+      }
+    },
+    "animal_words": {
+      "kind": "collect_category_words",
+      "title": "Animal Words",
+      "prompt": "Catch: ANIMALS",
+      "rules": {
+        "category": "animals",
+        "fallSpeed": 1,
+        "itemCount": 5
+      },
+      "scoring": {
+        "pointsPerCorrect": 8,
+        "wrongPenalty": 1
+      }
+    },
+    "food_words": {
+      "kind": "collect_category_words",
+      "title": "Food Words",
+      "prompt": "Catch: FOODS",
+      "rules": {
+        "category": "foods",
+        "fallSpeed": 1,
+        "itemCount": 5
+      },
+      "scoring": {
+        "pointsPerCorrect": 8,
+        "wrongPenalty": 1
+      }
+    },
+    "category_stream": {
+      "kind": "collect_category_words",
+      "title": "Category Catch",
+      "prompt": "Catch the matching words!",
+      "rules": {
+        "category": "animals",
+        "fallSpeed": 1,
+        "itemCount": 5
+      },
+      "scoring": {
+        "pointsPerCorrect": 8,
+        "wrongPenalty": 1
+      }
+    },
+    "letters_in_word": {
+      "kind": "collect_letters",
+      "title": "Letters In Word",
+      "prompt": "Catch the matching letters!",
+      "rules": {
+        "letterSet": "word_letters",
+        "targetWord": "DOG",
+        "fallSpeed": 1,
+        "itemCount": 5
+      },
+      "scoring": {
+        "pointsPerCorrect": 8,
+        "wrongPenalty": 1
+      }
+    },
+    "sentence_finish": {
+      "kind": "choice_prompt",
+      "title": "Sentence Finish",
+      "prompt": "Finish the sentence!",
+      "rules": {
+        "promptSet": "sentence_completion",
+        "fallSpeed": 1,
+        "answerCount": 3
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0
+      }
+    },
+    "opposites": {
+      "kind": "choice_prompt",
+      "title": "Opposites",
+      "prompt": "Catch the opposite word!",
+      "rules": {
+        "promptSet": "opposites",
+        "fallSpeed": 1,
+        "answerCount": 4
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0
+      }
+    },
+    "synonyms": {
+      "kind": "choice_prompt",
+      "title": "Synonyms",
+      "prompt": "Catch the similar word!",
+      "rules": {
+        "promptSet": "synonyms",
+        "fallSpeed": 1,
+        "answerCount": 4
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0
+      }
+    },
+    "riddle_catch": {
+      "kind": "choice_prompt",
+      "title": "Riddle Catch",
+      "prompt": "Catch the answer!",
+      "rules": {
+        "promptSet": "riddle",
+        "fallSpeed": 0.9,
+        "answerCount": 4
+      },
+      "scoring": {
+        "pointsPerCorrect": 15,
+        "wrongPenalty": 0
+      }
+    }
+  },
+  "worlds": [
+    {
+      "id": "main",
+      "title": "Language Grove",
+      "levels": [
+        {
+          "levelId": "main_1",
+          "levelNum": 1,
+          "label": "Vowel Garden",
+          "recipeId": "vowel_catch",
+          "timeLimit": 60,
+          "goal": { "type": "catchCount", "value": 3 },
+          "clearReward": 15,
+          "bonusTiers": [{ "threshold": 5, "reward": 6 }, { "threshold": 7, "reward": 8 }],
+          "overrides": { "rules": { "itemCount": 4, "fallSpeed": 1 } }
+        },
+        {
+          "levelId": "main_2",
+          "levelNum": 2,
+          "label": "More Vowels",
+          "recipeId": "vowel_catch",
+          "timeLimit": 55,
+          "goal": { "type": "catchCount", "value": 5 },
+          "clearReward": 20,
+          "bonusTiers": [{ "threshold": 7, "reward": 8 }, { "threshold": 9, "reward": 10 }],
+          "overrides": { "rules": { "itemCount": 5, "fallSpeed": 1.1 } }
+        },
+        {
+          "levelId": "main_3",
+          "levelNum": 3,
+          "label": "Consonant Trail",
+          "recipeId": "consonant_catch",
+          "timeLimit": 55,
+          "goal": { "type": "catchCount", "value": 5 },
+          "clearReward": 20,
+          "bonusTiers": [{ "threshold": 7, "reward": 8 }, { "threshold": 9, "reward": 10 }],
+          "overrides": { "rules": { "itemCount": 5, "fallSpeed": 1.1 } }
+        },
+        {
+          "levelId": "main_4",
+          "levelNum": 4,
+          "label": "Animal Friends",
+          "recipeId": "animal_words",
+          "timeLimit": 60,
+          "goal": { "type": "catchCount", "value": 4 },
+          "clearReward": 25,
+          "bonusTiers": [{ "threshold": 6, "reward": 10 }, { "threshold": 8, "reward": 13 }],
+          "overrides": { "rules": { "itemCount": 4, "fallSpeed": 1 } }
+        },
+        {
+          "levelId": "main_5",
+          "levelNum": 5,
+          "label": "Fruit Basket",
+          "recipeId": "food_words",
+          "timeLimit": 55,
+          "goal": { "type": "catchCount", "value": 4 },
+          "clearReward": 25,
+          "bonusTiers": [{ "threshold": 6, "reward": 10 }, { "threshold": 8, "reward": 13 }],
+          "overrides": { "rules": { "itemCount": 5, "fallSpeed": 1.1 } }
+        },
+        {
+          "levelId": "main_6",
+          "levelNum": 6,
+          "label": "Finish the Sentence",
+          "recipeId": "sentence_finish",
+          "timeLimit": 60,
+          "goal": { "type": "correctAnswers", "value": 3 },
+          "clearReward": 30,
+          "bonusTiers": [{ "threshold": 5, "reward": 12 }, { "threshold": 7, "reward": 15 }]
+        },
+        {
+          "levelId": "main_7",
+          "levelNum": 7,
+          "label": "Letters in DOG",
+          "recipeId": "letters_in_word",
+          "timeLimit": 45,
+          "goal": { "type": "catchCount", "value": 3 },
+          "clearReward": 30,
+          "bonusTiers": [{ "threshold": 5, "reward": 12 }, { "threshold": 7, "reward": 15 }]
+        },
+        {
+          "levelId": "main_8",
+          "levelNum": 8,
+          "label": "Opposites!",
+          "recipeId": "opposites",
+          "timeLimit": 55,
+          "goal": { "type": "correctAnswers", "value": 4 },
+          "clearReward": 35,
+          "bonusTiers": [{ "threshold": 6, "reward": 14 }, { "threshold": 8, "reward": 18 }]
+        },
+        {
+          "levelId": "main_9",
+          "levelNum": 9,
+          "label": "Flying Things",
+          "recipeId": "category_stream",
+          "timeLimit": 50,
+          "goal": { "type": "catchCount", "value": 5 },
+          "clearReward": 40,
+          "bonusTiers": [{ "threshold": 7, "reward": 16 }, { "threshold": 9, "reward": 20 }],
+          "overrides": { "rules": { "category": "flyingThings", "itemCount": 5, "fallSpeed": 1.2 } }
+        },
+        {
+          "levelId": "main_10",
+          "levelNum": 10,
+          "label": "Word Wizard",
+          "recipeId": "synonyms",
+          "timeLimit": 50,
+          "goal": { "type": "correctAnswers", "value": 5 },
+          "clearReward": 50,
+          "bonusTiers": [{ "threshold": 7, "reward": 20 }, { "threshold": 9, "reward": 25 }]
+        }
+      ]
+    }
+  ]
+}

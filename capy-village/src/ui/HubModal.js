@@ -227,10 +227,10 @@ function renderArcadePanel(overlay) {
   const cat         = _selectedCategory;
   const bestScores  = saveManager.getArcadeBestScores(cat.id);
   const arcadeCfg   = gameManager.getArcadeConfig(cat.gameId) ?? {};
-  const arcadeModes = arcadeCfg.modes ?? [];
+  const arcadeRecipes = arcadeCfg.recipes ?? [];
 
   // Build a title lookup from bundled arcade config
-  const modeTitle = (id) => arcadeModes.find(m => m.id === id)?.title ?? id;
+  const modeTitle = (id) => arcadeRecipes.find(m => m.id === id)?.title ?? id;
   const bestEntries = Object.entries(bestScores);
 
   const bestScoresHtml = bestEntries.length > 0 ? `
@@ -261,9 +261,8 @@ function renderArcadePanel(overlay) {
   });
   overlay.querySelector('#hub-close').addEventListener('click', closeHub);
   overlay.querySelector('#hub-arcade-start').addEventListener('click', () => {
-    const arcadeWeights = arcadeCfg.arcadeWeights ?? {};
     closeHub();
-    gameManager.startGame(cat.gameId, { mode: 'arcade', arcadeWeights });
+    gameManager.startGame(cat.gameId, { mode: 'arcade' });
   });
 }
 

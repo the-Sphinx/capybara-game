@@ -57,17 +57,25 @@ function shuffle(arr) {
   return copy;
 }
 
-export class MathOperationAnswerMode extends AnswerMode {
+function isPrime(value) {
+  if (value < 2) return false;
+  for (let divisor = 2; divisor * divisor <= value; divisor += 1) {
+    if (value % divisor === 0) return false;
+  }
+  return true;
+}
+
+export class MathEquationAnswerMode extends AnswerMode {
   createRound() {
-    const params = this.mode.params;
-    const operation = params.operation ?? 'mixed';
+    const rules = this.mode.rules;
+    const operation = rules.operation ?? 'mixed';
     const operations = operation === 'addition'
       ? ['+']
       : operation === 'subtraction'
         ? ['-']
         : ['+', '-'];
     const op = randFrom(operations);
-    const [min, max] = params.numberRange ?? [1, 10];
+    const [min, max] = rules.numberRange ?? [1, 10];
 
     let a;
     let b;
@@ -84,7 +92,7 @@ export class MathOperationAnswerMode extends AnswerMode {
     }
 
     const equationText = `${a} ${op} ${b} = ?`;
-    const answers = this._generateAnswers(answer, params.answerCount ?? 3);
+    const answers = this.#generateAnswers(answer, rules.answerCount ?? 3);
     const areaWidth = this.playArea.clientWidth || 600;
     const entities = answers.map((value, index) => {
       const el = document.createElement('div');
@@ -108,7 +116,7 @@ export class MathOperationAnswerMode extends AnswerMode {
     };
   }
 
-  _generateAnswers(answer, answerCount) {
+  #generateAnswers(answer, answerCount) {
     const wrongs = new Set();
     for (const offset of [1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6]) {
       const candidate = answer + offset;
@@ -121,7 +129,7 @@ export class MathOperationAnswerMode extends AnswerMode {
   }
 
   onCorrect(tile, event) {
-    const points = this.mode.params.pointsPerCorrect ?? 10;
+    const points = this.mode.scoring.pointsPerCorrect ?? 10;
     tile.el.classList.add('mg-tile--pop');
     tile.el.addEventListener('animationend', () => tile.el.remove(), { once: true });
     this.shell.addCorrect();
@@ -142,7 +150,7 @@ export class MathOperationAnswerMode extends AnswerMode {
     this.shell.resetCombo();
     tile.el.classList.add('mg-tile--wrong');
     tile.el.addEventListener('animationend', () => tile.el.classList.remove('mg-tile--wrong'), { once: true });
-    this.shell.showFeedback(event, this.mode.params.wrongFeedback ?? 'Wrong!', 'wrong');
+    this.shell.showFeedback(event, this.mode.scoring.wrongFeedback ?? 'Wrong!', 'wrong');
     soundManager.play('wrong');
   }
 
@@ -152,14 +160,14 @@ export class MathOperationAnswerMode extends AnswerMode {
   }
 }
 
-export class MathDivisibilityCollectionMode extends CollectionMode {
+export class MathNumberCollectMode extends CollectionMode {
   getSpawnDelay() {
     return randBetween(0.8, 1.4);
   }
 
   createEntity() {
     const areaWidth = this.playArea.clientWidth || 600;
-    const [min, max] = this.mode.params.numberRange ?? [1, 20];
+    const [min, max] = this.mode.rules.numberRange ?? [1, 20];
     const value = Math.floor(randBetween(min, max + 1));
     const variants = NUMBER_SPRITES[value] ?? NUMBER_SPRITES[1];
     const el = document.createElement('img');
@@ -170,19 +178,33 @@ export class MathDivisibilityCollectionMode extends CollectionMode {
     el.style.top = `-${ITEM_SIZE}px`;
     this.playArea.appendChild(el);
     soundManager.play('pop');
-    const divisor = this.mode.params.divisor;
-    const remainder = this.mode.params.remainder ?? 0;
     return {
       el,
       value,
-      isCorrect: value % divisor === remainder,
+      isCorrect: this.#matches(value),
       y: -ITEM_SIZE,
       speed: randBetween(COL_SPD_MIN, COL_SPD_MAX),
     };
   }
 
+  #matches(value) {
+    const rules = this.mode.rules;
+    switch (rules.matcher) {
+      case 'odd':
+        return value % 2 === 1;
+      case 'even':
+        return value % 2 === 0;
+      case 'prime':
+        return isPrime(value);
+      case 'divisible_by':
+        return value % rules.divisor === (rules.remainder ?? 0);
+      default:
+        return false;
+    }
+  }
+
   onEntityClick(item, index, event) {
-    const points = this.mode.params.pointsPerCorrect ?? 2;
+    const points = this.mode.scoring.pointsPerCorrect ?? 2;
     if (item.isCorrect) {
       item.el.classList.add('wmc-item--pop');
       item.el.addEventListener('animationend', () => item.el.remove(), { once: true });
@@ -198,15 +220,15 @@ export class MathDivisibilityCollectionMode extends CollectionMode {
 
     this.shell.addWrongClick();
     this.shell.resetCombo();
-    const penalty = this.mode.params.wrongPenalty ?? 0;
+    const penalty = this.mode.scoring.wrongPenalty ?? 0;
     if (penalty > 0) {
       this.shell.subtractScore(penalty * points);
     }
     item.el.classList.add('wmc-item--wrong');
     item.el.addEventListener('animationend', () => item.el.classList.remove('wmc-item--wrong'), { once: true });
     const text = penalty > 0
-      ? `${this.mode.params.wrongFeedback ?? 'Wrong!'} -${penalty * points}`
-      : (this.mode.params.wrongFeedback ?? 'Wrong!');
+      ? `${this.mode.scoring.wrongFeedback ?? 'Wrong!'} -${penalty * points}`
+      : (this.mode.scoring.wrongFeedback ?? 'Wrong!');
     this.shell.showFeedback(event, text, 'wrong');
     soundManager.play('wrong');
   }

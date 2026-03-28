@@ -1,182 +1,229 @@
-# Minigame Mode Authoring
+# Minigame Authoring
 
-Minigame mode recipes now use a typed structure:
+This document is generated from per-game plugin descriptors.
 
-```json
-{
-  "id": "number_garden_collect_odd",
-  "type": "math.collection.divisibility",
-  "title": "Collect Odd Numbers",
-  "prompt": "Catch odd numbers!",
-  "params": {
-    "divisor": 2,
-    "remainder": 1,
-    "numberRange": [1, 20],
-    "pointsPerCorrect": 2,
-    "wrongPenalty": 1,
-    "wrongFeedback": "Even!"
-  }
-}
-```
+Games are authored through one `game.json` manifest per game.
 
-## Shape
+Top-level structure:
+- `worldSelect` for world-map metadata
+- `levelSelect` for shared level-slot metadata
+- `arcade` for arcade recipe selection
+- `recipes` for reusable gameplay recipes
+- `worlds` for hierarchical world and level content
 
-- `id`: stable authored recipe id referenced by level JSON and arcade config
-- `type`: the executable behavior type
-- `title`: human-readable mode title
-- `prompt`: short HUD prompt
-- `params`: only keys allowed by that `type`
+Levels reference recipes with `recipeId`.
+Per-level tuning goes under `overrides.rules` and `overrides.scoring`.
 
-Levels reference the recipe with `modeId`, then add level-specific overrides like:
+# math_garden authoring
 
-- `timeLimit`
-- `goal`
-- `clearReward`
-- `bonusTiers`
-- `slot`
+This game is authored through a single `game.json` manifest.
 
-Some mode params can also be overridden at the level layer. If a level uses a key outside the allowed override list for its mode type, validation fails during config load.
+Recipes live under `recipes`.
+Levels reference recipes with `recipeId`.
+Level-specific tuning goes under `overrides.rules` and `overrides.scoring`.
 
-## Supported Types
+## `collect_numbers`
 
-### `math.collection.divisibility`
+Catch numbers that match a number rule like odd, even, prime, or divisible-by.
 
-Use for number-catching modes like odd, even, or multiples.
+Uses family: `collection`
 
-Required params:
-- `divisor`
+Required rules:
+- `matcher`
 - `numberRange`
-- `pointsPerCorrect`
-- `wrongPenalty`
-- `wrongFeedback`
 
-Optional params:
-- `remainder` default `0`
-
-Level override keys:
+Optional rules:
 - `divisor`
 - `remainder`
+- `itemCount`
+
+Required scoring:
+- `pointsPerCorrect`
+- `wrongPenalty`
+
+Optional scoring:
+- `wrongFeedback`
+
+Level overrideable rule keys:
+- `matcher`
 - `numberRange`
+- `divisor`
+- `remainder`
+- `itemCount`
+
+Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 - `wrongFeedback`
 
-Examples:
-- odd numbers: `divisor: 2`, `remainder: 1`
-- even numbers: `divisor: 2`, `remainder: 0`
-- multiples of 3: `divisor: 3`, `remainder: 0`
+## `answer_equation`
 
-### `math.answer.operation`
+Tap the correct arithmetic answer for addition, subtraction, or mixed equations.
 
-Use for arithmetic answer-tapping modes.
+Uses family: `answer`
 
-Required params:
+Required rules:
 - `operation`
 - `numberRange`
 - `answerCount`
+
+Optional rules:
+- none
+
+Required scoring:
 - `pointsPerCorrect`
 - `wrongPenalty`
+
+Optional scoring:
 - `wrongFeedback`
 
-Allowed `operation` values:
-- `addition`
-- `subtraction`
-- `mixed`
-
-Level override keys:
+Level overrideable rule keys:
 - `operation`
 - `numberRange`
 - `answerCount`
+
+Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 - `wrongFeedback`
 
-### `language.stream.letters`
 
-Use for falling-letter catch modes.
+# language_grove authoring
 
-Required params:
+This game is authored through a single `game.json` manifest.
+
+Recipes live under `recipes`.
+Levels reference recipes with `recipeId`.
+Level-specific tuning goes under `overrides.rules` and `overrides.scoring`.
+
+## `collect_letters`
+
+Catch vowels, consonants, or letters belonging to a target word.
+
+Uses family: `stream`
+
+Required rules:
 - `letterSet`
 - `fallSpeed`
-- `pointsPerCorrect`
-- `wrongPenalty`
 
-Optional params:
+Optional rules:
 - `targetWord`
 - `itemCount`
 
-Allowed `letterSet` values:
-- `vowels`
-- `consonants`
-- `word_letters`
+Required scoring:
+- `pointsPerCorrect`
+- `wrongPenalty`
 
-When `letterSet` is `word_letters`, `targetWord` is required.
+Optional scoring:
+- none
 
-Level override keys:
+Level overrideable rule keys:
 - `letterSet`
 - `targetWord`
 - `fallSpeed`
 - `itemCount`
+
+Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 
-### `language.stream.category`
+## `collect_category_words`
 
-Use for falling-word category modes.
+Catch words that belong to a category such as animals, foods, or flying things.
 
-Required params:
+Uses family: `stream`
+
+Required rules:
 - `category`
 - `fallSpeed`
+
+Optional rules:
+- `itemCount`
+
+Required scoring:
 - `pointsPerCorrect`
 - `wrongPenalty`
 
-Optional params:
-- `itemCount`
+Optional scoring:
+- none
 
-Level override keys:
+Level overrideable rule keys:
 - `category`
 - `fallSpeed`
 - `itemCount`
+
+Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 
-### `language.choice.sentence_completion`
-### `language.choice.opposites`
-### `language.choice.synonyms`
-### `language.choice.riddle`
+## `choice_prompt`
 
-Use these for prompt + answer-choice rounds.
+Show a prompt and let the player choose the correct answer from falling choices.
 
-Required params:
+Uses family: `choice_round`
+
+Required rules:
+- `promptSet`
 - `fallSpeed`
 - `answerCount`
+
+Optional rules:
+- none
+
+Required scoring:
 - `pointsPerCorrect`
 - `wrongPenalty`
 
-Level override keys:
+Optional scoring:
+- none
+
+Level overrideable rule keys:
+- `promptSet`
 - `fallSpeed`
 - `answerCount`
+
+Level overrideable scoring keys:
 - `pointsPerCorrect`
 - `wrongPenalty`
 
-## Current Schema Files
 
-- `/Users/gorkem/workspace/gorkem/capybara-game/capy-village/src/config/games/schemas/math_garden.modes.schema.json`
-- `/Users/gorkem/workspace/gorkem/capybara-game/capy-village/src/config/games/schemas/language_grove.modes.schema.json`
-- `/Users/gorkem/workspace/gorkem/capybara-game/capy-village/src/config/games/schemas/watermelon_catch.modes.schema.json`
+# watermelon_catch authoring
 
-## Authoring Workflow
+This game is authored through a single `game.json` manifest.
 
-1. Add or edit a recipe in `public/config/games/<gameId>/modes.json`.
-2. Reference that recipe from level JSON via `modeId`.
-3. Add only allowed level overrides for that mode type.
-4. Keep rewards and bonus tiers in level JSON, not in runtime code.
+Recipes live under `recipes`.
+Levels reference recipes with `recipeId`.
+Level-specific tuning goes under `overrides.rules` and `overrides.scoring`.
 
-## Naming Guidance
+## `classic_collect`
 
-- `id` should describe the world/content intent
-- `type` should describe the executable behavior
+Classic Watermelon Catch rules with fruit, specials, bombs, and time bonuses.
 
-Examples:
-- recipe id: `number_garden_collect_odd`
-- recipe type: `math.collection.divisibility`
+Uses family: `collection`
+
+Required rules:
+- `itemValues`
+- `timeBonuses`
+- `bombPenalty`
+
+Optional rules:
+- `fallSpeedMult`
+- `spawnRateMult`
+- `specialItems`
+
+Required scoring:
+- none
+
+Optional scoring:
+- `wrongPenalty`
+- `wrongFeedback`
+
+Level overrideable rule keys:
+- `fallSpeedMult`
+- `spawnRateMult`
+- `specialItems`
+
+Level overrideable scoring keys:
+- `wrongPenalty`
+- `wrongFeedback`
+

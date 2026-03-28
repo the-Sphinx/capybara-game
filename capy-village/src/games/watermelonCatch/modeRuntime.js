@@ -33,14 +33,14 @@ function randBetween(a, b) {
 
 export class WatermelonClassicCollectionMode extends CollectionMode {
   getSpawnDelay() {
-    return randBetween(SPAWN_MIN, SPAWN_MAX) / (this.mode.params.spawnRateMult ?? 1.0);
+    return randBetween(SPAWN_MIN, SPAWN_MAX) / (this.mode.rules.spawnRateMult ?? 1.0);
   }
 
   createEntity() {
     const areaWidth = this.playArea.clientWidth || 600;
     const x = randBetween(8, areaWidth - ITEM_SIZE - 8);
-    const speed = randBetween(SPEED_MIN, SPEED_MAX) * (this.mode.params.fallSpeedMult ?? 1.0);
-    const specialItems = this.mode.params.specialItems ?? {};
+    const speed = randBetween(SPEED_MIN, SPEED_MAX) * (this.mode.rules.fallSpeedMult ?? 1.0);
+    const specialItems = this.mode.rules.specialItems ?? {};
     const roll = Math.random();
     let spriteSrc;
     let value = null;
@@ -51,31 +51,31 @@ export class WatermelonClassicCollectionMode extends CollectionMode {
     if (specialItems.hourglass && roll < 0.02) {
       itemKind = 'hourglass';
       spriteSrc = BASE_URL + randFrom(SPRITES.specials.hourglass);
-      value = this.mode.params.timeBonuses.hourglass;
+      value = this.mode.rules.timeBonuses.hourglass;
     } else if (specialItems.clock && roll < 0.05) {
       itemKind = 'clock';
       spriteSrc = BASE_URL + randFrom(SPRITES.specials.clock);
-      value = this.mode.params.timeBonuses.clock;
+      value = this.mode.rules.timeBonuses.clock;
     } else if (specialItems.bomb && roll < 0.2) {
       itemKind = 'bomb';
       spriteSrc = BASE_URL + randFrom(SPRITES.specials.bomb);
-      value = this.mode.params.bombPenalty;
+      value = this.mode.rules.bombPenalty;
       isCorrect = () => false;
     } else if (specialItems.gold && roll < 0.23) {
       itemKind = 'gold';
       spriteSrc = BASE_URL + randFrom(SPRITES.specials.gold);
-      value = this.mode.params.itemValues.gold;
+      value = this.mode.rules.itemValues.gold;
       soundLabel = 'pop2';
     } else if (specialItems.silver && roll < 0.28) {
       itemKind = 'silver';
       spriteSrc = BASE_URL + randFrom(SPRITES.specials.silver);
-      value = this.mode.params.itemValues.silver;
+      value = this.mode.rules.itemValues.silver;
       soundLabel = 'pop2';
     } else {
       const useSlice = Math.random() < 0.65;
       const sprite = useSlice ? randFrom(SPRITES.slices) : randFrom(SPRITES.faces);
       spriteSrc = BASE_URL + sprite;
-      value = useSlice ? this.mode.params.itemValues.slice : this.mode.params.itemValues.face;
+      value = useSlice ? this.mode.rules.itemValues.slice : this.mode.rules.itemValues.face;
       soundLabel = useSlice ? 'pop' : 'pop2';
     }
 

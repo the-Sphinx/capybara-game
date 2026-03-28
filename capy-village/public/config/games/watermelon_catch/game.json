@@ -1,0 +1,153 @@
+{
+  "id": "watermelon_catch",
+  "worldSelect": {
+    "enabled": false
+  },
+  "levelSelect": {
+    "enabled": false
+  },
+  "arcade": {
+    "enabled": true,
+    "recipeIds": ["classic_arcade"],
+    "weights": {
+      "classic_arcade": 1
+    }
+  },
+  "recipes": {
+    "classic_arcade": {
+      "kind": "classic_collect",
+      "title": "Classic Catch",
+      "prompt": "Catch fruit and avoid trouble!",
+      "rules": {
+        "itemValues": { "face": 1, "slice": 1, "gold": 5, "silver": 3 },
+        "timeBonuses": { "hourglass": 5, "clock": 3 },
+        "bombPenalty": 5,
+        "fallSpeedMult": 1,
+        "spawnRateMult": 1,
+        "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": true, "silver": true }
+      },
+      "scoring": {
+        "wrongPenalty": 0,
+        "wrongFeedback": "🚫"
+      }
+    }
+  },
+  "worlds": [
+    {
+      "id": "main",
+      "title": "Watermelon Catch",
+      "levels": [
+        {
+          "levelId": "main_1",
+          "levelNum": 1,
+          "label": "Warm-Up",
+          "recipeId": "classic_arcade",
+          "timeLimit": 45,
+          "goal": { "type": "score", "value": 10 },
+          "clearReward": 15,
+          "bonusTiers": [{ "threshold": 20, "reward": 6 }, { "threshold": 30, "reward": 8 }],
+          "overrides": { "rules": { "fallSpeedMult": 0.8, "spawnRateMult": 0.8, "specialItems": { "hourglass": false, "clock": false, "bomb": false, "gold": false, "silver": false } } }
+        },
+        {
+          "levelId": "main_2",
+          "levelNum": 2,
+          "label": "Getting Going",
+          "recipeId": "classic_arcade",
+          "timeLimit": 40,
+          "goal": { "type": "score", "value": 20 },
+          "clearReward": 20,
+          "bonusTiers": [{ "threshold": 30, "reward": 8 }, { "threshold": 40, "reward": 10 }],
+          "overrides": { "rules": { "fallSpeedMult": 0.9, "spawnRateMult": 0.9, "specialItems": { "hourglass": true, "clock": false, "bomb": false, "gold": false, "silver": false } } }
+        },
+        {
+          "levelId": "main_3",
+          "levelNum": 3,
+          "label": "Catcher's Debut",
+          "recipeId": "classic_arcade",
+          "timeLimit": 35,
+          "goal": { "type": "catchCount", "value": 15 },
+          "clearReward": 25,
+          "bonusTiers": [{ "threshold": 25, "reward": 10 }, { "threshold": 35, "reward": 13 }],
+          "overrides": { "rules": { "fallSpeedMult": 1, "spawnRateMult": 1, "specialItems": { "hourglass": true, "clock": true, "bomb": false, "gold": false, "silver": false } } }
+        },
+        {
+          "levelId": "main_4",
+          "levelNum": 4,
+          "label": "Combo Starter",
+          "recipeId": "classic_arcade",
+          "timeLimit": 35,
+          "goal": { "type": "combo", "value": 3 },
+          "clearReward": 30,
+          "bonusTiers": [{ "threshold": 4, "reward": 12 }, { "threshold": 5, "reward": 15 }],
+          "overrides": { "rules": { "fallSpeedMult": 1, "spawnRateMult": 1, "specialItems": { "hourglass": true, "clock": true, "bomb": true, "gold": false, "silver": false } } }
+        },
+        {
+          "levelId": "main_5",
+          "levelNum": 5,
+          "label": "Golden Rush",
+          "recipeId": "classic_arcade",
+          "timeLimit": 35,
+          "goal": { "type": "score", "value": 50 },
+          "clearReward": 40,
+          "bonusTiers": [{ "threshold": 60, "reward": 16 }, { "threshold": 70, "reward": 20 }],
+          "overrides": { "rules": { "fallSpeedMult": 1.1, "spawnRateMult": 1.1 } }
+        },
+        {
+          "levelId": "main_6",
+          "levelNum": 6,
+          "label": "Speed Picker",
+          "recipeId": "classic_arcade",
+          "timeLimit": 30,
+          "goal": { "type": "catchCount", "value": 25 },
+          "clearReward": 45,
+          "bonusTiers": [{ "threshold": 35, "reward": 18 }, { "threshold": 45, "reward": 23 }],
+          "overrides": { "rules": { "fallSpeedMult": 1.2, "spawnRateMult": 1.2 } }
+        },
+        {
+          "levelId": "main_7",
+          "levelNum": 7,
+          "label": "Combo King",
+          "recipeId": "classic_arcade",
+          "timeLimit": 30,
+          "goal": { "type": "combo", "value": 5 },
+          "clearReward": 55,
+          "bonusTiers": [{ "threshold": 6, "reward": 22 }, { "threshold": 7, "reward": 28 }],
+          "overrides": { "rules": { "fallSpeedMult": 1.2, "spawnRateMult": 1.2 } }
+        },
+        {
+          "levelId": "main_8",
+          "levelNum": 8,
+          "label": "High Scorer",
+          "recipeId": "classic_arcade",
+          "timeLimit": 30,
+          "goal": { "type": "score", "value": 80 },
+          "clearReward": 60,
+          "bonusTiers": [{ "threshold": 90, "reward": 24 }, { "threshold": 100, "reward": 30 }],
+          "overrides": { "rules": { "fallSpeedMult": 1.4, "spawnRateMult": 1.3 } }
+        },
+        {
+          "levelId": "main_9",
+          "levelNum": 9,
+          "label": "Marathon",
+          "recipeId": "classic_arcade",
+          "timeLimit": 30,
+          "goal": { "type": "catchCount", "value": 40 },
+          "clearReward": 70,
+          "bonusTiers": [{ "threshold": 50, "reward": 28 }, { "threshold": 60, "reward": 35 }],
+          "overrides": { "rules": { "fallSpeedMult": 1.4, "spawnRateMult": 1.4 } }
+        },
+        {
+          "levelId": "main_10",
+          "levelNum": 10,
+          "label": "Grand Master",
+          "recipeId": "classic_arcade",
+          "timeLimit": 30,
+          "goal": { "type": "combo", "value": 8 },
+          "clearReward": 100,
+          "bonusTiers": [{ "threshold": 9, "reward": 40 }, { "threshold": 10, "reward": 50 }],
+          "overrides": { "rules": { "fallSpeedMult": 1.6, "spawnRateMult": 1.5 } }
+        }
+      ]
+    }
+  ]
+}

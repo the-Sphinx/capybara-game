@@ -55,7 +55,7 @@ export class CollectionMode extends BaseMode {
 
   tick(delta) {
     this.spawnTimer += delta;
-    const maxItems = this.mode?.params?.itemCount ?? Number.POSITIVE_INFINITY;
+    const maxItems = this.mode?.rules?.itemCount ?? Number.POSITIVE_INFINITY;
     if (this.spawnTimer >= this.spawnDelay && this.items.length < maxItems) {
       const entity = this.createEntity();
       if (entity) {

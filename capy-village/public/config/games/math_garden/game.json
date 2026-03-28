@@ -1,0 +1,347 @@
+{
+  "id": "math_garden",
+  "defaults": {},
+  "worldSelect": {
+    "enabled": true,
+    "backgroundPath": "assets/games/math_garden/math_garden_v4.png",
+    "levelSelectBackgroundPath": "assets/games/math_garden/level_select.jpeg"
+  },
+  "levelSelect": {
+    "enabled": true,
+    "backgroundPath": "assets/games/math_garden/level_select.jpeg",
+    "slots": [
+      { "slot": 1, "x": 0.8474, "y": 0.8398, "r": 0.025 },
+      { "slot": 2, "x": 0.6817, "y": 0.7253, "r": 0.025 },
+      { "slot": 3, "x": 0.3103, "y": 0.8424, "r": 0.025 },
+      { "slot": 4, "x": 0.1642, "y": 0.6862, "r": 0.025 },
+      { "slot": 5, "x": 0.2427, "y": 0.4857, "r": 0.025 },
+      { "slot": 6, "x": 0.6635, "y": 0.5339, "r": 0.025 },
+      { "slot": 7, "x": 0.7863, "y": 0.2409, "r": 0.025 },
+      { "slot": 8, "x": 0.556, "y": 0.2461, "r": 0.025 },
+      { "slot": 9, "x": 0.3358, "y": 0.3008, "r": 0.025 },
+      { "slot": 10, "x": 0.1875, "y": 0.2552, "r": 0.025 }
+    ]
+  },
+  "arcade": {
+    "enabled": true,
+    "recipeIds": [
+      "addition_basic",
+      "mixed_equations",
+      "collect_even_basic",
+      "collect_odd_basic",
+      "collect_multiples_of_3",
+      "collect_multiples_of_5"
+    ],
+    "weights": {
+      "addition_basic": 2,
+      "mixed_equations": 2,
+      "collect_even_basic": 2,
+      "collect_odd_basic": 2,
+      "collect_multiples_of_3": 1,
+      "collect_multiples_of_5": 1
+    }
+  },
+  "recipes": {
+    "addition_basic": {
+      "kind": "answer_equation",
+      "title": "Addition Garden",
+      "prompt": "Tap the correct answer!",
+      "rules": {
+        "operation": "addition",
+        "numberRange": [1, 10],
+        "answerCount": 3
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Wrong!"
+      }
+    },
+    "mixed_equations": {
+      "kind": "answer_equation",
+      "title": "Mixed Math",
+      "prompt": "Tap the correct answer!",
+      "rules": {
+        "operation": "mixed",
+        "numberRange": [1, 15],
+        "answerCount": 3
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Wrong!"
+      }
+    },
+    "collect_even_basic": {
+      "kind": "collect_numbers",
+      "title": "Collect Even Numbers",
+      "prompt": "Catch even numbers!",
+      "rules": {
+        "matcher": "even",
+        "numberRange": [1, 20]
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Odd!"
+      }
+    },
+    "collect_odd_basic": {
+      "kind": "collect_numbers",
+      "title": "Collect Odd Numbers",
+      "prompt": "Catch odd numbers!",
+      "rules": {
+        "matcher": "odd",
+        "numberRange": [1, 20]
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Even!"
+      }
+    },
+    "collect_multiples_of_3": {
+      "kind": "collect_numbers",
+      "title": "Collect Multiples of 3",
+      "prompt": "Catch multiples of 3!",
+      "rules": {
+        "matcher": "divisible_by",
+        "divisor": 3,
+        "remainder": 0,
+        "numberRange": [1, 20]
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×3!"
+      }
+    },
+    "collect_multiples_of_5": {
+      "kind": "collect_numbers",
+      "title": "Collect Multiples of 5",
+      "prompt": "Catch multiples of 5!",
+      "rules": {
+        "matcher": "divisible_by",
+        "divisor": 5,
+        "remainder": 0,
+        "numberRange": [1, 20]
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×5!"
+      }
+    }
+  },
+  "worlds": [
+    {
+      "id": "number_garden",
+      "title": "Number Garden",
+      "subtitle": "Odd, even, divisible",
+      "unlockRequirementText": "",
+      "signBox": { "x": 0.1828, "y": 0.3014, "w": 0.0901, "h": 0.0553 },
+      "levels": [
+        {
+          "levelId": "number_garden_1",
+          "levelNum": 1,
+          "slot": 1,
+          "label": "Odd Harvest",
+          "recipeId": "collect_odd_basic",
+          "timeLimit": 60,
+          "goal": { "type": "catchCount", "value": 5 },
+          "clearReward": 10,
+          "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 13, "reward": 5 }],
+          "overrides": { "rules": { "numberRange": [1, 15] } }
+        },
+        {
+          "levelId": "number_garden_2",
+          "levelNum": 2,
+          "slot": 2,
+          "label": "Even Harvest",
+          "recipeId": "collect_even_basic",
+          "timeLimit": 50,
+          "goal": { "type": "catchCount", "value": 8 },
+          "clearReward": 10,
+          "bonusTiers": [{ "threshold": 12, "reward": 5 }, { "threshold": 16, "reward": 5 }],
+          "overrides": { "rules": { "numberRange": [1, 15] } }
+        },
+        {
+          "levelId": "number_garden_3",
+          "levelNum": 3,
+          "slot": 3,
+          "label": "Odd Harvest 2",
+          "recipeId": "collect_odd_basic",
+          "timeLimit": 45,
+          "goal": { "type": "catchCount", "value": 12 },
+          "clearReward": 10,
+          "bonusTiers": [{ "threshold": 16, "reward": 5 }, { "threshold": 20, "reward": 5 }],
+          "overrides": { "rules": { "numberRange": [10, 25] } }
+        },
+        {
+          "levelId": "number_garden_4",
+          "levelNum": 4,
+          "slot": 4,
+          "label": "Even Harvest 2",
+          "recipeId": "collect_even_basic",
+          "timeLimit": 40,
+          "goal": { "type": "catchCount", "value": 14 },
+          "clearReward": 15,
+          "bonusTiers": [{ "threshold": 18, "reward": 6 }, { "threshold": 22, "reward": 8 }],
+          "overrides": { "rules": { "numberRange": [10, 25] } }
+        }
+      ]
+    },
+    {
+      "id": "addition_field",
+      "title": "Addition Field",
+      "subtitle": "Add and grow",
+      "unlockRequirementText": "Complete Number Garden",
+      "signBox": { "x": 0.3804, "y": 0.291, "w": 0.0845, "h": 0.0465 },
+      "levels": [
+        {
+          "levelId": "addition_field_2",
+          "levelNum": 2,
+          "slot": 1,
+          "label": "Seedling",
+          "recipeId": "addition_basic",
+          "timeLimit": 60,
+          "goal": { "type": "correctAnswers", "value": 5 },
+          "clearReward": 20,
+          "bonusTiers": [{ "threshold": 9, "reward": 8 }, { "threshold": 13, "reward": 10 }]
+        },
+        {
+          "levelId": "addition_field_5",
+          "levelNum": 5,
+          "slot": 2,
+          "label": "Flowering",
+          "recipeId": "mixed_equations",
+          "timeLimit": 50,
+          "goal": { "type": "correctAnswers", "value": 7 },
+          "clearReward": 30,
+          "bonusTiers": [{ "threshold": 11, "reward": 12 }, { "threshold": 15, "reward": 15 }],
+          "overrides": { "rules": { "numberRange": [1, 10] } }
+        }
+      ]
+    },
+    {
+      "id": "subtraction_patch",
+      "title": "Subtraction Patch",
+      "subtitle": "Take away",
+      "unlockRequirementText": "Complete Addition Field",
+      "signBox": { "x": 0.2206, "y": 0.4837, "w": 0.093, "h": 0.0559 },
+      "levels": [
+        {
+          "levelId": "subtraction_patch_4",
+          "levelNum": 4,
+          "slot": 1,
+          "label": "Odd Garden",
+          "recipeId": "collect_odd_basic",
+          "timeLimit": 55,
+          "goal": { "type": "catchCount", "value": 8 },
+          "clearReward": 25,
+          "bonusTiers": [{ "threshold": 12, "reward": 10 }, { "threshold": 16, "reward": 13 }],
+          "overrides": { "rules": { "numberRange": [1, 15] } }
+        }
+      ]
+    },
+    {
+      "id": "multiplication_meadow",
+      "title": "Times Meadow",
+      "subtitle": "Groups and times",
+      "unlockRequirementText": "Complete Subtraction Patch",
+      "signBox": { "x": 0.5025, "y": 0.5592, "w": 0.0941, "h": 0.0521 },
+      "levels": [
+        {
+          "levelId": "multiplication_meadow_6",
+          "levelNum": 6,
+          "slot": 1,
+          "label": "Triple Vines",
+          "recipeId": "collect_multiples_of_3",
+          "timeLimit": 50,
+          "goal": { "type": "catchCount", "value": 6 },
+          "clearReward": 30,
+          "bonusTiers": [{ "threshold": 10, "reward": 12 }, { "threshold": 14, "reward": 15 }]
+        }
+      ]
+    },
+    {
+      "id": "division_grove",
+      "title": "Division Grove",
+      "subtitle": "Split fairly",
+      "unlockRequirementText": "Complete Times Meadow",
+      "signBox": { "x": 0.2424, "y": 0.7447, "w": 0.1057, "h": 0.0644 },
+      "levels": [
+        {
+          "levelId": "division_grove_7",
+          "levelNum": 7,
+          "slot": 1,
+          "label": "High Five",
+          "recipeId": "collect_multiples_of_5",
+          "timeLimit": 45,
+          "goal": { "type": "catchCount", "value": 5 },
+          "clearReward": 35,
+          "bonusTiers": [{ "threshold": 9, "reward": 14 }, { "threshold": 13, "reward": 18 }]
+        }
+      ]
+    },
+    {
+      "id": "geometry_yard",
+      "title": "Geometry Yard",
+      "subtitle": "Shapes and space",
+      "unlockRequirementText": "Complete Division Grove",
+      "signBox": { "x": 0.7438, "y": 0.7474, "w": 0.1068, "h": 0.0618 },
+      "levels": [
+        {
+          "levelId": "geometry_yard_9",
+          "levelNum": 9,
+          "slot": 1,
+          "label": "Orchard",
+          "recipeId": "collect_odd_basic",
+          "timeLimit": 40,
+          "goal": { "type": "catchCount", "value": 10 },
+          "clearReward": 50,
+          "bonusTiers": [{ "threshold": 14, "reward": 20 }, { "threshold": 18, "reward": 25 }],
+          "overrides": { "rules": { "numberRange": [1, 25] } }
+        },
+        {
+          "levelId": "geometry_yard_10",
+          "levelNum": 10,
+          "slot": 2,
+          "label": "Grand Garden",
+          "recipeId": "collect_multiples_of_3",
+          "timeLimit": 40,
+          "goal": { "type": "catchCount", "value": 8 },
+          "clearReward": 60,
+          "bonusTiers": [{ "threshold": 12, "reward": 24 }, { "threshold": 16, "reward": 30 }],
+          "overrides": { "rules": { "numberRange": [1, 30] } }
+        }
+      ]
+    },
+    {
+      "id": "fraction_forest",
+      "title": "Fraction Forest",
+      "subtitle": "Pieces and parts",
+      "unlockRequirementText": "Complete Geometry Yard",
+      "signBox": { "x": 0.7078, "y": 0.3603, "w": 0.0825, "h": 0.0462 },
+      "levels": [
+        {
+          "levelId": "fraction_forest_8",
+          "levelNum": 8,
+          "slot": 1,
+          "label": "Garden",
+          "recipeId": "mixed_equations",
+          "timeLimit": 45,
+          "goal": { "type": "correctAnswers", "value": 10 },
+          "clearReward": 45,
+          "bonusTiers": [{ "threshold": 14, "reward": 18 }, { "threshold": 18, "reward": 23 }],
+          "overrides": {
+            "rules": {
+              "numberRange": [5, 20],
+              "answerCount": 4
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

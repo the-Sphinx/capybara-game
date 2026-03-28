@@ -1,11 +1,6 @@
-import { gameState }   from '../state.js';
+import { gameState } from '../state.js';
 import { saveManager } from '../SaveManager.js';
-import {
-  createModeHandler,
-  normalizeLevelDefinitions,
-  normalizeModeDefinitions,
-  resolveModeForLevel,
-} from './modeRegistry.js';
+import { GAME_PLUGINS } from './plugins/index.js';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
@@ -23,10 +18,10 @@ function joinConfigPath(gameId, relativePath) {
 
 class GameManager {
   constructor() {
-    this._registry      = new Map();
-    this._gameConfigs   = new Map();
-    this._configLoads   = new Map();
-    this._activeGame    = null;
+    this._registry = new Map();
+    this._gameConfigs = new Map();
+    this._configLoads = new Map();
+    this._activeGame = null;
 
     this._overlay = document.createElement('div');
     this._overlay.id = 'game-overlay';
@@ -63,39 +58,23 @@ class GameManager {
   }
 
   async _loadGameConfig(gameId) {
-    const [arcadeConfig, worldSelectConfig, levelSelectConfig, modes] = await Promise.all([
-      fetchJson(joinConfigPath(gameId, 'arcade.json')),
-      fetchJson(joinConfigPath(gameId, 'world_select.json')),
-      fetchJson(joinConfigPath(gameId, 'level_select.json')),
-      fetchJson(joinConfigPath(gameId, 'modes.json')),
-    ]);
-
-    const normalizedModes = normalizeModeDefinitions(gameId, modes);
-    const modeMap = new Map(normalizedModes.map((mode) => [mode.id, mode]));
-    const levels = [];
-    for (const world of worldSelectConfig?.worlds ?? []) {
-      const worldId = world.id;
-      const adventureLevels = await fetchJson(joinConfigPath(gameId, `levels/${worldId}_levels.json`));
-      levels.push(...normalizeLevelDefinitions(gameId, adventureLevels, modeMap, worldId));
+    const plugin = GAME_PLUGINS[gameId];
+    if (!plugin) {
+      throw new Error(`No game plugin registered for "${gameId}"`);
     }
+    const manifest = await fetchJson(joinConfigPath(gameId, 'game.json'));
+    const config = plugin.normalize(manifest);
 
-    const arcadeModeIds = arcadeConfig?.modeIds
-      ?? Object.keys(arcadeConfig?.arcadeWeights ?? {});
-    const resolvedArcadeModes = arcadeModeIds
-      .map((modeId) => modeMap.get(modeId))
-      .filter(Boolean);
+    const recipeIds = config.arcade.recipeIds ?? Object.keys(config.arcade.weights ?? {});
+    const arcadeRecipes = recipeIds.map((recipeId) => config.recipes.get(recipeId)).filter(Boolean);
 
     return {
-      gameId,
-      levels,
-      modes: normalizedModes,
-      modeMap,
-      arcadeConfig: {
-        ...arcadeConfig,
-        modes: resolvedArcadeModes,
+      ...config,
+      plugin,
+      arcade: {
+        ...config.arcade,
+        recipes: arcadeRecipes,
       },
-      worldSelectConfig,
-      levelSelectConfig,
     };
   }
 
@@ -108,31 +87,36 @@ class GameManager {
   }
 
   getArcadeConfig(gameId) {
-    return this._gameConfigs.get(gameId)?.arcadeConfig ?? null;
+    return this._gameConfigs.get(gameId)?.arcade ?? null;
   }
 
   getWorldSelectConfig(gameId) {
-    return this._gameConfigs.get(gameId)?.worldSelectConfig ?? null;
+    return this._gameConfigs.get(gameId)?.worldSelect ?? null;
   }
 
   getLevelSelectConfig(gameId) {
-    return this._gameConfigs.get(gameId)?.levelSelectConfig ?? null;
+    return this._gameConfigs.get(gameId)?.levelSelect ?? null;
   }
 
-  getModeConfig(gameId, modeId) {
-    return this._gameConfigs.get(gameId)?.modeMap?.get(modeId) ?? null;
+  getRecipes(gameId) {
+    return this._gameConfigs.get(gameId)?.recipes ?? new Map();
   }
 
-  resolveModeForLevel(gameId, levelRef) {
+  getRecipe(gameId, recipeId) {
+    return this._gameConfigs.get(gameId)?.recipes?.get(recipeId) ?? null;
+  }
+
+  resolveRecipeForLevel(gameId, levelRef) {
     const level = typeof levelRef === 'string'
       ? this.getLevelById(gameId, levelRef)
       : levelRef;
     if (!level) return null;
-    return resolveModeForLevel(this.getModeConfig(gameId, level.modeId), level);
+    return level.resolvedRecipe ?? null;
   }
 
   createModeHandler(gameId, shell) {
-    return createModeHandler(shell, shell.mode);
+    const config = this._gameConfigs.get(gameId);
+    return config?.plugin?.createHandler(shell, shell.mode) ?? null;
   }
 
   resolveLaunchConfig(gameId, launchConfig) {
@@ -142,18 +126,14 @@ class GameManager {
     const sourceLevel = launchConfig.levelId
       ? (this.getLevelById(gameId, launchConfig.levelId) ?? launchConfig)
       : launchConfig;
-    const resolvedMode = this.resolveModeForLevel(gameId, sourceLevel);
+    const resolvedRecipe = this.resolveRecipeForLevel(gameId, sourceLevel);
     return {
       ...sourceLevel,
       ...launchConfig,
       levelId: sourceLevel.levelId,
       worldId: sourceLevel.worldId,
-      resolvedMode,
+      resolvedRecipe,
     };
-  }
-
-  getModes(gameId) {
-    return this._gameConfigs.get(gameId)?.modes ?? [];
   }
 
   getLevelById(gameId, levelId) {
@@ -197,10 +177,8 @@ class GameManager {
 
   _endActiveGame(result) {
     if (result) {
-      console.log('[GameManager] result:', result);
       if (typeof result.coinsEarned === 'number' && result.coinsEarned > 0) {
         saveManager.addCoins(result.coinsEarned);
-        console.log(`[GameManager] +${result.coinsEarned} coins → total ${saveManager.getData().coins}`);
       }
     }
 

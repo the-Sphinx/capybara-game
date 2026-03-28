@@ -204,3 +204,27 @@ The next strong follow-up would be extending Math’s `worlds/<worldId>.json` co
 
 ### Verification
 - Ran `npm run build` successfully in `capy-village` after the typed-registry refactor.
+
+## 15. Plugin Manifest Architecture
+
+### What Changed
+- Removed the central authored-mode bottleneck by deleting `capy-village/src/games/modeRegistry.js`.
+- Added explicit per-game plugins under `capy-village/src/games/plugins/` with small colocated mode descriptor files.
+- Replaced split game config files with one `game.json` manifest per game in `capy-village/public/config/games/<gameId>/`.
+- Preserved the shared runtime base classes (`CollectionMode`, `AnswerMode`, `StreamMode`, `ChoiceRoundMode`) while moving game-specific recipe resolution into plugin descriptors.
+- Added inheritance-aware manifest normalization so authoring now flows through:
+  - game defaults
+  - world defaults
+  - level overrides
+- Generated authoring docs and schemas from descriptor metadata instead of maintaining a separate handwritten mode contract.
+
+### Reviewer Focus
+- Confirm `GameManager` now loads only `game.json` per game and resolves levels/recipes through `GAME_PLUGINS`.
+- Confirm the old authored config split (`world_select.json`, `level_select.json`, `modes.json`, `levels/*.json`, `arcade.json`) is gone from active runtime paths.
+- Confirm Math, Language, and Watermelon all create handlers through their game plugin, not a central registry file.
+- Confirm `docs/minigame_mode_authoring.md` and `capy-village/src/config/games/schemas/*.game.schema.json` are generated from plugin descriptor metadata.
+- Confirm Math recipe authoring can now express new number rules, such as prime matching, without touching central runtime wiring.
+
+### Verification
+- Ran `npm run generate:minigame-authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.

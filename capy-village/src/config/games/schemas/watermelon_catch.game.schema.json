@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "watermelon_catch game manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "recipes",
+    "worlds"
+  ],
+  "properties": {
+    "id": {
+      "const": "watermelon_catch"
+    },
+    "defaults": {
+      "type": "object"
+    },
+    "worldSelect": {
+      "type": "object"
+    },
+    "levelSelect": {
+      "type": "object"
+    },
+    "arcade": {
+      "type": "object"
+    },
+    "recipes": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "title",
+              "prompt",
+              "rules",
+              "scoring"
+            ],
+            "properties": {
+              "kind": {
+                "const": "classic_collect"
+              },
+              "title": {
+                "type": "string"
+              },
+              "prompt": {
+                "type": "string"
+              },
+              "rules": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "itemValues",
+                  "timeBonuses",
+                  "bombPenalty"
+                ],
+                "properties": {
+                  "itemValues": {},
+                  "timeBonuses": {},
+                  "bombPenalty": {},
+                  "fallSpeedMult": {},
+                  "spawnRateMult": {},
+                  "specialItems": {}
+                }
+              },
+              "scoring": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {
+                  "wrongPenalty": {},
+                  "wrongFeedback": {}
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "worlds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "levels"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "unlockRequirementText": {
+            "type": "string"
+          },
+          "signBox": {
+            "type": "object"
+          },
+          "clickBox": {
+            "type": "object"
+          },
+          "defaults": {
+            "type": "object"
+          },
+          "levels": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

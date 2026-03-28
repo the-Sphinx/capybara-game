@@ -1,0 +1,54 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { buildGameSchema, buildPluginDocs } from '../capy-village/src/games/plugins/pluginUtils.js';
+import { collectNumbersMode } from '../capy-village/src/games/plugins/math_garden/collectNumbers.mode.js';
+import { answerEquationMode } from '../capy-village/src/games/plugins/math_garden/answerEquation.mode.js';
+import { collectLettersMode } from '../capy-village/src/games/plugins/language_grove/collectLetters.mode.js';
+import { collectCategoryWordsMode } from '../capy-village/src/games/plugins/language_grove/collectCategoryWords.mode.js';
+import { choicePromptMode } from '../capy-village/src/games/plugins/language_grove/choicePrompt.mode.js';
+import { classicCollectMode } from '../capy-village/src/games/plugins/watermelon_catch/classicCollect.mode.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, '..');
+const schemaDir = path.join(repoRoot, 'capy-village', 'src', 'config', 'games', 'schemas');
+const docsPath = path.join(repoRoot, 'docs', 'minigame_mode_authoring.md');
+
+const plugins = [
+  { gameId: 'math_garden', modeDescriptors: [collectNumbersMode, answerEquationMode] },
+  { gameId: 'language_grove', modeDescriptors: [collectLettersMode, collectCategoryWordsMode, choicePromptMode] },
+  { gameId: 'watermelon_catch', modeDescriptors: [classicCollectMode] },
+];
+
+await fs.mkdir(schemaDir, { recursive: true });
+
+for (const plugin of plugins) {
+  const schema = buildGameSchema(plugin);
+  const schemaPath = path.join(schemaDir, `${plugin.gameId}.game.schema.json`);
+  await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2) + '\n', 'utf8');
+}
+
+const docParts = [
+  '# Minigame Authoring',
+  '',
+  'This document is generated from per-game plugin descriptors.',
+  '',
+  'Games are authored through one `game.json` manifest per game.',
+  '',
+  'Top-level structure:',
+  '- `worldSelect` for world-map metadata',
+  '- `levelSelect` for shared level-slot metadata',
+  '- `arcade` for arcade recipe selection',
+  '- `recipes` for reusable gameplay recipes',
+  '- `worlds` for hierarchical world and level content',
+  '',
+  'Levels reference recipes with `recipeId`.',
+  'Per-level tuning goes under `overrides.rules` and `overrides.scoring`.',
+  '',
+];
+
+for (const plugin of plugins) {
+  docParts.push(buildPluginDocs(plugin), '');
+}
+
+await fs.writeFile(docsPath, docParts.join('\n'), 'utf8');
