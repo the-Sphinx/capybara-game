@@ -1,0 +1,112 @@
+{
+  "id": "main",
+  "title": "Language Grove",
+  "levels": [
+    {
+      "levelId": "main_1",
+      "levelNum": 1,
+      "label": "Vowel Garden",
+      "recipeId": "vowel_catch",
+      "timeLimit": 60,
+      "goal": { "type": "catchCount", "value": 3 },
+      "clearReward": 15,
+      "bonusTiers": [{ "threshold": 5, "reward": 6 }, { "threshold": 7, "reward": 8 }],
+      "overrides": { "rules": { "itemCount": 4, "fallSpeed": 1 } }
+    },
+    {
+      "levelId": "main_2",
+      "levelNum": 2,
+      "label": "More Vowels",
+      "recipeId": "vowel_catch",
+      "timeLimit": 55,
+      "goal": { "type": "catchCount", "value": 5 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 7, "reward": 8 }, { "threshold": 9, "reward": 10 }],
+      "overrides": { "rules": { "itemCount": 5, "fallSpeed": 1.1 } }
+    },
+    {
+      "levelId": "main_3",
+      "levelNum": 3,
+      "label": "Consonant Trail",
+      "recipeId": "consonant_catch",
+      "timeLimit": 55,
+      "goal": { "type": "catchCount", "value": 5 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 7, "reward": 8 }, { "threshold": 9, "reward": 10 }],
+      "overrides": { "rules": { "itemCount": 5, "fallSpeed": 1.1 } }
+    },
+    {
+      "levelId": "main_4",
+      "levelNum": 4,
+      "label": "Animal Friends",
+      "recipeId": "animal_words",
+      "timeLimit": 60,
+      "goal": { "type": "catchCount", "value": 4 },
+      "clearReward": 25,
+      "bonusTiers": [{ "threshold": 6, "reward": 10 }, { "threshold": 8, "reward": 13 }],
+      "overrides": { "rules": { "itemCount": 4, "fallSpeed": 1 } }
+    },
+    {
+      "levelId": "main_5",
+      "levelNum": 5,
+      "label": "Fruit Basket",
+      "recipeId": "food_words",
+      "timeLimit": 55,
+      "goal": { "type": "catchCount", "value": 4 },
+      "clearReward": 25,
+      "bonusTiers": [{ "threshold": 6, "reward": 10 }, { "threshold": 8, "reward": 13 }],
+      "overrides": { "rules": { "itemCount": 5, "fallSpeed": 1.1 } }
+    },
+    {
+      "levelId": "main_6",
+      "levelNum": 6,
+      "label": "Finish the Sentence",
+      "recipeId": "sentence_finish",
+      "timeLimit": 60,
+      "goal": { "type": "correctAnswers", "value": 3 },
+      "clearReward": 30,
+      "bonusTiers": [{ "threshold": 5, "reward": 12 }, { "threshold": 7, "reward": 15 }]
+    },
+    {
+      "levelId": "main_7",
+      "levelNum": 7,
+      "label": "Letters in DOG",
+      "recipeId": "letters_in_word",
+      "timeLimit": 45,
+      "goal": { "type": "catchCount", "value": 3 },
+      "clearReward": 30,
+      "bonusTiers": [{ "threshold": 5, "reward": 12 }, { "threshold": 7, "reward": 15 }]
+    },
+    {
+      "levelId": "main_8",
+      "levelNum": 8,
+      "label": "Opposites!",
+      "recipeId": "opposites",
+      "timeLimit": 55,
+      "goal": { "type": "correctAnswers", "value": 4 },
+      "clearReward": 35,
+      "bonusTiers": [{ "threshold": 6, "reward": 14 }, { "threshold": 8, "reward": 18 }]
+    },
+    {
+      "levelId": "main_9",
+      "levelNum": 9,
+      "label": "Flying Things",
+      "recipeId": "category_stream",
+      "timeLimit": 50,
+      "goal": { "type": "catchCount", "value": 5 },
+      "clearReward": 40,
+      "bonusTiers": [{ "threshold": 7, "reward": 16 }, { "threshold": 9, "reward": 20 }],
+      "overrides": { "rules": { "category": "flyingThings", "itemCount": 5, "fallSpeed": 1.2 } }
+    },
+    {
+      "levelId": "main_10",
+      "levelNum": 10,
+      "label": "Word Wizard",
+      "recipeId": "synonyms",
+      "timeLimit": 50,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 50,
+      "bonusTiers": [{ "threshold": 7, "reward": 20 }, { "threshold": 9, "reward": 25 }]
+    }
+  ]
+}

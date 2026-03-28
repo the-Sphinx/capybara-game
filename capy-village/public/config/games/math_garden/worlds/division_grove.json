@@ -1,0 +1,20 @@
+{
+  "id": "division_grove",
+  "title": "Division Grove",
+  "subtitle": "Split fairly",
+  "unlockRequirementText": "Complete Times Meadow",
+  "signBox": { "x": 0.2424, "y": 0.7447, "w": 0.1057, "h": 0.0644 },
+  "levels": [
+    {
+      "levelId": "division_grove_7",
+      "levelNum": 7,
+      "slot": 1,
+      "label": "High Five",
+      "recipeId": "collect_multiples_of_5",
+      "timeLimit": 45,
+      "goal": { "type": "catchCount", "value": 5 },
+      "clearReward": 35,
+      "bonusTiers": [{ "threshold": 9, "reward": 14 }, { "threshold": 13, "reward": 18 }]
+    }
+  ]
+}

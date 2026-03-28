@@ -2,6 +2,20 @@
 
 ## 0. Final Fix Follow-Up
 
+### Config Structure Cleanup
+- Followed up by simplifying the authored config split:
+- `game.json` now contains shared game config plus `worldIds`
+- world-specific progression content now lives in `worlds/<worldId>.json`
+- Removed the duplicate `levelSelectBackgroundPath` from `worldSelect`; `levelSelect.backgroundPath` is now the only source for level-select art.
+- Updated `GameManager` to load and assemble the per-world files before plugin normalization.
+- Regenerated schemas and authoring docs to match this smaller, clearer authored structure.
+
+### Reviewer Focus
+- Confirm `capy-village/public/config/games/*/game.json` no longer embeds full world blocks inline.
+- Confirm world files now exist under `capy-village/public/config/games/*/worlds/`.
+- Confirm the generated schema requires `worldIds` and no longer includes `worldSelect.levelSelectBackgroundPath`.
+- Confirm the runtime still derives `worldSelect.worlds` correctly from the loaded world files.
+
 ### What Changed
 - Implemented the final authoring-contract cleanup after the plugin-manifest refactor.
 - Tightened `capy-village/src/games/plugins/pluginUtils.js` so authored manifest validation now reports path-specific errors and validates:

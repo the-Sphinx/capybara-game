@@ -136,15 +136,12 @@ function validateBox(box, path) {
 
 function validateWorldSelect(worldSelect, path) {
   if (worldSelect == null) return;
-  validateKeys(worldSelect, keySet(['enabled', 'backgroundPath', 'levelSelectBackgroundPath']), path);
+  validateKeys(worldSelect, keySet(['enabled', 'backgroundPath']), path);
   if ('enabled' in worldSelect && typeof worldSelect.enabled !== 'boolean') {
     fail(`${path}.enabled`, 'must be a boolean');
   }
   if ('backgroundPath' in worldSelect && typeof worldSelect.backgroundPath !== 'string') {
     fail(`${path}.backgroundPath`, 'must be a string');
-  }
-  if ('levelSelectBackgroundPath' in worldSelect && typeof worldSelect.levelSelectBackgroundPath !== 'string') {
-    fail(`${path}.levelSelectBackgroundPath`, 'must be a string');
   }
 }
 
@@ -339,9 +336,9 @@ export function normalizeGameManifest(plugin, manifest) {
   );
 
   const worlds = (manifest.worlds ?? []).map((world) => {
-    validateKeys(
-      world,
-      keySet(['id', 'title', 'subtitle', 'unlockRequirementText', 'signBox', 'clickBox', 'defaults', 'levels']),
+      validateKeys(
+        world,
+        keySet(['id', 'title', 'subtitle', 'unlockRequirementText', 'signBox', 'clickBox', 'defaults', 'levels']),
       `worlds.${world?.id ?? 'unknown'}`,
     );
     if (typeof world.id !== 'string' || !world.id) {
@@ -496,9 +493,13 @@ export function buildGameSchema(plugin) {
     title: `${plugin.gameId} game manifest`,
     type: 'object',
     additionalProperties: false,
-    required: ['id', 'recipes', 'worlds'],
+    required: ['id', 'worldIds', 'recipes'],
     properties: {
       id: { const: plugin.gameId },
+      worldIds: {
+        type: 'array',
+        items: { type: 'string' },
+      },
       defaults: defaultsSchema,
       worldSelect: {
         type: 'object',
@@ -506,7 +507,6 @@ export function buildGameSchema(plugin) {
         properties: {
           enabled: { type: 'boolean' },
           backgroundPath: { type: 'string' },
-          levelSelectBackgroundPath: { type: 'string' },
         },
       },
       levelSelect: {
@@ -550,53 +550,6 @@ export function buildGameSchema(plugin) {
         type: 'object',
         additionalProperties: {
           oneOf: kindEntries,
-        },
-      },
-      worlds: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['id', 'title', 'levels'],
-          properties: {
-            id: { type: 'string' },
-            title: { type: 'string' },
-            subtitle: { type: 'string' },
-            unlockRequirementText: { type: 'string' },
-            signBox: boxSchema,
-            clickBox: boxSchema,
-            defaults: defaultsSchema,
-            levels: {
-              type: 'array',
-              items: {
-                type: 'object',
-                additionalProperties: false,
-                required: ['levelId', 'levelNum', 'label', 'recipeId'],
-                properties: {
-                  levelId: { type: 'string' },
-                  levelNum: { type: 'number' },
-                  label: { type: 'string' },
-                  slot: { type: 'number' },
-                  recipeId: { type: 'string' },
-                  timeLimit: { type: 'number' },
-                  goal: goalSchema,
-                  clearReward: { type: 'number' },
-                  bonusTiers: {
-                    type: 'array',
-                    items: bonusTierSchema,
-                  },
-                  overrides: {
-                    type: 'object',
-                    additionalProperties: false,
-                    properties: {
-                      rules: { type: 'object' },
-                      scoring: { type: 'object' },
-                    },
-                  },
-                },
-              },
-            },
-          },
         },
       },
     },
@@ -665,12 +618,15 @@ ${levelExample}
 
   return `# ${plugin.gameId} authoring
 
-This game is authored through a single \`game.json\` manifest.
+This game is authored through:
+- \`game.json\` for shared game config
+- \`worlds/<worldId>.json\` for world-specific progression content
 
 Core concepts:
 - \`recipes\` define reusable gameplay templates.
 - Each recipe declares a \`kind\`, plus \`rules\` and \`scoring\`.
-- \`worlds[].levels[]\` define progression and rewards.
+- \`worldIds\` in \`game.json\` define world loading order.
+- Each \`worlds/<worldId>.json\` file defines one world and its \`levels\`.
 - Levels reference recipes with \`recipeId\`.
 - Level-specific tuning goes under \`overrides.rules\` and \`overrides.scoring\`.
 - \`defaults\` can be set at the game level or per world, then overridden per level.

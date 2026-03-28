@@ -62,8 +62,16 @@ class GameManager {
     if (!plugin) {
       throw new Error(`No game plugin registered for "${gameId}"`);
     }
-    const manifest = await fetchJson(joinConfigPath(gameId, 'game.json'));
-    const config = plugin.normalize(manifest);
+    const authoredManifest = await fetchJson(joinConfigPath(gameId, 'game.json'));
+    const worldIds = authoredManifest.worldIds ?? [];
+    const worlds = await Promise.all(
+      worldIds.map((worldId) => fetchJson(joinConfigPath(gameId, `worlds/${worldId}.json`))),
+    );
+    const { worldIds: _worldIds, ...sharedManifest } = authoredManifest;
+    const config = plugin.normalize({
+      ...sharedManifest,
+      worlds,
+    });
 
     const recipeIds = config.arcade.recipeIds ?? Object.keys(config.arcade.weights ?? {});
     const arcadeRecipes = recipeIds.map((recipeId) => config.recipes.get(recipeId)).filter(Boolean);

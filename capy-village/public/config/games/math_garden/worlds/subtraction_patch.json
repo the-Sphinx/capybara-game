@@ -1,0 +1,21 @@
+{
+  "id": "subtraction_patch",
+  "title": "Subtraction Patch",
+  "subtitle": "Take away",
+  "unlockRequirementText": "Complete Addition Field",
+  "signBox": { "x": 0.2206, "y": 0.4837, "w": 0.093, "h": 0.0559 },
+  "levels": [
+    {
+      "levelId": "subtraction_patch_4",
+      "levelNum": 4,
+      "slot": 1,
+      "label": "Odd Garden",
+      "recipeId": "collect_odd_basic",
+      "timeLimit": 55,
+      "goal": { "type": "catchCount", "value": 8 },
+      "clearReward": 25,
+      "bonusTiers": [{ "threshold": 12, "reward": 10 }, { "threshold": 16, "reward": 13 }],
+      "overrides": { "rules": { "numberRange": [1, 15] } }
+    }
+  ]
+}

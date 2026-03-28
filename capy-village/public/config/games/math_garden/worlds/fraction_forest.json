@@ -1,0 +1,26 @@
+{
+  "id": "fraction_forest",
+  "title": "Fraction Forest",
+  "subtitle": "Pieces and parts",
+  "unlockRequirementText": "Complete Geometry Yard",
+  "signBox": { "x": 0.7078, "y": 0.3603, "w": 0.0825, "h": 0.0462 },
+  "levels": [
+    {
+      "levelId": "fraction_forest_8",
+      "levelNum": 8,
+      "slot": 1,
+      "label": "Garden",
+      "recipeId": "mixed_equations",
+      "timeLimit": 45,
+      "goal": { "type": "correctAnswers", "value": 10 },
+      "clearReward": 45,
+      "bonusTiers": [{ "threshold": 14, "reward": 18 }, { "threshold": 18, "reward": 23 }],
+      "overrides": {
+        "rules": {
+          "numberRange": [5, 20],
+          "answerCount": 4
+        }
+      }
+    }
+  ]
+}

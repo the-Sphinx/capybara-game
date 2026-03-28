@@ -1,0 +1,32 @@
+{
+  "id": "addition_field",
+  "title": "Addition Field",
+  "subtitle": "Add and grow",
+  "unlockRequirementText": "Complete Number Garden",
+  "signBox": { "x": 0.3804, "y": 0.291, "w": 0.0845, "h": 0.0465 },
+  "levels": [
+    {
+      "levelId": "addition_field_2",
+      "levelNum": 2,
+      "slot": 1,
+      "label": "Seedling",
+      "recipeId": "addition_basic",
+      "timeLimit": 60,
+      "goal": { "type": "correctAnswers", "value": 5 },
+      "clearReward": 20,
+      "bonusTiers": [{ "threshold": 9, "reward": 8 }, { "threshold": 13, "reward": 10 }]
+    },
+    {
+      "levelId": "addition_field_5",
+      "levelNum": 5,
+      "slot": 2,
+      "label": "Flowering",
+      "recipeId": "mixed_equations",
+      "timeLimit": 50,
+      "goal": { "type": "correctAnswers", "value": 7 },
+      "clearReward": 30,
+      "bonusTiers": [{ "threshold": 11, "reward": 12 }, { "threshold": 15, "reward": 15 }],
+      "overrides": { "rules": { "numberRange": [1, 10] } }
+    }
+  ]
+}

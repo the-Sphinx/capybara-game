@@ -1,0 +1,20 @@
+{
+  "id": "multiplication_meadow",
+  "title": "Times Meadow",
+  "subtitle": "Groups and times",
+  "unlockRequirementText": "Complete Subtraction Patch",
+  "signBox": { "x": 0.5025, "y": 0.5592, "w": 0.0941, "h": 0.0521 },
+  "levels": [
+    {
+      "levelId": "multiplication_meadow_6",
+      "levelNum": 6,
+      "slot": 1,
+      "label": "Triple Vines",
+      "recipeId": "collect_multiples_of_3",
+      "timeLimit": 50,
+      "goal": { "type": "catchCount", "value": 6 },
+      "clearReward": 30,
+      "bonusTiers": [{ "threshold": 10, "reward": 12 }, { "threshold": 14, "reward": 15 }]
+    }
+  ]
+}

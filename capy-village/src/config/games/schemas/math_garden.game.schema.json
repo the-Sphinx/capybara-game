@@ -5,12 +5,18 @@
   "additionalProperties": false,
   "required": [
     "id",
-    "recipes",
-    "worlds"
+    "worldIds",
+    "recipes"
   ],
   "properties": {
     "id": {
       "const": "math_garden"
+    },
+    "worldIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "defaults": {
       "type": "object",
@@ -70,9 +76,6 @@
           "type": "boolean"
         },
         "backgroundPath": {
-          "type": "string"
-        },
-        "levelSelectBackgroundPath": {
           "type": "string"
         }
       }
@@ -290,213 +293,6 @@
             }
           }
         ]
-      }
-    },
-    "worlds": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "title",
-          "levels"
-        ],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "subtitle": {
-            "type": "string"
-          },
-          "unlockRequirementText": {
-            "type": "string"
-          },
-          "signBox": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "x",
-              "y",
-              "w",
-              "h"
-            ],
-            "properties": {
-              "x": {
-                "type": "number"
-              },
-              "y": {
-                "type": "number"
-              },
-              "w": {
-                "type": "number"
-              },
-              "h": {
-                "type": "number"
-              }
-            }
-          },
-          "clickBox": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "x",
-              "y",
-              "w",
-              "h"
-            ],
-            "properties": {
-              "x": {
-                "type": "number"
-              },
-              "y": {
-                "type": "number"
-              },
-              "w": {
-                "type": "number"
-              },
-              "h": {
-                "type": "number"
-              }
-            }
-          },
-          "defaults": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "recipeId": {
-                "type": "string"
-              },
-              "timeLimit": {
-                "type": "number"
-              },
-              "goal": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "type",
-                  "value"
-                ],
-                "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "number"
-                  }
-                }
-              },
-              "clearReward": {
-                "type": "number"
-              },
-              "bonusTiers": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "threshold",
-                    "reward"
-                  ],
-                  "properties": {
-                    "threshold": {
-                      "type": "number"
-                    },
-                    "reward": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "levels": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "levelId",
-                "levelNum",
-                "label",
-                "recipeId"
-              ],
-              "properties": {
-                "levelId": {
-                  "type": "string"
-                },
-                "levelNum": {
-                  "type": "number"
-                },
-                "label": {
-                  "type": "string"
-                },
-                "slot": {
-                  "type": "number"
-                },
-                "recipeId": {
-                  "type": "string"
-                },
-                "timeLimit": {
-                  "type": "number"
-                },
-                "goal": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "type",
-                    "value"
-                  ],
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "number"
-                    }
-                  }
-                },
-                "clearReward": {
-                  "type": "number"
-                },
-                "bonusTiers": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                      "threshold",
-                      "reward"
-                    ],
-                    "properties": {
-                      "threshold": {
-                        "type": "number"
-                      },
-                      "reward": {
-                        "type": "number"
-                      }
-                    }
-                  }
-                },
-                "overrides": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "rules": {
-                      "type": "object"
-                    },
-                    "scoring": {
-                      "type": "object"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   }

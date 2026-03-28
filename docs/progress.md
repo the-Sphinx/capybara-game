@@ -2,6 +2,21 @@
 
 ## 2026-03-28
 
+### Minigame Config Split Cleanup
+- Simplified the authored minigame config contract again.
+- Removed the duplicated `levelSelectBackgroundPath` from `worldSelect`; level-select art now lives only under `levelSelect.backgroundPath`.
+- Split large per-game `game.json` files so world-specific content now lives under:
+- `capy-village/public/config/games/<gameId>/worlds/<worldId>.json`
+- Added `worldIds` to each `game.json` to define load order.
+- Updated `GameManager` to fetch `game.json`, then load `worlds/<worldId>.json` files and compose the full manifest before plugin normalization.
+- Regenerated authoring docs and schemas so they now describe the new `game.json + worlds/*.json` structure.
+
+### Self-Check
+- Verified `npm run generate:authoring` succeeds in `capy-village`.
+- Verified `npm run build` succeeds in `capy-village`.
+- Confirmed `math_garden.game.schema.json` now expects `worldIds` instead of inline `worlds`.
+- Confirmed the generated authoring doc now tells authors to add new worlds under `worlds/<worldId>.json`.
+
 ### Final Minigame Authoring Fix Pass
 - Implemented `docs/tasks/capy_final_fix_plan.md`.
 - Tightened plugin manifest validation so authored `game.json` files now fail with path-specific errors for bad keys and invalid nested values.

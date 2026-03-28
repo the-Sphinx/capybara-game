@@ -2,30 +2,34 @@
 
 This document is generated from per-game plugin descriptors.
 
-Games are authored through one `game.json` manifest per game.
+Games are authored through one shared `game.json` plus `worlds/<worldId>.json` files per game.
 
 Top-level structure in `public/config/games/<gameId>/game.json`:
+- `worldIds` for world loading order
 - `worldSelect` for world-map metadata
 - `levelSelect` for shared level-slot metadata
 - `arcade` for arcade recipe selection
 - `recipes` for reusable gameplay recipes
-- `worlds` for hierarchical world and level content
 
 Core concepts:
 - Add a new recipe by creating one entry under `recipes`.
-- Add a new level by adding one object under `worlds[].levels[]`.
+- Add a new world by adding its id to `worldIds` and creating `worlds/<worldId>.json`.
+- Add a new level by editing that world file under `worlds/<worldId>.json`.
 - Levels reference recipes with `recipeId`.
 - Per-level tuning goes under `overrides.rules` and `overrides.scoring`.
 - Game-level `defaults` apply first, then world-level `defaults`, then the level itself.
 
 # math_garden authoring
 
-This game is authored through a single `game.json` manifest.
+This game is authored through:
+- `game.json` for shared game config
+- `worlds/<worldId>.json` for world-specific progression content
 
 Core concepts:
 - `recipes` define reusable gameplay templates.
 - Each recipe declares a `kind`, plus `rules` and `scoring`.
-- `worlds[].levels[]` define progression and rewards.
+- `worldIds` in `game.json` define world loading order.
+- Each `worlds/<worldId>.json` file defines one world and its `levels`.
 - Levels reference recipes with `recipeId`.
 - Level-specific tuning goes under `overrides.rules` and `overrides.scoring`.
 - `defaults` can be set at the game level or per world, then overridden per level.
@@ -218,12 +222,15 @@ Level example:
 
 # language_grove authoring
 
-This game is authored through a single `game.json` manifest.
+This game is authored through:
+- `game.json` for shared game config
+- `worlds/<worldId>.json` for world-specific progression content
 
 Core concepts:
 - `recipes` define reusable gameplay templates.
 - Each recipe declares a `kind`, plus `rules` and `scoring`.
-- `worlds[].levels[]` define progression and rewards.
+- `worldIds` in `game.json` define world loading order.
+- Each `worlds/<worldId>.json` file defines one world and its `levels`.
 - Levels reference recipes with `recipeId`.
 - Level-specific tuning goes under `overrides.rules` and `overrides.scoring`.
 - `defaults` can be set at the game level or per world, then overridden per level.
@@ -336,12 +343,15 @@ Allowed `promptSet` values: `sentence_completion`, `opposites`, `synonyms`, `rid
 
 # watermelon_catch authoring
 
-This game is authored through a single `game.json` manifest.
+This game is authored through:
+- `game.json` for shared game config
+- `worlds/<worldId>.json` for world-specific progression content
 
 Core concepts:
 - `recipes` define reusable gameplay templates.
 - Each recipe declares a `kind`, plus `rules` and `scoring`.
-- `worlds[].levels[]` define progression and rewards.
+- `worldIds` in `game.json` define world loading order.
+- Each `worlds/<worldId>.json` file defines one world and its `levels`.
 - Levels reference recipes with `recipeId`.
 - Level-specific tuning goes under `overrides.rules` and `overrides.scoring`.
 - `defaults` can be set at the game level or per world, then overridden per level.
