@@ -8,9 +8,7 @@ function deepClone(value) {
 
 function pathJoin(...parts) {
   return parts.map((part, index) => {
-    if (index === 0) {
-      return part.replace(/\/+$/, '');
-    }
+    if (index === 0) return part.replace(/\/+$/, '');
     return part.replace(/^\/+|\/+$/g, '');
   }).join('/');
 }
@@ -38,61 +36,45 @@ function makeValidationError(path, message, severity = 'error') {
 function detectWorldGraphIssues(worlds) {
   const errors = [];
   const worldMap = new Map(worlds.map((world) => [world.id, world]));
-
   worlds.forEach((world) => {
     if (world.unlockAfterWorldId && !worldMap.has(world.unlockAfterWorldId)) {
       errors.push(makeValidationError(`worlds.${world.id}.unlockAfterWorldId`, `Unknown world id "${world.unlockAfterWorldId}"`));
     }
   });
-
-  worlds.forEach((world) => {
-    const seen = new Set([world.id]);
-    let cursor = world;
-    while (cursor?.unlockAfterWorldId) {
-      if (seen.has(cursor.unlockAfterWorldId)) {
-        errors.push(makeValidationError(`worlds.${world.id}.unlockAfterWorldId`, 'World unlock graph contains a cycle'));
-        break;
-      }
-      seen.add(cursor.unlockAfterWorldId);
-      cursor = worldMap.get(cursor.unlockAfterWorldId) ?? null;
-    }
-  });
-
   return errors;
 }
 
-function detectLevelIssues(worlds, recipeIds) {
+function detectLevelIssues(worlds) {
   const errors = [];
   worlds.forEach((world) => {
     const slotMap = new Map();
-    const levelIdMap = new Map();
-    const levelNumMap = new Map();
+    const idMap = new Map();
+    const numMap = new Map();
     (world.levels ?? []).forEach((level, index) => {
-      const levelPath = `worlds.${world.id}.levels[${index}]`;
-      if (recipeIds && !recipeIds.has(level.recipeId)) {
-        errors.push(makeValidationError(`${levelPath}.recipeId`, `Unknown recipe id "${level.recipeId}"`));
+      const path = `worlds.${world.id}.levels[${index}]`;
+      if (!level.id) {
+        errors.push(makeValidationError(`${path}.id`, 'Level is missing an id'));
+      } else if (idMap.has(level.id)) {
+        errors.push(makeValidationError(`${path}.id`, `Duplicate level id "${level.id}" in world`));
+      } else {
+        idMap.set(level.id, true);
+      }
+      if (level.levelNum == null) {
+        errors.push(makeValidationError(`${path}.levelNum`, 'Level is missing a level number'));
+      } else if (numMap.has(level.levelNum)) {
+        errors.push(makeValidationError(`${path}.levelNum`, `Duplicate level number ${level.levelNum} in world`));
+      } else {
+        numMap.set(level.levelNum, true);
       }
       if (level.slot == null) {
-        errors.push(makeValidationError(`${levelPath}.slot`, 'Level is missing a slot assignment'));
+        errors.push(makeValidationError(`${path}.slot`, 'Level is missing a slot assignment'));
       } else if (slotMap.has(level.slot)) {
-        errors.push(makeValidationError(`${levelPath}.slot`, `Slot ${level.slot} is already used by "${slotMap.get(level.slot)}"`));
+        errors.push(makeValidationError(`${path}.slot`, `Duplicate slot ${level.slot} in world`));
       } else {
-        slotMap.set(level.slot, level.label || level.levelId);
+        slotMap.set(level.slot, true);
       }
-
-      if (level.levelId) {
-        if (levelIdMap.has(level.levelId)) {
-          errors.push(makeValidationError(`${levelPath}.levelId`, `Duplicate levelId "${level.levelId}" in world`));
-        } else {
-          levelIdMap.set(level.levelId, true);
-        }
-      }
-      if (level.levelNum != null) {
-        if (levelNumMap.has(level.levelNum)) {
-          errors.push(makeValidationError(`${levelPath}.levelNum`, `Duplicate levelNum ${level.levelNum} in world`));
-        } else {
-          levelNumMap.set(level.levelNum, true);
-        }
+      if (!level.activityType) {
+        errors.push(makeValidationError(`${path}.activityType`, 'Level is missing an activity type'));
       }
     });
   });
@@ -108,15 +90,6 @@ export class GameContentService {
     }
   }
 
-  getEditorDefinition() {
-    return this.plugin.getEditorDefinition?.() ?? {
-      gameId: this.gameId,
-      label: this.gameId,
-      goalTypes: [],
-      modeDescriptors: this.plugin.modeDescriptors ?? [],
-    };
-  }
-
   async load() {
     const payload = await fetchJson(pathJoin(BASE_URL, '__authoring/game-config', this.gameId));
     const game = deepClone(payload.game);
@@ -126,16 +99,15 @@ export class GameContentService {
       game,
       worlds,
       validation,
-      editorDefinition: this.getEditorDefinition(),
+      editorDefinition: this.plugin.getEditorDefinition(validation.normalized),
     };
   }
 
   validate(game, worlds) {
-    const errors = [];
-    const recipeIds = new Set(Object.keys(game.recipes ?? {}));
-    errors.push(...detectWorldGraphIssues(worlds));
-    errors.push(...detectLevelIssues(worlds, recipeIds));
-
+    const errors = [
+      ...detectWorldGraphIssues(worlds),
+      ...detectLevelIssues(worlds),
+    ];
     try {
       const normalized = this.plugin.normalize(authoredManifestFromState(game, worlds));
       return {
@@ -169,25 +141,15 @@ export class GameContentService {
     });
   }
 
-  getResolvedRecipe(validation, recipeId) {
-    return validation.normalized?.recipes?.get(recipeId) ?? null;
-  }
-
   getResolvedLevel(validation, levelId) {
-    return validation.normalized?.levels?.find((level) => level.levelId === levelId) ?? null;
+    return validation.normalized?.levels?.find((level) => level.levelId === levelId || level.id === levelId) ?? null;
   }
 
-  getUsedBy(worlds, recipeId) {
-    return worlds.flatMap((world) =>
-      (world.levels ?? [])
-        .filter((level) => level.recipeId === recipeId)
-        .map((level) => ({
-          worldId: world.id,
-          worldTitle: world.title,
-          levelId: level.levelId,
-          levelNum: level.levelNum,
-          label: level.label,
-        })),
-    );
+  getPreset(editorDefinition, presetId) {
+    return editorDefinition?.presets?.find((preset) => preset.id === presetId) ?? null;
+  }
+
+  getPreview(editorDefinition, levelOrResolvedLevel) {
+    return editorDefinition?.buildPreview?.(levelOrResolvedLevel) ?? null;
   }
 }

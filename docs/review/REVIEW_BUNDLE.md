@@ -1,5 +1,44 @@
 # REVIEW BUNDLE
 
+## 0. Authoring Layer Transition
+
+### What Changed
+- Implemented `docs/tasks/authoring_layer_transition_plan.md`.
+- Replaced the old Math Garden recipe-first authoring model with a level-first authoring layer centered on:
+- game
+- world
+- level
+- activity type
+- optional preset
+- Added descriptor-based authoring contracts in `capy-village/src/authoring/descriptors/` and a Math-specific normalizer in `capy-village/src/authoring/mathGardenAuthoring.js`.
+- Migrated Math Garden authored data so:
+- `game.json` now carries shared defaults, presets, world order, world-select/level-select, and arcade activities
+- `worlds/*.json` now carry world metadata plus self-contained authored levels
+- level sections now directly store:
+- `objective`
+- `content`
+- `difficulty`
+- `scoring`
+- `presentation`
+- Reworked the Game Editor into a world/level authoring surface driven by descriptor metadata rather than recipe-specific hand-coded fields.
+- Added generated authoring outputs:
+- `capy-village/src/config/games/schemas/math_garden.game.schema.json`
+- `capy-village/src/config/games/schemas/math_garden.world.schema.json`
+- `docs/math_garden_authoring.md`
+- Corrected migrated unlock defaults so later Math worlds no longer accidentally start unlocked.
+
+### Reviewer Focus
+- Confirm the Math plugin now normalizes through `capy-village/src/authoring/mathGardenAuthoring.js` instead of the previous recipe-centric path.
+- Confirm the new level data shape is self-contained and no longer depends on `recipeId` / `overrides` for Math Garden authored levels.
+- Confirm `capy-village/src/gameEditor/GameContentEditor.js` renders descriptor-driven forms rather than a recipe editor flow.
+- Confirm generated Math authoring schema/docs reflect the new level sections and activity types.
+- Confirm only `number_garden` remains `startsUnlocked: true` by default in the migrated world files.
+
+### Verification
+- Ran `npm run generate:authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.
+- Opened `game-editor.html` through the Vite dev server and confirmed the Math Garden authoring UI booted with world, level, and preset data loaded.
+
 ## 0. Final Fix Follow-Up
 
 ### Math Garden Five-World Progression Pass

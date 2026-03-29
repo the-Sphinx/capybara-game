@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Math Garden world config",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "title",
+    "levels"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string"
+    },
+    "learningObjective": {
+      "type": "string"
+    },
+    "unlockRequirementText": {
+      "type": "string"
+    },
+    "startsUnlocked": {
+      "type": "boolean"
+    },
+    "unlockAfterWorldId": {
+      "type": "string"
+    },
+    "signBox": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "clickBox": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "levels": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "id",
+              "label",
+              "levelNum",
+              "activityType",
+              "objective",
+              "content",
+              "difficulty",
+              "scoring",
+              "presentation"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "levelNum": {
+                "type": "number"
+              },
+              "slot": {
+                "type": "number"
+              },
+              "schemaVersion": {
+                "type": "number"
+              },
+              "activityType": {
+                "const": "collect_stream"
+              },
+              "sourcePresetId": {
+                "type": "string"
+              },
+              "objective": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "difficulty": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "scoring": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "presentation": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "id",
+              "label",
+              "levelNum",
+              "activityType",
+              "objective",
+              "content",
+              "difficulty",
+              "scoring",
+              "presentation"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "levelNum": {
+                "type": "number"
+              },
+              "slot": {
+                "type": "number"
+              },
+              "schemaVersion": {
+                "type": "number"
+              },
+              "activityType": {
+                "const": "answer_prompt"
+              },
+              "sourcePresetId": {
+                "type": "string"
+              },
+              "objective": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "difficulty": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "scoring": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "presentation": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

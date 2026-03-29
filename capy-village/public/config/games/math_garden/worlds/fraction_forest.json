@@ -2,8 +2,19 @@
   "id": "fraction_forest",
   "title": "Fraction Forest",
   "subtitle": "Pieces and parts",
+  "label": "Fraction Forest",
+  "theme": "fraction forest",
+  "learningObjective": "Pieces and parts",
   "unlockRequirementText": "Complete Geometry Yard",
+  "startsUnlocked": false,
   "unlockAfterWorldId": "geometry_yard",
-  "signBox": { "x": 0.7078, "y": 0.3603, "w": 0.0825, "h": 0.0462 },
+  "signBox": {
+    "x": 0.7078,
+    "y": 0.3603,
+    "w": 0.0825,
+    "h": 0.0462
+  },
+  "clickBox": null,
+  "defaults": {},
   "levels": []
 }

@@ -1,5 +1,57 @@
 # Progress
 
+## 2026-03-29
+
+### Authoring Layer Transition
+- Implemented `docs/tasks/authoring_layer_transition_plan.md`.
+- Replaced the Math Garden authoring model with a level-first structure built around:
+- `game`
+- `world`
+- `level`
+- `activityType`
+- optional `preset`
+- Added a new descriptor layer under `capy-village/src/authoring/descriptors/` so activity descriptors are now the source of truth for:
+- editor sections and fields
+- visibility and defaults
+- validation metadata
+- generated schema output
+- generated authoring docs
+- Added Math Garden authoring normalization in `capy-village/src/authoring/mathGardenAuthoring.js`.
+- Migrated Math Garden config from recipe/override-style authoring into:
+- game-level presets and arcade activities in `capy-village/public/config/games/math_garden/game.json`
+- world-level authored levels in `capy-village/public/config/games/math_garden/worlds/*.json`
+- Each level now directly owns stable sections for:
+- `objective`
+- `content`
+- `difficulty`
+- `scoring`
+- `presentation`
+- Rewired the Math plugin to normalize through the new authoring layer instead of the older recipe registry path.
+- Reworked the game editor into a world-and-level authoring tool:
+- world list + level list + preset browser
+- slot-based level map preview
+- descriptor-driven forms
+- structured matcher / phase editing for `collect_stream`
+- live resolved-level preview
+- direct save back to repo files through the existing dev-only authoring endpoints
+- Added a dedicated Math authoring artifact generator:
+- `tools/generate_math_authoring_artifacts.mjs`
+- Generated:
+- `capy-village/src/config/games/schemas/math_garden.game.schema.json`
+- `capy-village/src/config/games/schemas/math_garden.world.schema.json`
+- `docs/math_garden_authoring.md`
+- Corrected migrated Math world unlock defaults so only `number_garden` starts unlocked by default.
+
+### Self-Check
+- Verified `npm run generate:authoring` succeeds in `capy-village`.
+- Verified `npm run build` succeeds in `capy-village`.
+- Verified the new Game Editor boots in-browser at `game-editor.html` through the Vite dev server.
+- Confirmed Math Garden authoring data loads into the new editor with:
+- world navigation
+- level selection
+- preset browsing
+- descriptor-driven forms
+
 ## 2026-03-28
 
 ### Math Garden Core Worlds Level Design Pass

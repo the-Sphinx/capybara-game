@@ -2,234 +2,639 @@
   "id": "division_grove",
   "title": "Division Grove",
   "subtitle": "Sharing and precision",
+  "label": "Division Grove",
+  "theme": "division grove",
+  "learningObjective": "Sharing and precision",
   "unlockRequirementText": "Complete Multiplication Meadow",
+  "startsUnlocked": false,
   "unlockAfterWorldId": "multiplication_meadow",
-  "startsUnlocked": true,
-  "signBox": { "x": 0.2424, "y": 0.7447, "w": 0.1057, "h": 0.0644 },
+  "signBox": {
+    "x": 0.2424,
+    "y": 0.7447,
+    "w": 0.1057,
+    "h": 0.0644
+  },
+  "clickBox": null,
+  "defaults": {},
   "levels": [
     {
-      "levelId": "division_grove_1",
+      "id": "division_grove_1",
+      "label": "Share by Two",
       "levelNum": 1,
       "slot": 1,
-      "label": "Share by Two",
-      "recipeId": "collect_multiples_of_2",
-      "timeLimit": 56,
-      "goal": { "type": "catchCount", "value": 5 },
-      "clearReward": 20,
-      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 11, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [2, 18],
-          "itemCount": 5,
-          "spawnDelayRange": [1.0, 1.35],
-          "fallSpeedRange": [85, 125]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_2",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 2,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            2,
+            18
+          ]
+        },
+        "itemCount": 5,
+        "spawnDelayRange": [
+          1,
+          1.35
+        ],
+        "fallSpeedRange": [
+          85,
+          125
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 56,
+        "goal": {
+          "type": "catchCount",
+          "value": 5
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×2!",
+        "clearReward": 20,
+        "bonusTiers": [
+          {
+            "threshold": 8,
+            "reward": 4
+          },
+          {
+            "threshold": 11,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Double Trail",
+        "prompt": "Catch multiples of 2!"
       }
     },
     {
-      "levelId": "division_grove_2",
+      "id": "division_grove_2",
+      "label": "Fives Review",
       "levelNum": 2,
       "slot": 2,
-      "label": "Fives Review",
-      "recipeId": "collect_multiples_of_5",
-      "timeLimit": 54,
-      "goal": { "type": "catchCount", "value": 6 },
-      "clearReward": 22,
-      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 12, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [5, 40],
-          "itemCount": 6,
-          "spawnDelayRange": [0.95, 1.25],
-          "fallSpeedRange": [90, 135]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_5",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 5,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            5,
+            40
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": [
+          0.95,
+          1.25
+        ],
+        "fallSpeedRange": [
+          90,
+          135
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 54,
+        "goal": {
+          "type": "catchCount",
+          "value": 6
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×5!",
+        "clearReward": 22,
+        "bonusTiers": [
+          {
+            "threshold": 9,
+            "reward": 4
+          },
+          {
+            "threshold": 12,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "High Five",
+        "prompt": "Catch multiples of 5!"
       }
     },
     {
-      "levelId": "division_grove_3",
+      "id": "division_grove_3",
+      "label": "Thirds Focus",
       "levelNum": 3,
       "slot": 3,
-      "label": "Thirds Focus",
-      "recipeId": "collect_multiples_of_3",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 6 },
-      "clearReward": 25,
-      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 12, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [3, 30],
-          "itemCount": 6,
-          "spawnDelayRange": [0.85, 1.15],
-          "fallSpeedRange": [100, 145]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_3",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 3,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            3,
+            30
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": [
+          0.85,
+          1.15
+        ],
+        "fallSpeedRange": [
+          100,
+          145
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 50,
+        "goal": {
+          "type": "catchCount",
+          "value": 6
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 4,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×3!",
+        "clearReward": 25,
+        "bonusTiers": [
+          {
+            "threshold": 9,
+            "reward": 5
+          },
+          {
+            "threshold": 12,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Triple Trail",
+        "prompt": "Catch multiples of 3!"
       }
     },
     {
-      "levelId": "division_grove_4",
+      "id": "division_grove_4",
+      "label": "Sixes Stream",
       "levelNum": 4,
       "slot": 4,
-      "label": "Sixes Stream",
-      "recipeId": "collect_divisible_by_6",
-      "timeLimit": 48,
-      "goal": { "type": "catchCount", "value": 7 },
-      "clearReward": 29,
-      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 13, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [6, 42],
-          "itemCount": 7,
-          "spawnDelayRange": [0.8, 1.1],
-          "fallSpeedRange": [105, 155]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_6",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 6,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            6,
+            42
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": [
+          0.8,
+          1.1
+        ],
+        "fallSpeedRange": [
+          105,
+          155
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 48,
+        "goal": {
+          "type": "catchCount",
+          "value": 7
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 6,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷6!",
+        "clearReward": 29,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 5
+          },
+          {
+            "threshold": 13,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Six in Step",
+        "prompt": "Catch numbers divisible by 6!"
       }
     },
     {
-      "levelId": "division_grove_5",
+      "id": "division_grove_5",
+      "label": "Perfect Tens",
       "levelNum": 5,
       "slot": 5,
-      "label": "Perfect Tens",
-      "recipeId": "collect_divisible_by_10",
-      "timeLimit": 46,
-      "goal": { "type": "catchCount", "value": 7 },
-      "clearReward": 33,
-      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 13, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [10, 60],
-          "itemCount": 7,
-          "spawnDelayRange": [0.75, 1.05],
-          "fallSpeedRange": [110, 160]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_10",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 10,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            10,
+            60
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": [
+          0.75,
+          1.05
+        ],
+        "fallSpeedRange": [
+          110,
+          160
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 46,
+        "goal": {
+          "type": "catchCount",
+          "value": 7
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷10!",
+        "clearReward": 33,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 6
+          },
+          {
+            "threshold": 13,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Perfect Tens",
+        "prompt": "Catch numbers divisible by 10!"
       }
     },
     {
-      "levelId": "division_grove_6",
+      "id": "division_grove_6",
+      "label": "Eights Challenge",
       "levelNum": 6,
       "slot": 6,
-      "label": "Eights Challenge",
-      "recipeId": "collect_divisible_by_8",
-      "timeLimit": 42,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 38,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [8, 64],
-          "itemCount": 8,
-          "spawnDelayRange": [0.65, 0.95],
-          "fallSpeedRange": [115, 175]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Only equal shares!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_8",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 8,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            8,
+            64
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.65,
+          0.95
+        ],
+        "fallSpeedRange": [
+          115,
+          175
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 42,
+        "goal": {
+          "type": "catchCount",
+          "value": 8
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Only equal shares!",
+        "clearReward": 38,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 14,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Eight Together",
+        "prompt": "Catch numbers divisible by 8!"
       }
     },
     {
-      "levelId": "division_grove_7",
+      "id": "division_grove_7",
+      "label": "Dense Divisors",
       "levelNum": 7,
       "slot": 7,
-      "label": "Dense Divisors",
-      "recipeId": "collect_divisible_by_6",
-      "timeLimit": 40,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 42,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [6, 54],
-          "itemCount": 9,
-          "spawnDelayRange": [0.55, 0.85],
-          "fallSpeedRange": [120, 180]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Check divisibility!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_6",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 6,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            6,
+            54
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.55,
+          0.85
+        ],
+        "fallSpeedRange": [
+          120,
+          180
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 40,
+        "goal": {
+          "type": "catchCount",
+          "value": 8
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 6,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Check divisibility!",
+        "clearReward": 42,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 14,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Six in Step",
+        "prompt": "Catch numbers divisible by 6!"
       }
     },
     {
-      "levelId": "division_grove_8",
+      "id": "division_grove_8",
+      "label": "Fast Divisors",
       "levelNum": 8,
       "slot": 8,
-      "label": "Fast Divisors",
-      "recipeId": "collect_divisible_by_10",
-      "timeLimit": 36,
-      "goal": { "type": "catchCount", "value": 9 },
-      "clearReward": 47,
-      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [10, 70],
-          "itemCount": 9,
-          "spawnDelayRange": [0.45, 0.7],
-          "fallSpeedRange": [130, 195]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Stay precise!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_10",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 10,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            10,
+            70
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.45,
+          0.7
+        ],
+        "fallSpeedRange": [
+          130,
+          195
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 36,
+        "goal": {
+          "type": "catchCount",
+          "value": 9
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Stay precise!",
+        "clearReward": 47,
+        "bonusTiers": [
+          {
+            "threshold": 12,
+            "reward": 8
+          },
+          {
+            "threshold": 15,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Perfect Tens",
+        "prompt": "Catch numbers divisible by 10!"
       }
     },
     {
-      "levelId": "division_grove_9",
+      "id": "division_grove_9",
+      "label": "Accuracy Grove",
       "levelNum": 9,
       "slot": 9,
-      "label": "Accuracy Grove",
-      "recipeId": "collect_divisible_by_8",
-      "timeLimit": 35,
-      "goal": { "type": "catchCount", "value": 9 },
-      "clearReward": 52,
-      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [8, 72],
-          "itemCount": 9,
-          "spawnDelayRange": [0.45, 0.7],
-          "fallSpeedRange": [130, 200]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Exact thinking only!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_8",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 8,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            8,
+            72
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.45,
+          0.7
+        ],
+        "fallSpeedRange": [
+          130,
+          200
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 35,
+        "goal": {
+          "type": "catchCount",
+          "value": 9
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Exact thinking only!",
+        "clearReward": 52,
+        "bonusTiers": [
+          {
+            "threshold": 12,
+            "reward": 8
+          },
+          {
+            "threshold": 15,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Eight Together",
+        "prompt": "Catch numbers divisible by 8!"
       }
     },
     {
-      "levelId": "division_grove_10",
+      "id": "division_grove_10",
+      "label": "Division Boss",
       "levelNum": 10,
       "slot": 10,
-      "label": "Division Boss",
-      "recipeId": "collect_divisible_by_10",
-      "timeLimit": 32,
-      "goal": { "type": "catchCount", "value": 10 },
-      "clearReward": 60,
-      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 16, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [10, 80],
-          "itemCount": 10,
-          "spawnDelayRange": [0.35, 0.55],
-          "fallSpeedRange": [140, 210]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Master the sharing rule!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_10",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 10,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            10,
+            80
+          ]
+        },
+        "itemCount": 10,
+        "spawnDelayRange": [
+          0.35,
+          0.55
+        ],
+        "fallSpeedRange": [
+          140,
+          210
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 32,
+        "goal": {
+          "type": "catchCount",
+          "value": 10
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 7,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Master the sharing rule!",
+        "clearReward": 60,
+        "bonusTiers": [
+          {
+            "threshold": 13,
+            "reward": 8
+          },
+          {
+            "threshold": 16,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Perfect Tens",
+        "prompt": "Catch numbers divisible by 10!"
       }
     }
   ]

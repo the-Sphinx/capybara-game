@@ -1,5 +1,7 @@
 {
   "id": "math_garden",
+  "label": "Math Garden",
+  "schemaVersion": 1,
   "defaults": {},
   "worldIds": [
     "number_garden",
@@ -18,261 +20,795 @@
     "enabled": true,
     "backgroundPath": "assets/games/math_garden/level_select.jpeg",
     "slots": [
-      { "slot": 1, "x": 0.8474, "y": 0.8398, "r": 0.025 },
-      { "slot": 2, "x": 0.6817, "y": 0.7253, "r": 0.025 },
-      { "slot": 3, "x": 0.3103, "y": 0.8424, "r": 0.025 },
-      { "slot": 4, "x": 0.1642, "y": 0.6862, "r": 0.025 },
-      { "slot": 5, "x": 0.2427, "y": 0.4857, "r": 0.025 },
-      { "slot": 6, "x": 0.6635, "y": 0.5339, "r": 0.025 },
-      { "slot": 7, "x": 0.7863, "y": 0.2409, "r": 0.025 },
-      { "slot": 8, "x": 0.556, "y": 0.2461, "r": 0.025 },
-      { "slot": 9, "x": 0.3358, "y": 0.3008, "r": 0.025 },
-      { "slot": 10, "x": 0.1875, "y": 0.2552, "r": 0.025 }
+      {
+        "slot": 1,
+        "x": 0.8474,
+        "y": 0.8398,
+        "r": 0.025
+      },
+      {
+        "slot": 2,
+        "x": 0.6817,
+        "y": 0.7253,
+        "r": 0.025
+      },
+      {
+        "slot": 3,
+        "x": 0.3103,
+        "y": 0.8424,
+        "r": 0.025
+      },
+      {
+        "slot": 4,
+        "x": 0.1642,
+        "y": 0.6862,
+        "r": 0.025
+      },
+      {
+        "slot": 5,
+        "x": 0.2427,
+        "y": 0.4857,
+        "r": 0.025
+      },
+      {
+        "slot": 6,
+        "x": 0.6635,
+        "y": 0.5339,
+        "r": 0.025
+      },
+      {
+        "slot": 7,
+        "x": 0.7863,
+        "y": 0.2409,
+        "r": 0.025
+      },
+      {
+        "slot": 8,
+        "x": 0.556,
+        "y": 0.2461,
+        "r": 0.025
+      },
+      {
+        "slot": 9,
+        "x": 0.3358,
+        "y": 0.3008,
+        "r": 0.025
+      },
+      {
+        "slot": 10,
+        "x": 0.1875,
+        "y": 0.2552,
+        "r": 0.025
+      }
     ]
   },
   "arcade": {
     "enabled": true,
-    "recipeIds": [
-      "addition_basic",
-      "mixed_equations",
-      "collect_even_basic",
-      "collect_odd_basic",
-      "collect_multiples_of_3",
-      "collect_multiples_of_5"
-    ],
-    "weights": {
-      "addition_basic": 2,
-      "mixed_equations": 2,
-      "collect_even_basic": 2,
-      "collect_odd_basic": 2,
-      "collect_multiples_of_3": 1,
-      "collect_multiples_of_5": 1
-    }
+    "activities": [
+      {
+        "id": "addition_basic",
+        "label": "Addition Garden",
+        "activityType": "answer_prompt",
+        "schemaVersion": 1,
+        "objective": {
+          "operation": "addition"
+        },
+        "content": {
+          "numberRange": [
+            0,
+            10
+          ],
+          "answerCount": 3,
+          "fixedOperand": null,
+          "targetValue": null,
+          "leftRange": null,
+          "rightRange": null
+        },
+        "difficulty": {
+          "timeLimit": 60,
+          "goal": {
+            "type": "correctAnswers",
+            "value": 8
+          }
+        },
+        "scoring": {
+          "pointsPerCorrect": 10,
+          "wrongPenalty": 0,
+          "wrongFeedback": "Try again!",
+          "clearReward": 0,
+          "bonusTiers": []
+        },
+        "presentation": {
+          "title": "Addition Garden",
+          "prompt": "Tap the correct answer!"
+        },
+        "weight": 2
+      },
+      {
+        "id": "mixed_equations",
+        "label": "Mixed Math",
+        "activityType": "answer_prompt",
+        "schemaVersion": 1,
+        "objective": {
+          "operation": "mixed"
+        },
+        "content": {
+          "numberRange": [
+            0,
+            15
+          ],
+          "answerCount": 4,
+          "fixedOperand": null,
+          "targetValue": null,
+          "leftRange": null,
+          "rightRange": null
+        },
+        "difficulty": {
+          "timeLimit": 60,
+          "goal": {
+            "type": "correctAnswers",
+            "value": 8
+          }
+        },
+        "scoring": {
+          "pointsPerCorrect": 12,
+          "wrongPenalty": 0,
+          "wrongFeedback": "Try again!",
+          "clearReward": 0,
+          "bonusTiers": []
+        },
+        "presentation": {
+          "title": "Mixed Math",
+          "prompt": "Tap the correct answer!"
+        },
+        "weight": 2
+      },
+      {
+        "id": "collect_even_basic",
+        "label": "Collect Even Numbers",
+        "activityType": "collect_stream",
+        "schemaVersion": 1,
+        "objective": {
+          "rule": {
+            "type": "parity",
+            "parity": "even"
+          }
+        },
+        "content": {
+          "domain": {
+            "kind": "numbers",
+            "range": [
+              1,
+              20
+            ]
+          },
+          "itemCount": 6,
+          "spawnDelayRange": null,
+          "fallSpeedRange": null
+        },
+        "difficulty": {
+          "timeLimit": 60,
+          "goal": {
+            "type": "catchCount",
+            "value": 12
+          }
+        },
+        "scoring": {
+          "pointsPerCorrect": 2,
+          "wrongPenalty": 1,
+          "wrongFeedback": "Odd!",
+          "clearReward": 0,
+          "bonusTiers": []
+        },
+        "presentation": {
+          "title": "Collect Even Numbers",
+          "prompt": "Catch even numbers!"
+        },
+        "weight": 2
+      },
+      {
+        "id": "collect_odd_basic",
+        "label": "Collect Odd Numbers",
+        "activityType": "collect_stream",
+        "schemaVersion": 1,
+        "objective": {
+          "rule": {
+            "type": "parity",
+            "parity": "odd"
+          }
+        },
+        "content": {
+          "domain": {
+            "kind": "numbers",
+            "range": [
+              1,
+              20
+            ]
+          },
+          "itemCount": 6,
+          "spawnDelayRange": null,
+          "fallSpeedRange": null
+        },
+        "difficulty": {
+          "timeLimit": 60,
+          "goal": {
+            "type": "catchCount",
+            "value": 12
+          }
+        },
+        "scoring": {
+          "pointsPerCorrect": 2,
+          "wrongPenalty": 1,
+          "wrongFeedback": "Even!",
+          "clearReward": 0,
+          "bonusTiers": []
+        },
+        "presentation": {
+          "title": "Collect Odd Numbers",
+          "prompt": "Catch odd numbers!"
+        },
+        "weight": 2
+      },
+      {
+        "id": "collect_multiples_of_3",
+        "label": "Triple Trail",
+        "activityType": "collect_stream",
+        "schemaVersion": 1,
+        "objective": {
+          "rule": {
+            "type": "modulo",
+            "mod": 3,
+            "remainder": 0
+          }
+        },
+        "content": {
+          "domain": {
+            "kind": "numbers",
+            "range": [
+              1,
+              24
+            ]
+          },
+          "itemCount": 6,
+          "spawnDelayRange": null,
+          "fallSpeedRange": null
+        },
+        "difficulty": {
+          "timeLimit": 60,
+          "goal": {
+            "type": "catchCount",
+            "value": 12
+          }
+        },
+        "scoring": {
+          "pointsPerCorrect": 4,
+          "wrongPenalty": 1,
+          "wrongFeedback": "Not ×3!",
+          "clearReward": 0,
+          "bonusTiers": []
+        },
+        "presentation": {
+          "title": "Triple Trail",
+          "prompt": "Catch multiples of 3!"
+        },
+        "weight": 1
+      },
+      {
+        "id": "collect_multiples_of_5",
+        "label": "High Five",
+        "activityType": "collect_stream",
+        "schemaVersion": 1,
+        "objective": {
+          "rule": {
+            "type": "modulo",
+            "mod": 5,
+            "remainder": 0
+          }
+        },
+        "content": {
+          "domain": {
+            "kind": "numbers",
+            "range": [
+              1,
+              30
+            ]
+          },
+          "itemCount": 6,
+          "spawnDelayRange": null,
+          "fallSpeedRange": null
+        },
+        "difficulty": {
+          "timeLimit": 60,
+          "goal": {
+            "type": "catchCount",
+            "value": 12
+          }
+        },
+        "scoring": {
+          "pointsPerCorrect": 5,
+          "wrongPenalty": 1,
+          "wrongFeedback": "Not ×5!",
+          "clearReward": 0,
+          "bonusTiers": []
+        },
+        "presentation": {
+          "title": "High Five",
+          "prompt": "Catch multiples of 5!"
+        },
+        "weight": 1
+      }
+    ]
   },
-  "recipes": {
-    "addition_basic": {
-      "kind": "answer_equation",
-      "title": "Addition Garden",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "addition",
-        "numberRange": [0, 10],
-        "answerCount": 3
+  "presets": [
+    {
+      "id": "addition_basic",
+      "label": "Addition Garden",
+      "description": "Tap the correct answer!",
+      "activityType": "answer_prompt",
+      "objective": {
+        "operation": "addition"
       },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 3,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 10,
         "wrongPenalty": 0,
         "wrongFeedback": "Try again!"
+      },
+      "presentation": {
+        "title": "Addition Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
-    "subtraction_basic": {
-      "kind": "answer_equation",
-      "title": "Subtraction Garden",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "subtraction",
-        "numberRange": [0, 10],
-        "answerCount": 3
+    {
+      "id": "subtraction_basic",
+      "label": "Subtraction Garden",
+      "description": "Tap the correct answer!",
+      "activityType": "answer_prompt",
+      "objective": {
+        "operation": "subtraction"
       },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 3,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 10,
         "wrongPenalty": 0,
         "wrongFeedback": "Try again!"
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
-    "mixed_equations": {
-      "kind": "answer_equation",
-      "title": "Mixed Math",
-      "prompt": "Tap the correct answer!",
-      "rules": {
-        "operation": "mixed",
-        "numberRange": [0, 15],
-        "answerCount": 4
+    {
+      "id": "mixed_equations",
+      "label": "Mixed Math",
+      "description": "Tap the correct answer!",
+      "activityType": "answer_prompt",
+      "objective": {
+        "operation": "mixed"
       },
+      "content": {
+        "numberRange": [
+          0,
+          15
+        ],
+        "answerCount": 4,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 12,
         "wrongPenalty": 0,
         "wrongFeedback": "Try again!"
+      },
+      "presentation": {
+        "title": "Mixed Math",
+        "prompt": "Tap the correct answer!"
       }
     },
-    "collect_even_basic": {
-      "kind": "collect_numbers",
-      "title": "Collect Even Numbers",
-      "prompt": "Catch even numbers!",
-      "rules": {
-        "matcher": "even",
-        "numberRange": [1, 20],
-        "itemCount": 6
+    {
+      "id": "collect_even_basic",
+      "label": "Collect Even Numbers",
+      "description": "Catch even numbers!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            20
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 2,
         "wrongPenalty": 1,
         "wrongFeedback": "Odd!"
+      },
+      "presentation": {
+        "title": "Collect Even Numbers",
+        "prompt": "Catch even numbers!"
       }
     },
-    "collect_odd_basic": {
-      "kind": "collect_numbers",
-      "title": "Collect Odd Numbers",
-      "prompt": "Catch odd numbers!",
-      "rules": {
-        "matcher": "odd",
-        "numberRange": [1, 20],
-        "itemCount": 6
+    {
+      "id": "collect_odd_basic",
+      "label": "Collect Odd Numbers",
+      "description": "Catch odd numbers!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "odd"
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            20
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 2,
         "wrongPenalty": 1,
         "wrongFeedback": "Even!"
+      },
+      "presentation": {
+        "title": "Collect Odd Numbers",
+        "prompt": "Catch odd numbers!"
       }
     },
-    "collect_prime_basic": {
-      "kind": "collect_numbers",
-      "title": "Collect Prime Numbers",
-      "prompt": "Catch prime numbers!",
-      "rules": {
-        "matcher": "prime",
-        "numberRange": [1, 30],
-        "itemCount": 6
+    {
+      "id": "collect_prime_basic",
+      "label": "Collect Prime Numbers",
+      "description": "Catch prime numbers!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "prime"
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            30
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 4,
         "wrongPenalty": 1,
         "wrongFeedback": "Not prime!"
+      },
+      "presentation": {
+        "title": "Collect Prime Numbers",
+        "prompt": "Catch prime numbers!"
       }
     },
-    "collect_multiples_of_2": {
-      "kind": "collect_numbers",
-      "title": "Double Trail",
-      "prompt": "Catch multiples of 2!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 2,
-        "remainder": 0,
-        "numberRange": [1, 20],
-        "itemCount": 6
+    {
+      "id": "collect_multiples_of_2",
+      "label": "Double Trail",
+      "description": "Catch multiples of 2!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 2,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            20
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 3,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ×2!"
+      },
+      "presentation": {
+        "title": "Double Trail",
+        "prompt": "Catch multiples of 2!"
       }
     },
-    "collect_multiples_of_3": {
-      "kind": "collect_numbers",
-      "title": "Triple Trail",
-      "prompt": "Catch multiples of 3!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 3,
-        "remainder": 0,
-        "numberRange": [1, 24],
-        "itemCount": 6
+    {
+      "id": "collect_multiples_of_3",
+      "label": "Triple Trail",
+      "description": "Catch multiples of 3!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 3,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            24
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 4,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ×3!"
+      },
+      "presentation": {
+        "title": "Triple Trail",
+        "prompt": "Catch multiples of 3!"
       }
     },
-    "collect_multiples_of_5": {
-      "kind": "collect_numbers",
-      "title": "High Five",
-      "prompt": "Catch multiples of 5!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 5,
-        "remainder": 0,
-        "numberRange": [1, 30],
-        "itemCount": 6
+    {
+      "id": "collect_multiples_of_5",
+      "label": "High Five",
+      "description": "Catch multiples of 5!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 5,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            30
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 5,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ×5!"
+      },
+      "presentation": {
+        "title": "High Five",
+        "prompt": "Catch multiples of 5!"
       }
     },
-    "collect_divisible_by_4": {
-      "kind": "collect_numbers",
-      "title": "Four at a Time",
-      "prompt": "Catch numbers divisible by 4!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 4,
-        "remainder": 0,
-        "numberRange": [4, 40],
-        "itemCount": 7
+    {
+      "id": "collect_divisible_by_4",
+      "label": "Four at a Time",
+      "description": "Catch numbers divisible by 4!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 4,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            4,
+            40
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 6,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ÷4!"
+      },
+      "presentation": {
+        "title": "Four at a Time",
+        "prompt": "Catch numbers divisible by 4!"
       }
     },
-    "collect_divisible_by_6": {
-      "kind": "collect_numbers",
-      "title": "Six in Step",
-      "prompt": "Catch numbers divisible by 6!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 6,
-        "remainder": 0,
-        "numberRange": [6, 48],
-        "itemCount": 7
+    {
+      "id": "collect_divisible_by_6",
+      "label": "Six in Step",
+      "description": "Catch numbers divisible by 6!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 6,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            6,
+            48
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 6,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ÷6!"
+      },
+      "presentation": {
+        "title": "Six in Step",
+        "prompt": "Catch numbers divisible by 6!"
       }
     },
-    "collect_divisible_by_8": {
-      "kind": "collect_numbers",
-      "title": "Eight Together",
-      "prompt": "Catch numbers divisible by 8!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 8,
-        "remainder": 0,
-        "numberRange": [8, 64],
-        "itemCount": 7
+    {
+      "id": "collect_divisible_by_8",
+      "label": "Eight Together",
+      "description": "Catch numbers divisible by 8!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 8,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            8,
+            64
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 7,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ÷8!"
+      },
+      "presentation": {
+        "title": "Eight Together",
+        "prompt": "Catch numbers divisible by 8!"
       }
     },
-    "collect_divisible_by_10": {
-      "kind": "collect_numbers",
-      "title": "Perfect Tens",
-      "prompt": "Catch numbers divisible by 10!",
-      "rules": {
-        "matcher": "divisible_by",
-        "divisor": 10,
-        "remainder": 0,
-        "numberRange": [10, 80],
-        "itemCount": 7
+    {
+      "id": "collect_divisible_by_10",
+      "label": "Perfect Tens",
+      "description": "Catch numbers divisible by 10!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 10,
+          "remainder": 0
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            10,
+            80
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 7,
         "wrongPenalty": 1,
         "wrongFeedback": "Not ÷10!"
+      },
+      "presentation": {
+        "title": "Perfect Tens",
+        "prompt": "Catch numbers divisible by 10!"
       }
     },
-    "collect_custom_rule": {
-      "kind": "collect_numbers",
-      "title": "Number Rule Catch",
-      "prompt": "Catch the right numbers!",
-      "rules": {
-        "matcher": "even",
-        "numberRange": [1, 20],
-        "itemCount": 6
+    {
+      "id": "collect_custom_rule",
+      "label": "Number Rule Catch",
+      "description": "Catch the right numbers!",
+      "activityType": "collect_stream",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
+        }
       },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            20
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": null,
+        "fallSpeedRange": null
+      },
+      "difficulty": {},
       "scoring": {
         "pointsPerCorrect": 3,
         "wrongPenalty": 1,
         "wrongFeedback": "Try again!"
+      },
+      "presentation": {
+        "title": "Number Rule Catch",
+        "prompt": "Catch the right numbers!"
       }
     }
-  }
+  ]
 }

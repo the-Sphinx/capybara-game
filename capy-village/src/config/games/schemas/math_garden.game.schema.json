@@ -1,16 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "math_garden game manifest",
+  "title": "Math Garden game config",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "id",
+    "label",
+    "schemaVersion",
     "worldIds",
-    "recipes"
+    "worldSelect",
+    "levelSelect",
+    "arcade",
+    "presets"
   ],
   "properties": {
     "id": {
       "const": "math_garden"
+    },
+    "label": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "number"
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": true
     },
     "worldIds": {
       "type": "array",
@@ -18,334 +33,252 @@
         "type": "string"
       }
     },
-    "defaults": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "recipeId": {
-          "type": "string"
-        },
-        "timeLimit": {
-          "type": "number"
-        },
-        "goal": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "type",
-            "value"
-          ],
-          "properties": {
-            "type": {
-              "type": "string"
-            },
-            "value": {
-              "type": "number"
-            }
-          }
-        },
-        "clearReward": {
-          "type": "number"
-        },
-        "bonusTiers": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "threshold",
-              "reward"
-            ],
-            "properties": {
-              "threshold": {
-                "type": "number"
-              },
-              "reward": {
-                "type": "number"
-              }
-            }
-          }
-        }
-      }
-    },
     "worldSelect": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "backgroundPath": {
-          "type": "string"
-        }
-      }
+      "additionalProperties": true
     },
     "levelSelect": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "backgroundPath": {
-          "type": "string"
-        },
-        "slots": {
-          "type": "array",
-          "items": {
+      "additionalProperties": true
+    },
+    "presets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "label",
+          "activityType"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "activityType": {
+            "type": "string",
+            "enum": [
+              "collect_stream",
+              "answer_prompt"
+            ]
+          },
+          "objective": {
             "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "slot",
-              "x",
-              "y",
-              "r"
-            ],
-            "properties": {
-              "slot": {
-                "type": "number"
-              },
-              "x": {
-                "type": "number"
-              },
-              "y": {
-                "type": "number"
-              },
-              "r": {
-                "type": "number"
-              }
-            }
+            "additionalProperties": true
+          },
+          "content": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "difficulty": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "scoring": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "presentation": {
+            "type": "object",
+            "additionalProperties": true
           }
         }
       }
     },
     "arcade": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "enabled": {
           "type": "boolean"
         },
-        "recipeIds": {
+        "activities": {
           "type": "array",
           "items": {
-            "type": "string"
-          }
-        },
-        "weights": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "number"
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "id",
+              "label",
+              "activityType",
+              "objective",
+              "content",
+              "difficulty",
+              "scoring",
+              "presentation"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "activityType": {
+                "type": "string",
+                "enum": [
+                  "collect_stream",
+                  "answer_prompt"
+                ]
+              },
+              "schemaVersion": {
+                "type": "number"
+              },
+              "weight": {
+                "type": "number"
+              },
+              "objective": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "content": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "difficulty": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "scoring": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "presentation": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
           }
         }
       }
-    },
-    "recipes": {
-      "type": "object",
-      "additionalProperties": {
-        "oneOf": [
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "kind",
-              "title",
-              "prompt",
-              "rules",
-              "scoring"
-            ],
-            "properties": {
-              "kind": {
-                "const": "collect_numbers"
-              },
-              "title": {
-                "type": "string"
-              },
-              "prompt": {
-                "type": "string"
-              },
-              "rules": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "numberRange"
-                ],
-                "properties": {
-                  "numberRange": {
-                    "type": "array",
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "items": {
-                      "type": "number"
-                    }
-                  },
-                  "matcher": {
-                    "oneOf": [
-                      {
-                        "type": "string",
-                        "enum": [
-                          "even",
-                          "odd",
-                          "prime",
-                          "divisible_by"
-                        ]
-                      },
-                      {
-                        "type": "object"
-                      }
-                    ]
-                  },
-                  "divisor": {
-                    "type": "number"
-                  },
-                  "remainder": {
-                    "type": "number"
-                  },
-                  "itemCount": {
-                    "type": "number"
-                  },
-                  "spawnDelayRange": {
-                    "type": "array",
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "items": {
-                      "type": "number"
-                    }
-                  },
-                  "fallSpeedRange": {
-                    "type": "array",
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "items": {
-                      "type": "number"
-                    }
-                  },
-                  "phases": {
-                    "type": "array",
-                    "items": {
-                      "type": "object"
-                    }
-                  }
-                }
-              },
-              "scoring": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "pointsPerCorrect",
-                  "wrongPenalty"
-                ],
-                "properties": {
-                  "pointsPerCorrect": {
-                    "type": "number"
-                  },
-                  "wrongPenalty": {
-                    "type": "number"
-                  },
-                  "wrongFeedback": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "kind",
-              "title",
-              "prompt",
-              "rules",
-              "scoring"
-            ],
-            "properties": {
-              "kind": {
-                "const": "answer_equation"
-              },
-              "title": {
-                "type": "string"
-              },
-              "prompt": {
-                "type": "string"
-              },
-              "rules": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "operation",
-                  "numberRange",
-                  "answerCount"
-                ],
-                "properties": {
-                  "operation": {
-                    "type": "string",
-                    "enum": [
-                      "addition",
-                      "subtraction",
-                      "multiplication",
-                      "division",
-                      "mixed"
-                    ]
-                  },
-                  "numberRange": {
-                    "type": "array",
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "items": {
-                      "type": "number"
-                    }
-                  },
-                  "answerCount": {
-                    "type": "number"
-                  },
-                  "fixedOperand": {
-                    "type": "number"
-                  },
-                  "targetValue": {
-                    "type": "number"
-                  },
-                  "leftRange": {
-                    "type": "array",
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "items": {
-                      "type": "number"
-                    }
-                  },
-                  "rightRange": {
-                    "type": "array",
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "items": {
-                      "type": "number"
-                    }
-                  }
-                }
-              },
-              "scoring": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "pointsPerCorrect",
-                  "wrongPenalty"
-                ],
-                "properties": {
-                  "pointsPerCorrect": {
-                    "type": "number"
-                  },
-                  "wrongPenalty": {
-                    "type": "number"
-                  },
-                  "wrongFeedback": {
-                    "type": "string"
-                  }
-                }
-              }
+    }
+  },
+  "$defs": {
+    "level": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "id",
+            "label",
+            "levelNum",
+            "activityType",
+            "objective",
+            "content",
+            "difficulty",
+            "scoring",
+            "presentation"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "levelNum": {
+              "type": "number"
+            },
+            "slot": {
+              "type": "number"
+            },
+            "schemaVersion": {
+              "type": "number"
+            },
+            "activityType": {
+              "const": "collect_stream"
+            },
+            "sourcePresetId": {
+              "type": "string"
+            },
+            "objective": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "content": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "difficulty": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "scoring": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "presentation": {
+              "type": "object",
+              "additionalProperties": true
             }
           }
-        ]
-      }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "id",
+            "label",
+            "levelNum",
+            "activityType",
+            "objective",
+            "content",
+            "difficulty",
+            "scoring",
+            "presentation"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "levelNum": {
+              "type": "number"
+            },
+            "slot": {
+              "type": "number"
+            },
+            "schemaVersion": {
+              "type": "number"
+            },
+            "activityType": {
+              "const": "answer_prompt"
+            },
+            "sourcePresetId": {
+              "type": "string"
+            },
+            "objective": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "content": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "difficulty": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "scoring": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "presentation": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      ]
     }
   }
 }

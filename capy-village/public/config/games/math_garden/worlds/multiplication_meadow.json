@@ -2,219 +2,639 @@
   "id": "multiplication_meadow",
   "title": "Multiplication Meadow",
   "subtitle": "Groups and multiples",
+  "label": "Multiplication Meadow",
+  "theme": "multiplication meadow",
+  "learningObjective": "Groups and multiples",
   "unlockRequirementText": "Complete Subtraction Patch",
+  "startsUnlocked": false,
   "unlockAfterWorldId": "subtraction_patch",
-  "startsUnlocked": true,
-  "signBox": { "x": 0.5025, "y": 0.5592, "w": 0.0941, "h": 0.0521 },
+  "signBox": {
+    "x": 0.5025,
+    "y": 0.5592,
+    "w": 0.0941,
+    "h": 0.0521
+  },
+  "clickBox": null,
+  "defaults": {},
   "levels": [
     {
-      "levelId": "multiplication_meadow_1",
+      "id": "multiplication_meadow_1",
+      "label": "Double Bloom",
       "levelNum": 1,
       "slot": 1,
-      "label": "Double Bloom",
-      "recipeId": "collect_multiples_of_2",
-      "timeLimit": 58,
-      "goal": { "type": "catchCount", "value": 5 },
-      "clearReward": 18,
-      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 11, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 14],
-          "itemCount": 5,
-          "spawnDelayRange": [1.1, 1.5],
-          "fallSpeedRange": [75, 115]
-        },
-        "scoring": {
-          "wrongPenalty": 0
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_2",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 2,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            14
+          ]
+        },
+        "itemCount": 5,
+        "spawnDelayRange": [
+          1.1,
+          1.5
+        ],
+        "fallSpeedRange": [
+          75,
+          115
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 58,
+        "goal": {
+          "type": "catchCount",
+          "value": 5
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Not ×2!",
+        "clearReward": 18,
+        "bonusTiers": [
+          {
+            "threshold": 8,
+            "reward": 4
+          },
+          {
+            "threshold": 11,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Double Trail",
+        "prompt": "Catch multiples of 2!"
       }
     },
     {
-      "levelId": "multiplication_meadow_2",
+      "id": "multiplication_meadow_2",
+      "label": "Triple Trail",
       "levelNum": 2,
       "slot": 2,
-      "label": "Triple Trail",
-      "recipeId": "collect_multiples_of_3",
-      "timeLimit": 56,
-      "goal": { "type": "catchCount", "value": 6 },
-      "clearReward": 20,
-      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 12, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 18],
-          "itemCount": 6,
-          "spawnDelayRange": [0.95, 1.3],
-          "fallSpeedRange": [85, 125]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_3",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 3,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            18
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": [
+          0.95,
+          1.3
+        ],
+        "fallSpeedRange": [
+          85,
+          125
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 56,
+        "goal": {
+          "type": "catchCount",
+          "value": 6
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 4,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×3!",
+        "clearReward": 20,
+        "bonusTiers": [
+          {
+            "threshold": 9,
+            "reward": 4
+          },
+          {
+            "threshold": 12,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Triple Trail",
+        "prompt": "Catch multiples of 3!"
       }
     },
     {
-      "levelId": "multiplication_meadow_3",
+      "id": "multiplication_meadow_3",
+      "label": "Double Crowd",
       "levelNum": 3,
       "slot": 3,
-      "label": "Double Crowd",
-      "recipeId": "collect_multiples_of_2",
-      "timeLimit": 54,
-      "goal": { "type": "catchCount", "value": 7 },
-      "clearReward": 22,
-      "bonusTiers": [{ "threshold": 10, "reward": 4 }, { "threshold": 13, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 22],
-          "itemCount": 8,
-          "spawnDelayRange": [0.8, 1.1],
-          "fallSpeedRange": [95, 145]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_2",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 2,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            22
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.8,
+          1.1
+        ],
+        "fallSpeedRange": [
+          95,
+          145
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 54,
+        "goal": {
+          "type": "catchCount",
+          "value": 7
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×2!",
+        "clearReward": 22,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 4
+          },
+          {
+            "threshold": 13,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Double Trail",
+        "prompt": "Catch multiples of 2!"
       }
     },
     {
-      "levelId": "multiplication_meadow_4",
+      "id": "multiplication_meadow_4",
+      "label": "Fours Patch",
       "levelNum": 4,
       "slot": 4,
-      "label": "Fours Patch",
-      "recipeId": "collect_divisible_by_4",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 7 },
-      "clearReward": 25,
-      "bonusTiers": [{ "threshold": 10, "reward": 5 }, { "threshold": 13, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [4, 28],
-          "itemCount": 6,
-          "spawnDelayRange": [0.85, 1.15],
-          "fallSpeedRange": [95, 145]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_4",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 4,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            4,
+            28
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": [
+          0.85,
+          1.15
+        ],
+        "fallSpeedRange": [
+          95,
+          145
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 50,
+        "goal": {
+          "type": "catchCount",
+          "value": 7
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 6,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷4!",
+        "clearReward": 25,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 5
+          },
+          {
+            "threshold": 13,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Four at a Time",
+        "prompt": "Catch numbers divisible by 4!"
       }
     },
     {
-      "levelId": "multiplication_meadow_5",
+      "id": "multiplication_meadow_5",
+      "label": "High Five",
       "levelNum": 5,
       "slot": 5,
-      "label": "High Five",
-      "recipeId": "collect_multiples_of_5",
-      "timeLimit": 48,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 29,
-      "bonusTiers": [{ "threshold": 11, "reward": 5 }, { "threshold": 14, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [5, 35],
-          "itemCount": 7,
-          "spawnDelayRange": [0.8, 1.1],
-          "fallSpeedRange": [100, 155]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_5",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 5,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            5,
+            35
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": [
+          0.8,
+          1.1
+        ],
+        "fallSpeedRange": [
+          100,
+          155
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 48,
+        "goal": {
+          "type": "catchCount",
+          "value": 8
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×5!",
+        "clearReward": 29,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 5
+          },
+          {
+            "threshold": 14,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "High Five",
+        "prompt": "Catch multiples of 5!"
       }
     },
     {
-      "levelId": "multiplication_meadow_6",
+      "id": "multiplication_meadow_6",
+      "label": "Triple Challenge",
       "levelNum": 6,
       "slot": 6,
-      "label": "Triple Challenge",
-      "recipeId": "collect_multiples_of_3",
-      "timeLimit": 44,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 33,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 30],
-          "itemCount": 8,
-          "spawnDelayRange": [0.65, 0.95],
-          "fallSpeedRange": [110, 170]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_3",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 3,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            30
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.65,
+          0.95
+        ],
+        "fallSpeedRange": [
+          110,
+          170
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 44,
+        "goal": {
+          "type": "catchCount",
+          "value": 8
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 4,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×3!",
+        "clearReward": 33,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 14,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Triple Trail",
+        "prompt": "Catch multiples of 3!"
       }
     },
     {
-      "levelId": "multiplication_meadow_7",
+      "id": "multiplication_meadow_7",
+      "label": "Fours Challenge",
       "levelNum": 7,
       "slot": 7,
-      "label": "Fours Challenge",
-      "recipeId": "collect_divisible_by_4",
-      "timeLimit": 42,
-      "goal": { "type": "catchCount", "value": 8 },
-      "clearReward": 37,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [4, 40],
-          "itemCount": 8,
-          "spawnDelayRange": [0.6, 0.9],
-          "fallSpeedRange": [115, 180]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_4",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 4,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            4,
+            40
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.6,
+          0.9
+        ],
+        "fallSpeedRange": [
+          115,
+          180
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 42,
+        "goal": {
+          "type": "catchCount",
+          "value": 8
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 6,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ÷4!",
+        "clearReward": 37,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 14,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Four at a Time",
+        "prompt": "Catch numbers divisible by 4!"
       }
     },
     {
-      "levelId": "multiplication_meadow_8",
+      "id": "multiplication_meadow_8",
+      "label": "Fast Multiples",
       "levelNum": 8,
       "slot": 8,
-      "label": "Fast Multiples",
-      "recipeId": "collect_multiples_of_5",
-      "timeLimit": 38,
-      "goal": { "type": "catchCount", "value": 9 },
-      "clearReward": 42,
-      "bonusTiers": [{ "threshold": 12, "reward": 6 }, { "threshold": 15, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [5, 45],
-          "itemCount": 9,
-          "spawnDelayRange": [0.5, 0.75],
-          "fallSpeedRange": [125, 190]
-        },
-        "scoring": {
-          "wrongPenalty": 1
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_5",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 5,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            5,
+            45
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.5,
+          0.75
+        ],
+        "fallSpeedRange": [
+          125,
+          190
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 38,
+        "goal": {
+          "type": "catchCount",
+          "value": 9
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not ×5!",
+        "clearReward": 42,
+        "bonusTiers": [
+          {
+            "threshold": 12,
+            "reward": 6
+          },
+          {
+            "threshold": 15,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "High Five",
+        "prompt": "Catch multiples of 5!"
       }
     },
     {
-      "levelId": "multiplication_meadow_9",
+      "id": "multiplication_meadow_9",
+      "label": "Precision Patch",
       "levelNum": 9,
       "slot": 9,
-      "label": "Precision Patch",
-      "recipeId": "collect_divisible_by_4",
-      "timeLimit": 36,
-      "goal": { "type": "catchCount", "value": 9 },
-      "clearReward": 48,
-      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 15, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [4, 48],
-          "itemCount": 9,
-          "spawnDelayRange": [0.5, 0.75],
-          "fallSpeedRange": [125, 190]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Only the right groups!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_divisible_by_4",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 4,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            4,
+            48
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.5,
+          0.75
+        ],
+        "fallSpeedRange": [
+          125,
+          190
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 36,
+        "goal": {
+          "type": "catchCount",
+          "value": 9
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 6,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Only the right groups!",
+        "clearReward": 48,
+        "bonusTiers": [
+          {
+            "threshold": 12,
+            "reward": 8
+          },
+          {
+            "threshold": 15,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Four at a Time",
+        "prompt": "Catch numbers divisible by 4!"
       }
     },
     {
-      "levelId": "multiplication_meadow_10",
+      "id": "multiplication_meadow_10",
+      "label": "Multiples Boss",
       "levelNum": 10,
       "slot": 10,
-      "label": "Multiples Boss",
-      "recipeId": "collect_multiples_of_5",
-      "timeLimit": 34,
-      "goal": { "type": "catchCount", "value": 10 },
-      "clearReward": 56,
-      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 16, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [5, 50],
-          "itemCount": 10,
-          "spawnDelayRange": [0.4, 0.65],
-          "fallSpeedRange": [135, 205]
-        },
-        "scoring": {
-          "wrongPenalty": 2,
-          "wrongFeedback": "Stay on pattern!"
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_multiples_of_5",
+      "objective": {
+        "rule": {
+          "type": "modulo",
+          "mod": 5,
+          "remainder": 0
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            5,
+            50
+          ]
+        },
+        "itemCount": 10,
+        "spawnDelayRange": [
+          0.4,
+          0.65
+        ],
+        "fallSpeedRange": [
+          135,
+          205
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 34,
+        "goal": {
+          "type": "catchCount",
+          "value": 10
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 5,
+        "wrongPenalty": 2,
+        "wrongFeedback": "Stay on pattern!",
+        "clearReward": 56,
+        "bonusTiers": [
+          {
+            "threshold": 13,
+            "reward": 8
+          },
+          {
+            "threshold": 16,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "High Five",
+        "prompt": "Catch multiples of 5!"
       }
     }
   ]

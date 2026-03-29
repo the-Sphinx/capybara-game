@@ -6,8 +6,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "generate:authoring": "node ../tools/generate_minigame_authoring_artifacts.mjs",
-    "generate:minigame-authoring": "node ../tools/generate_minigame_authoring_artifacts.mjs"
+    "generate:authoring": "node ../tools/generate_minigame_authoring_artifacts.mjs && node ../tools/generate_math_authoring_artifacts.mjs",
+    "generate:minigame-authoring": "node ../tools/generate_minigame_authoring_artifacts.mjs",
+    "generate:math-authoring": "node ../tools/generate_math_authoring_artifacts.mjs"
   },
   "dependencies": {
     "three": "^0.172.0"

@@ -2,258 +2,872 @@
   "id": "number_garden",
   "title": "Even & Odd",
   "subtitle": "Learn parity",
+  "label": "Even & Odd",
+  "theme": "number garden",
+  "learningObjective": "Learn parity",
   "unlockRequirementText": "",
   "startsUnlocked": true,
-  "signBox": { "x": 0.1828, "y": 0.3014, "w": 0.0901, "h": 0.0553 },
+  "unlockAfterWorldId": null,
+  "signBox": {
+    "x": 0.1828,
+    "y": 0.3014,
+    "w": 0.0901,
+    "h": 0.0553
+  },
+  "clickBox": null,
+  "defaults": {},
   "levels": [
     {
-      "levelId": "number_garden_1",
+      "id": "number_garden_1",
+      "label": "Even Start",
       "levelNum": 1,
       "slot": 1,
-      "label": "Even Start",
-      "recipeId": "collect_even_basic",
-      "timeLimit": 60,
-      "goal": { "type": "catchCount", "value": 10 },
-      "clearReward": 10,
-      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 11, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 10],
-          "itemCount": 5,
-          "spawnDelayRange": [1.2, 1.7],
-          "fallSpeedRange": [70, 110]
-        },
-        "scoring": {
-          "wrongPenalty": 0
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_even_basic",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            10
+          ]
+        },
+        "itemCount": 5,
+        "spawnDelayRange": [
+          1.2,
+          1.7
+        ],
+        "fallSpeedRange": [
+          70,
+          110
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 60,
+        "goal": {
+          "type": "catchCount",
+          "value": 10
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Odd!",
+        "clearReward": 10,
+        "bonusTiers": [
+          {
+            "threshold": 8,
+            "reward": 4
+          },
+          {
+            "threshold": 11,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Collect Even Numbers",
+        "prompt": "Catch even numbers!"
       }
     },
     {
-      "levelId": "number_garden_2",
+      "id": "number_garden_2",
+      "label": "Even Steps",
       "levelNum": 2,
       "slot": 2,
-      "label": "Even Steps",
-      "recipeId": "collect_even_basic",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 10 },
-      "clearReward": 12,
-      "bonusTiers": [{ "threshold": 9, "reward": 4 }, { "threshold": 12, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 15],
-          "itemCount": 6,
-          "spawnDelayRange": [0.95, 1.35],
-          "fallSpeedRange": [80, 125]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_even_basic",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            15
+          ]
+        },
+        "itemCount": 6,
+        "spawnDelayRange": [
+          0.95,
+          1.35
+        ],
+        "fallSpeedRange": [
+          80,
+          125
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 50,
+        "goal": {
+          "type": "catchCount",
+          "value": 10
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Odd!",
+        "clearReward": 12,
+        "bonusTiers": [
+          {
+            "threshold": 9,
+            "reward": 4
+          },
+          {
+            "threshold": 12,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Collect Even Numbers",
+        "prompt": "Catch even numbers!"
       }
     },
     {
-      "levelId": "number_garden_3",
+      "id": "number_garden_3",
+      "label": "Even Crowd",
       "levelNum": 3,
       "slot": 3,
-      "label": "Even Crowd",
-      "recipeId": "collect_even_basic",
-      "timeLimit": 50,
-      "goal": { "type": "catchCount", "value": 15 },
-      "clearReward": 16,
-      "bonusTiers": [{ "threshold": 10, "reward": 4 }, { "threshold": 13, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 15],
-          "itemCount": 8,
-          "spawnDelayRange": [0.65, 1.0],
-          "fallSpeedRange": [95, 145]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_even_basic",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            15
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.65,
+          1
+        ],
+        "fallSpeedRange": [
+          95,
+          145
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 50,
+        "goal": {
+          "type": "catchCount",
+          "value": 15
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Odd!",
+        "clearReward": 16,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 4
+          },
+          {
+            "threshold": 13,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Collect Even Numbers",
+        "prompt": "Catch even numbers!"
       }
     },
     {
-      "levelId": "number_garden_4",
+      "id": "number_garden_4",
+      "label": "Odd Orchard",
       "levelNum": 4,
       "slot": 4,
-      "label": "Odd Orchard",
-      "recipeId": "collect_odd_basic",
-      "timeLimit": 40,
-      "goal": { "type": "catchCount", "value": 15 },
-      "clearReward": 18,
-      "bonusTiers": [{ "threshold": 10, "reward": 4 }, { "threshold": 13, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 15],
-          "itemCount": 7,
-          "spawnDelayRange": [0.9, 1.25],
-          "fallSpeedRange": [85, 130]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_odd_basic",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "odd"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            15
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": [
+          0.9,
+          1.25
+        ],
+        "fallSpeedRange": [
+          85,
+          130
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 40,
+        "goal": {
+          "type": "catchCount",
+          "value": 15
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Even!",
+        "clearReward": 18,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 4
+          },
+          {
+            "threshold": 13,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Collect Odd Numbers",
+        "prompt": "Catch odd numbers!"
       }
     },
     {
-      "levelId": "number_garden_5",
+      "id": "number_garden_5",
+      "label": "Rule Switch",
       "levelNum": 5,
       "slot": 5,
-      "label": "Rule Switch",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 35,
-      "goal": { "type": "catchCount", "value": 15 },
-      "clearReward": 22,
-      "bonusTiers": [{ "threshold": 11, "reward": 5 }, { "threshold": 14, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 18],
-          "itemCount": 7,
-          "spawnDelayRange": [0.8, 1.15],
-          "fallSpeedRange": [95, 145],
-          "phases": [
-            {
-              "prompt": "Catch even numbers!",
-              "matcher": { "type": "even" }
-            },
-            {
-              "switchAfterCaught": 4,
-              "prompt": "Now catch odd numbers!",
-              "matcher": { "type": "odd" }
-            }
-          ]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_custom_rule",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            18
+          ]
+        },
+        "itemCount": 7,
+        "spawnDelayRange": [
+          0.8,
+          1.15
+        ],
+        "fallSpeedRange": [
+          95,
+          145
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 35,
+        "goal": {
+          "type": "catchCount",
+          "value": 15
+        },
+        "phases": [
+          {
+            "objective": {
+              "rule": {
+                "type": "parity",
+                "parity": "even"
+              }
+            },
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  18
+                ]
+              },
+              "itemCount": 7,
+              "spawnDelayRange": [
+                0.8,
+                1.15
+              ],
+              "fallSpeedRange": [
+                95,
+                145
+              ]
+            },
+            "presentation": {
+              "prompt": "Catch even numbers!"
+            }
+          },
+          {
+            "switchAfterCaught": 4,
+            "objective": {
+              "rule": {
+                "type": "parity",
+                "parity": "odd"
+              }
+            },
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  18
+                ]
+              },
+              "itemCount": 7,
+              "spawnDelayRange": [
+                0.8,
+                1.15
+              ],
+              "fallSpeedRange": [
+                95,
+                145
+              ]
+            },
+            "presentation": {
+              "prompt": "Now catch odd numbers!"
+            }
+          }
+        ]
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Try again!",
+        "clearReward": 22,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 5
+          },
+          {
+            "threshold": 14,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Number Rule Catch",
+        "prompt": "Catch the right numbers!"
       }
     },
     {
-      "levelId": "number_garden_6",
+      "id": "number_garden_6",
+      "label": "Even Rush",
       "levelNum": 6,
       "slot": 6,
-      "label": "Even Rush",
-      "recipeId": "collect_even_basic",
-      "timeLimit": 30,
-      "goal": { "type": "catchCount", "value": 15 },
-      "clearReward": 26,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 20],
-          "itemCount": 8,
-          "spawnDelayRange": [0.55, 0.9],
-          "fallSpeedRange": [110, 180]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_even_basic",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            20
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.55,
+          0.9
+        ],
+        "fallSpeedRange": [
+          110,
+          180
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 30,
+        "goal": {
+          "type": "catchCount",
+          "value": 15
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Odd!",
+        "clearReward": 26,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 14,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Collect Even Numbers",
+        "prompt": "Catch even numbers!"
       }
     },
     {
-      "levelId": "number_garden_7",
+      "id": "number_garden_7",
+      "label": "Under Twenty",
       "levelNum": 7,
       "slot": 7,
-      "label": "Under Twenty",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 30,
-      "goal": { "type": "catchCount", "value": 15 },
-      "clearReward": 30,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 14, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 30],
-          "itemCount": 8,
-          "spawnDelayRange": [0.7, 1.0],
-          "fallSpeedRange": [105, 165],
-          "phases": [
-            {
-              "prompt": "Catch even numbers under 20!",
-              "matcher": {
-                "type": "all_of",
-                "rules": [
-                  { "type": "even" },
-                  { "type": "less_than_or_equal", "value": 20 }
-                ]
-              }
-            }
-          ]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_custom_rule",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            30
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.7,
+          1
+        ],
+        "fallSpeedRange": [
+          105,
+          165
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 30,
+        "goal": {
+          "type": "catchCount",
+          "value": 15
+        },
+        "phases": [
+          {
+            "objective": {
+              "rule": {
+                "type": "compound",
+                "matcher": {
+                  "type": "all_of",
+                  "rules": [
+                    {
+                      "type": "even"
+                    },
+                    {
+                      "type": "less_than_or_equal",
+                      "value": 20
+                    }
+                  ]
+                }
+              }
+            },
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  30
+                ]
+              },
+              "itemCount": 8,
+              "spawnDelayRange": [
+                0.7,
+                1
+              ],
+              "fallSpeedRange": [
+                105,
+                165
+              ]
+            },
+            "presentation": {
+              "prompt": "Catch even numbers under 20!"
+            }
+          }
+        ]
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Try again!",
+        "clearReward": 30,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 14,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Number Rule Catch",
+        "prompt": "Catch the right numbers!"
       }
     },
     {
-      "levelId": "number_garden_8",
+      "id": "number_garden_8",
+      "label": "Even Sprint",
       "levelNum": 8,
       "slot": 8,
-      "label": "Even Sprint",
-      "recipeId": "collect_even_basic",
-      "timeLimit": 25,
-      "goal": { "type": "catchCount", "value": 20 },
-      "clearReward": 36,
-      "bonusTiers": [{ "threshold": 12, "reward": 6 }, { "threshold": 15, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 22],
-          "itemCount": 8,
-          "spawnDelayRange": [0.5, 0.8],
-          "fallSpeedRange": [120, 190]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_even_basic",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            22
+          ]
+        },
+        "itemCount": 8,
+        "spawnDelayRange": [
+          0.5,
+          0.8
+        ],
+        "fallSpeedRange": [
+          120,
+          190
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 25,
+        "goal": {
+          "type": "catchCount",
+          "value": 20
+        },
+        "phases": []
+      },
+      "scoring": {
+        "pointsPerCorrect": 2,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Odd!",
+        "clearReward": 36,
+        "bonusTiers": [
+          {
+            "threshold": 12,
+            "reward": 6
+          },
+          {
+            "threshold": 15,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Collect Even Numbers",
+        "prompt": "Catch even numbers!"
       }
     },
     {
-      "levelId": "number_garden_9",
+      "id": "number_garden_9",
+      "label": "Parity Flip",
       "levelNum": 9,
       "slot": 9,
-      "label": "Parity Flip",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 30,
-      "goal": { "type": "catchCount", "value": 15 },
-      "clearReward": 44,
-      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 16, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 20],
-          "itemCount": 9,
-          "spawnDelayRange": [0.55, 0.85],
-          "fallSpeedRange": [120, 190],
-          "phases": [
-            {
-              "prompt": "Catch even numbers!",
-              "matcher": { "type": "even" }
-            },
-            {
-              "switchAfterCaught": 7,
-              "prompt": "Now catch odd numbers!",
-              "matcher": { "type": "odd" }
-            }
-          ]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_custom_rule",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
         }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            20
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.55,
+          0.85
+        ],
+        "fallSpeedRange": [
+          120,
+          190
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 30,
+        "goal": {
+          "type": "catchCount",
+          "value": 15
+        },
+        "phases": [
+          {
+            "objective": {
+              "rule": {
+                "type": "parity",
+                "parity": "even"
+              }
+            },
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  20
+                ]
+              },
+              "itemCount": 9,
+              "spawnDelayRange": [
+                0.55,
+                0.85
+              ],
+              "fallSpeedRange": [
+                120,
+                190
+              ]
+            },
+            "presentation": {
+              "prompt": "Catch even numbers!"
+            }
+          },
+          {
+            "switchAfterCaught": 7,
+            "objective": {
+              "rule": {
+                "type": "parity",
+                "parity": "odd"
+              }
+            },
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  20
+                ]
+              },
+              "itemCount": 9,
+              "spawnDelayRange": [
+                0.55,
+                0.85
+              ],
+              "fallSpeedRange": [
+                120,
+                190
+              ]
+            },
+            "presentation": {
+              "prompt": "Now catch odd numbers!"
+            }
+          }
+        ]
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Try again!",
+        "clearReward": 44,
+        "bonusTiers": [
+          {
+            "threshold": 13,
+            "reward": 8
+          },
+          {
+            "threshold": 16,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Number Rule Catch",
+        "prompt": "Catch the right numbers!"
       }
     },
     {
-      "levelId": "number_garden_10",
+      "id": "number_garden_10",
+      "label": "Parity Boss",
       "levelNum": 10,
       "slot": 10,
-      "label": "Parity Boss",
-      "recipeId": "collect_custom_rule",
-      "timeLimit": 30,
-      "goal": { "type": "catchCount", "value": 20 },
-      "clearReward": 52,
-      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 16, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 50],
-          "itemCount": 9,
-          "spawnDelayRange": [0.45, 0.7],
-          "fallSpeedRange": [130, 205],
-          "phases": [
-            {
-              "prompt": "Catch even numbers under 21!",
-              "matcher": {
-                "type": "all_of",
-                "rules": [
-                  { "type": "even" },
-                  { "type": "less_than_or_equal", "value": 20 }
-                ]
+      "activityType": "collect_stream",
+      "schemaVersion": 1,
+      "sourcePresetId": "collect_custom_rule",
+      "objective": {
+        "rule": {
+          "type": "parity",
+          "parity": "even"
+        }
+      },
+      "content": {
+        "domain": {
+          "kind": "numbers",
+          "range": [
+            1,
+            50
+          ]
+        },
+        "itemCount": 9,
+        "spawnDelayRange": [
+          0.45,
+          0.7
+        ],
+        "fallSpeedRange": [
+          130,
+          205
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 30,
+        "goal": {
+          "type": "catchCount",
+          "value": 20
+        },
+        "phases": [
+          {
+            "objective": {
+              "rule": {
+                "type": "compound",
+                "matcher": {
+                  "type": "all_of",
+                  "rules": [
+                    {
+                      "type": "even"
+                    },
+                    {
+                      "type": "less_than_or_equal",
+                      "value": 20
+                    }
+                  ]
+                }
               }
             },
-            {
-              "prompt": "Now catch odd numbers higher than 18!",
-              "switchAfterCaught": 10,
-              "matcher": {
-                "type": "all_of",
-                "rules": [
-                  { "type": "odd" },
-                  { "type": "greater_than_or_equal", "value": 19 }
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  50
                 ]
-              }
+              },
+              "itemCount": 9,
+              "spawnDelayRange": [
+                0.45,
+                0.7
+              ],
+              "fallSpeedRange": [
+                130,
+                205
+              ]
+            },
+            "presentation": {
+              "prompt": "Catch even numbers under 21!"
             }
-          ]
-        }
+          },
+          {
+            "switchAfterCaught": 10,
+            "objective": {
+              "rule": {
+                "type": "compound",
+                "matcher": {
+                  "type": "all_of",
+                  "rules": [
+                    {
+                      "type": "odd"
+                    },
+                    {
+                      "type": "greater_than_or_equal",
+                      "value": 19
+                    }
+                  ]
+                }
+              }
+            },
+            "content": {
+              "domain": {
+                "kind": "numbers",
+                "range": [
+                  1,
+                  50
+                ]
+              },
+              "itemCount": 9,
+              "spawnDelayRange": [
+                0.45,
+                0.7
+              ],
+              "fallSpeedRange": [
+                130,
+                205
+              ]
+            },
+            "presentation": {
+              "prompt": "Now catch odd numbers higher than 18!"
+            }
+          }
+        ]
+      },
+      "scoring": {
+        "pointsPerCorrect": 3,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Try again!",
+        "clearReward": 52,
+        "bonusTiers": [
+          {
+            "threshold": 13,
+            "reward": 8
+          },
+          {
+            "threshold": 16,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Number Rule Catch",
+        "prompt": "Catch the right numbers!"
       }
     }
   ]

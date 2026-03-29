@@ -1,7 +1,12 @@
+import { getAllFields, getFieldById, isFieldVisible } from '../authoring/descriptors/core.js';
 import { GameContentService } from './GameContentService.js';
 
 function deepClone(value) {
   return structuredClone(value);
+}
+
+function toJson(value) {
+  return JSON.stringify(value, null, 2);
 }
 
 function slugify(value) {
@@ -12,10 +17,6 @@ function slugify(value) {
     .replace(/^_+|_+$/g, '') || 'item';
 }
 
-function toDisplayJson(value) {
-  return JSON.stringify(value, null, 2);
-}
-
 function pathSegments(path) {
   return String(path)
     .split('.')
@@ -23,91 +24,58 @@ function pathSegments(path) {
     .map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
 }
 
-function getAtPath(target, path) {
-  return pathSegments(path).reduce((current, segment) => current?.[segment], target);
+function getAtPath(source, path) {
+  return pathSegments(path).reduce((cursor, segment) => cursor?.[segment], source);
 }
 
 function setAtPath(target, path, value) {
   const segments = pathSegments(path);
-  let current = target;
-  for (let i = 0; i < segments.length - 1; i += 1) {
-    const segment = segments[i];
-    const nextSegment = segments[i + 1];
-    if (current[segment] == null) {
-      current[segment] = typeof nextSegment === 'number' ? [] : {};
+  let cursor = target;
+  for (let index = 0; index < segments.length - 1; index += 1) {
+    const segment = segments[index];
+    const nextSegment = segments[index + 1];
+    if (cursor[segment] == null) {
+      cursor[segment] = typeof nextSegment === 'number' ? [] : {};
     }
-    current = current[segment];
+    cursor = cursor[segment];
   }
-  current[segments[segments.length - 1]] = value;
+  cursor[segments[segments.length - 1]] = value;
 }
 
 function deleteAtPath(target, path) {
   const segments = pathSegments(path);
-  let current = target;
-  for (let i = 0; i < segments.length - 1; i += 1) {
-    current = current?.[segments[i]];
-    if (current == null) {
-      return;
-    }
+  let cursor = target;
+  for (let index = 0; index < segments.length - 1; index += 1) {
+    cursor = cursor?.[segments[index]];
+    if (cursor == null) return;
   }
-  const last = segments[segments.length - 1];
-  if (Array.isArray(current) && typeof last === 'number') {
-    current.splice(last, 1);
-  } else if (current && typeof current === 'object') {
-    delete current[last];
+  const finalSegment = segments[segments.length - 1];
+  if (Array.isArray(cursor) && typeof finalSegment === 'number') {
+    cursor.splice(finalSegment, 1);
+  } else if (cursor && typeof cursor === 'object') {
+    delete cursor[finalSegment];
   }
 }
 
 function formatGoal(goal) {
-  if (!goal) return 'No goal set';
+  if (!goal) return 'No goal';
   switch (goal.type) {
     case 'catchCount':
-      return `Catch ${goal.value} correct items`;
+      return `Catch ${goal.value}`;
     case 'correctAnswers':
       return `Answer ${goal.value} correctly`;
     case 'score':
-      return `Score ${goal.value}+ points`;
+      return `Reach ${goal.value} score`;
     case 'combo':
-      return `Reach a ${goal.value}x combo`;
+      return `Reach ${goal.value}x combo`;
     default:
       return `${goal.type}: ${goal.value}`;
   }
 }
 
-function formatBonusTiers(bonusTiers) {
-  if (!bonusTiers?.length) return 'No bonus tiers';
-  return bonusTiers.map((tier) => `${tier.threshold} → +${tier.reward}`).join(' · ');
-}
-
-function matcherSummary(matcher) {
-  if (!matcher) return 'No matcher';
-  if (typeof matcher === 'string') {
-    return matcher.replaceAll('_', ' ');
-  }
-  switch (matcher.type) {
-    case 'odd':
-    case 'even':
-    case 'prime':
-      return matcher.type;
-    case 'divisible_by':
-      return `divisible by ${matcher.divisor}${matcher.remainder ? ` (remainder ${matcher.remainder})` : ''}`;
-    case 'less_than_or_equal':
-      return `≤ ${matcher.value}`;
-    case 'greater_than_or_equal':
-      return `≥ ${matcher.value}`;
-    case 'not':
-      return `not (${matcherSummary(matcher.rule)})`;
-    case 'any_of':
-      return `any of: ${(matcher.rules ?? []).map(matcherSummary).join(', ')}`;
-    case 'all_of':
-      return `all of: ${(matcher.rules ?? []).map(matcherSummary).join(', ')}`;
-    default:
-      return matcher.type ?? 'Custom matcher';
-  }
-}
-
-function recipeKindLabel(descriptor) {
-  return descriptor?.editor?.label ?? descriptor?.kind ?? 'Recipe';
+function formatBonusTiers(tiers) {
+  if (!tiers?.length) return 'No bonus tiers';
+  return tiers.map((tier) => `${tier.threshold} → +${tier.reward}`).join(' · ');
 }
 
 function coerceValue(type, rawValue) {
@@ -126,72 +94,48 @@ function createDefaultMatcher() {
 
 function createDefaultPhase() {
   return {
-    prompt: 'New phase',
     switchAfterCaught: 5,
-    matcher: createDefaultMatcher(),
+    objective: { rule: { type: 'parity', parity: 'even' } },
+    presentation: { prompt: 'Now catch even numbers!' },
   };
 }
 
-function createDefaultRecipe(descriptor, idBase = 'new_recipe') {
-  const example = descriptor.docs?.exampleRecipe ?? {};
-  return {
-    kind: descriptor.kind,
-    title: example.title ?? 'New Recipe',
-    prompt: example.prompt ?? 'Follow the prompt!',
-    rules: deepClone(example.rules ?? descriptor.rules.defaults ?? {}),
-    scoring: deepClone(example.scoring ?? descriptor.scoring.defaults ?? {}),
-    _suggestedId: slugify(idBase),
-  };
+function createSections(activityDescriptor) {
+  const sections = {};
+  for (const section of activityDescriptor.sections ?? []) {
+    sections[section.id] = {};
+    for (const field of section.fields ?? []) {
+      const localPath = field.id.replace(`${section.id}.`, '');
+      if (field.defaultValue !== undefined && localPath !== field.id) {
+        setAtPath(sections[section.id], localPath, deepClone(field.defaultValue));
+      }
+    }
+  }
+  return sections;
 }
 
-function createDefaultLevel(worldId, nextLevelNum, slot, recipeId, family = 'collection') {
+function createDefaultLevel(world, descriptor, slot) {
+  const sections = createSections(descriptor);
+  const nextLevelNum = Math.max(0, ...(world.levels ?? []).map((entry) => entry.levelNum ?? 0)) + 1;
   return {
-    levelId: `${worldId}_${nextLevelNum}`,
+    id: `${world.id}_${nextLevelNum}`,
+    label: `${descriptor.label} ${nextLevelNum}`,
     levelNum: nextLevelNum,
     slot,
-    label: `Level ${nextLevelNum}`,
-    recipeId,
-    timeLimit: 60,
-    goal: {
-      type: family === 'answer' ? 'correctAnswers' : 'catchCount',
-      value: family === 'answer' ? 6 : 10,
-    },
-    clearReward: 10,
-    bonusTiers: [
-      { threshold: family === 'answer' ? 8 : 13, reward: 4 },
-      { threshold: family === 'answer' ? 10 : 16, reward: 6 },
-    ],
-    overrides: {
-      rules: {},
-      scoring: {},
-    },
+    activityType: descriptor.id,
+    schemaVersion: 1,
+    ...sections,
   };
 }
 
-function nextAvailableLevelNum(world) {
-  const used = new Set((world.levels ?? []).map((level) => level.levelNum));
-  let candidate = 1;
-  while (used.has(candidate)) candidate += 1;
-  return candidate;
-}
-
-function nextAvailableSlot(world, slots) {
+function firstAvailableSlot(game, world) {
   const used = new Set((world.levels ?? []).map((level) => level.slot));
-  return slots.find((slot) => !used.has(slot.slot))?.slot ?? slots[0]?.slot ?? 1;
+  return (game.levelSelect?.slots ?? []).find((slot) => !used.has(slot.slot))?.slot
+    ?? (game.levelSelect?.slots?.[0]?.slot ?? 1);
 }
 
-function renderRangeInputs(label, path, range = [], options = {}) {
-  const [minValue, maxValue] = Array.isArray(range) ? range : ['', ''];
-  return `
-    <label class="game-editor__field">
-      <span>${label}</span>
-      <div class="game-editor__range-inputs">
-        <input type="number" data-action="set-path" data-path="${path}.0" data-value-type="number" min="${options.min ?? ''}" max="${options.max ?? ''}" step="${options.step ?? '1'}" value="${minValue ?? ''}" />
-        <span>to</span>
-        <input type="number" data-action="set-path" data-path="${path}.1" data-value-type="number" min="${options.min ?? ''}" max="${options.max ?? ''}" step="${options.step ?? '1'}" value="${maxValue ?? ''}" />
-      </div>
-    </label>
-  `;
+function buildWorldErrorPrefix(world) {
+  return `worlds.${world.id}`;
 }
 
 export class GameContentEditor {
@@ -200,19 +144,19 @@ export class GameContentEditor {
     this.gameId = gameId;
     this.service = new GameContentService(gameId);
     this.state = {
-      loading: true,
       game: null,
       worlds: [],
-      validation: { valid: false, errors: [], normalized: null },
       editorDefinition: null,
+      validation: { valid: false, errors: [], normalized: null },
       selectedWorldId: null,
       selectedLevelId: null,
-      selectedRecipeId: null,
+      selectedPresetId: null,
       selectionMode: 'world',
       dirtyGame: false,
       dirtyWorldIds: new Set(),
-      status: { tone: 'info', text: 'Loading…' },
       saving: false,
+      showAdvanced: false,
+      status: { tone: 'info', text: 'Loading…' },
     };
     this.boundHandle = (event) => this.handleEvent(event);
   }
@@ -226,22 +170,23 @@ export class GameContentEditor {
 
   async reload() {
     const payload = await this.service.load();
-    const firstWorldId = payload.worlds[0]?.id ?? null;
     this.state = {
       ...this.state,
-      loading: false,
       game: payload.game,
       worlds: payload.worlds,
       validation: payload.validation,
       editorDefinition: payload.editorDefinition,
-      selectedWorldId: this.state.selectedWorldId ?? firstWorldId,
+      selectedWorldId: this.state.selectedWorldId ?? payload.worlds[0]?.id ?? null,
       selectedLevelId: null,
-      selectedRecipeId: this.state.selectedRecipeId ?? Object.keys(payload.game.recipes ?? {})[0] ?? null,
+      selectedPresetId: payload.editorDefinition.presets?.[0]?.id ?? null,
       selectionMode: 'world',
       dirtyGame: false,
       dirtyWorldIds: new Set(),
-      status: { tone: payload.validation.valid ? 'success' : 'warning', text: payload.validation.valid ? 'Loaded Math Garden authoring data.' : 'Loaded with validation issues.' },
       saving: false,
+      status: {
+        tone: payload.validation.valid ? 'success' : 'warning',
+        text: payload.validation.valid ? 'Loaded authoring data.' : 'Loaded with validation issues.',
+      },
     };
     this.render();
   }
@@ -251,43 +196,23 @@ export class GameContentEditor {
   }
 
   get selectedLevel() {
-    return this.selectedWorld?.levels?.find((level) => level.levelId === this.state.selectedLevelId) ?? null;
+    return this.selectedWorld?.levels?.find((level) => level.id === this.state.selectedLevelId) ?? null;
   }
 
-  get selectedRecipe() {
-    return this.state.selectedRecipeId ? this.state.game.recipes?.[this.state.selectedRecipeId] ?? null : null;
-  }
-
-  get currentRecipeId() {
-    if (this.state.selectionMode === 'recipe') {
-      return this.state.selectedRecipeId;
-    }
-    if (this.selectedLevel) {
-      return this.selectedLevel.recipeId;
-    }
-    return this.state.selectedRecipeId;
-  }
-
-  get currentRecipe() {
-    const recipeId = this.currentRecipeId;
-    return recipeId ? this.state.game.recipes?.[recipeId] ?? null : null;
-  }
-
-  get currentDescriptor() {
-    const recipe = this.currentRecipe;
-    return this.state.editorDefinition?.modeDescriptors?.find((descriptor) => descriptor.kind === recipe?.kind) ?? null;
+  get selectedDescriptor() {
+    const activityType = this.selectedLevel?.activityType;
+    return this.state.editorDefinition?.activityDescriptors?.find((descriptor) => descriptor.id === activityType) ?? null;
   }
 
   refreshValidation(statusText = null, tone = null) {
-    const validation = this.service.validate(this.state.game, this.state.worlds);
-    this.state.validation = validation;
+    this.state.validation = this.service.validate(this.state.game, this.state.worlds);
     if (statusText) {
       this.state.status = {
-        tone: tone ?? (validation.valid ? 'success' : 'warning'),
+        tone: tone ?? (this.state.validation.valid ? 'success' : 'warning'),
         text: statusText,
       };
-    } else if (!validation.valid) {
-      this.state.status = { tone: 'warning', text: 'There are validation issues to fix before saving.' };
+    } else if (!this.state.validation.valid) {
+      this.state.status = { tone: 'warning', text: 'Fix validation issues before saving.' };
     }
   }
 
@@ -323,10 +248,7 @@ export class GameContentEditor {
 
     if (event.type === 'click') {
       this.handleClick(action, target);
-      return;
-    }
-
-    if (event.type === 'input' || event.type === 'change') {
+    } else {
       this.handleInput(action, target);
     }
   }
@@ -336,10 +258,14 @@ export class GameContentEditor {
       case 'reload-editor':
         void this.reload();
         break;
+      case 'toggle-advanced':
+        this.state.showAdvanced = !this.state.showAdvanced;
+        this.render();
+        break;
       case 'select-world':
         this.state.selectedWorldId = target.dataset.worldId;
-        this.state.selectionMode = 'world';
         this.state.selectedLevelId = null;
+        this.state.selectionMode = 'world';
         this.render();
         break;
       case 'select-level':
@@ -348,60 +274,51 @@ export class GameContentEditor {
         this.state.selectionMode = 'level';
         this.render();
         break;
-      case 'select-recipe':
-        this.state.selectedRecipeId = target.dataset.recipeId;
-        this.state.selectionMode = 'recipe';
-        this.render();
-        break;
-      case 'jump-to-recipe':
-        this.state.selectedRecipeId = target.dataset.recipeId;
-        this.state.selectionMode = 'recipe';
+      case 'select-preset':
+        this.state.selectedPresetId = target.dataset.presetId;
         this.render();
         break;
       case 'create-level':
-        this.createLevel(target.dataset.slot ? Number(target.dataset.slot) : null);
-        break;
-      case 'duplicate-level':
-        this.duplicateLevel();
+        this.createLevel(Number(target.dataset.slot || 0) || null);
         break;
       case 'delete-level':
         this.deleteLevel();
         break;
-      case 'create-recipe':
-        this.createRecipe();
+      case 'duplicate-level':
+        this.duplicateLevel();
         break;
-      case 'duplicate-recipe':
-        this.duplicateRecipe();
+      case 'apply-preset':
+        this.applyPreset();
         break;
-      case 'delete-recipe':
-        this.deleteRecipe();
+      case 'add-bonus-tier':
+        this.addBonusTier();
+        break;
+      case 'remove-bonus-tier':
+        this.removeBonusTier(Number(target.dataset.index));
+        break;
+      case 'phase-add':
+        this.addPhase();
+        break;
+      case 'phase-remove':
+        this.removePhase(Number(target.dataset.index));
+        break;
+      case 'set-matcher-type':
+        this.setCompoundMatcherType(target.dataset.path, target.dataset.matcherType);
+        break;
+      case 'add-compound-rule':
+        this.addCompoundMatcherChild(target.dataset.path);
+        break;
+      case 'remove-compound-rule':
+        this.removePath('level', target.dataset.path);
         break;
       case 'save-world':
         void this.saveSelectedWorld();
         break;
-      case 'save-recipes':
-        void this.saveRecipes();
+      case 'save-game':
+        void this.saveGame();
         break;
       case 'save-all':
         void this.saveAll();
-        break;
-      case 'matcher-set-type':
-        this.setMatcherType(target.dataset.path, target.dataset.matcherType);
-        break;
-      case 'matcher-add-child':
-        this.addMatcherChild(target.dataset.path);
-        break;
-      case 'matcher-remove-child':
-        this.removeAtTargetPath(target.dataset.path);
-        break;
-      case 'phase-add':
-        this.addPhase(target.dataset.path);
-        break;
-      case 'phase-delete':
-        this.removeAtTargetPath(target.dataset.path);
-        break;
-      case 'clear-path':
-        this.clearPath(target.dataset.entity, target.dataset.path);
         break;
       default:
         break;
@@ -409,278 +326,203 @@ export class GameContentEditor {
   }
 
   handleInput(action, target) {
-    if (action !== 'set-path') {
+    if (action === 'set-matcher-type') {
+      this.setCompoundMatcherType(target.dataset.path, target.value);
       return;
     }
+    if (action !== 'set-path') return;
 
-    const path = target.dataset.path;
-    const valueType = target.dataset.valueType ?? 'text';
     const entity = target.dataset.entity;
+    const path = target.dataset.path;
     const value = target instanceof HTMLInputElement && target.type === 'checkbox'
       ? target.checked
-      : coerceValue(valueType, target.value);
+      : coerceValue(target.dataset.valueType ?? 'text', target.value);
     this.setEntityPath(entity, path, value);
   }
 
   setEntityPath(entity, path, value) {
     if (entity === 'game') {
-      this.withGameMutation((game) => {
-        if (value === null && path.endsWith('.1') === false && path.endsWith('.0') === false) {
-          setAtPath(game, path, null);
-        } else {
-          setAtPath(game, path, value);
-        }
-      });
-      return;
-    }
-
-    if (entity === 'recipe') {
-      const recipeId = this.currentRecipeId;
-      if (!recipeId) return;
-      this.withGameMutation((game) => {
-        if (path === 'kind') {
-          const nextDescriptor = this.state.editorDefinition.modeDescriptors.find((descriptor) => descriptor.kind === value);
-          if (nextDescriptor) {
-            const nextRecipe = createDefaultRecipe(nextDescriptor, recipeId);
-            delete nextRecipe._suggestedId;
-            nextRecipe.title = game.recipes[recipeId].title;
-            nextRecipe.prompt = game.recipes[recipeId].prompt;
-            game.recipes[recipeId] = nextRecipe;
-          }
-          return;
-        }
-        setAtPath(game.recipes[recipeId], path, value);
-      });
-      return;
-    }
-
-    if (entity === 'world') {
-      if (!this.selectedWorld) return;
-      this.withWorldMutation(this.selectedWorld.id, (world) => {
-        setAtPath(world, path, value);
-      });
-      return;
-    }
-
-    if (entity === 'level') {
-      const level = this.selectedLevel;
-      if (!level || !this.selectedWorld) return;
-      this.withWorldMutation(this.selectedWorld.id, (world) => {
-        const authoredLevel = world.levels.find((entry) => entry.levelId === level.levelId);
-        setAtPath(authoredLevel, path, value);
-      });
-    }
-  }
-
-  clearPath(entity, path) {
-    if (entity === 'recipe') {
-      const recipeId = this.currentRecipeId;
-      if (!recipeId) return;
-      this.withGameMutation((game) => deleteAtPath(game.recipes[recipeId], path));
+      this.withGameMutation((game) => setAtPath(game, path, value));
       return;
     }
     if (entity === 'world' && this.selectedWorld) {
-      this.withWorldMutation(this.selectedWorld.id, (world) => deleteAtPath(world, path));
+      this.withWorldMutation(this.selectedWorld.id, (world) => setAtPath(world, path, value));
       return;
     }
     if (entity === 'level' && this.selectedWorld && this.selectedLevel) {
       this.withWorldMutation(this.selectedWorld.id, (world) => {
-        const authoredLevel = world.levels.find((entry) => entry.levelId === this.selectedLevel.levelId);
-        deleteAtPath(authoredLevel, path);
+        const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
+        if (path === 'activityType') {
+          const descriptor = this.state.editorDefinition.activityDescriptors.find((entry) => entry.id === value);
+          const sections = createSections(descriptor);
+          level.activityType = value;
+          level.objective = sections.objective ?? {};
+          level.content = sections.content ?? {};
+          level.difficulty = sections.difficulty ?? {};
+          level.scoring = {
+            clearReward: level.scoring?.clearReward ?? 10,
+            bonusTiers: level.scoring?.bonusTiers ?? [],
+            ...(sections.scoring ?? {}),
+          };
+          level.presentation = {
+            title: level.label,
+            ...(sections.presentation ?? {}),
+          };
+          return;
+        }
+        setAtPath(level, path, value);
       });
     }
   }
 
-  removeAtTargetPath(path) {
-    const entity = path.startsWith('rules') || path.startsWith('scoring') ? 'recipe' : 'level';
-    this.clearPath(entity, path);
+  removePath(entity, path) {
+    if (entity === 'level' && this.selectedWorld && this.selectedLevel) {
+      this.withWorldMutation(this.selectedWorld.id, (world) => {
+        const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
+        deleteAtPath(level, path);
+      });
+    }
   }
 
-  setMatcherType(path, matcherType) {
-    const next = (() => {
+  setCompoundMatcherType(path, matcherType) {
+    const matcher = (() => {
       switch (matcherType) {
-        case 'divisible_by':
-          return { type: matcherType, divisor: 2, remainder: 0 };
-        case 'less_than_or_equal':
-        case 'greater_than_or_equal':
-          return { type: matcherType, value: 10 };
         case 'not':
-          return { type: matcherType, rule: createDefaultMatcher() };
+          return { type: 'not', rule: createDefaultMatcher() };
         case 'any_of':
         case 'all_of':
           return { type: matcherType, rules: [createDefaultMatcher(), createDefaultMatcher()] };
-        case 'odd':
-        case 'even':
-        case 'prime':
+        case 'divisible_by':
+          return { type: 'divisible_by', divisor: 2, remainder: 0 };
+        case 'less_than_or_equal':
+        case 'greater_than_or_equal':
+          return { type: matcherType, value: 10 };
         default:
           return { type: matcherType };
       }
     })();
-    const entity = this.state.selectionMode === 'recipe' ? 'recipe' : 'level';
-    if (entity === 'recipe') {
-      this.withGameMutation((game) => setAtPath(game.recipes[this.currentRecipeId], path, next));
-    } else if (this.selectedWorld && this.selectedLevel) {
-      this.withWorldMutation(this.selectedWorld.id, (world) => {
-        const authoredLevel = world.levels.find((entry) => entry.levelId === this.selectedLevel.levelId);
-        setAtPath(authoredLevel, path, next);
-      });
-    }
+    this.setEntityPath('level', path, matcher);
   }
 
-  addMatcherChild(path) {
-    const entity = this.state.selectionMode === 'recipe' ? 'recipe' : 'level';
-    const mutator = (target) => {
-      const current = getAtPath(target, path) ?? [];
+  addCompoundMatcherChild(path) {
+    if (!this.selectedWorld || !this.selectedLevel) return;
+    this.withWorldMutation(this.selectedWorld.id, (world) => {
+      const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
+      const current = getAtPath(level, path) ?? [];
       current.push(createDefaultMatcher());
-      setAtPath(target, path, current);
-    };
-    if (entity === 'recipe') {
-      this.withGameMutation((game) => mutator(game.recipes[this.currentRecipeId]));
-    } else if (this.selectedWorld && this.selectedLevel) {
-      this.withWorldMutation(this.selectedWorld.id, (world) => {
-        const authoredLevel = world.levels.find((entry) => entry.levelId === this.selectedLevel.levelId);
-        mutator(authoredLevel);
-      });
-    }
+      setAtPath(level, path, current);
+    });
   }
 
-  addPhase(path) {
-    const entity = this.state.selectionMode === 'recipe' ? 'recipe' : 'level';
-    const mutator = (target) => {
-      const current = getAtPath(target, path) ?? [];
+  addPhase() {
+    if (!this.selectedWorld || !this.selectedLevel) return;
+    this.withWorldMutation(this.selectedWorld.id, (world) => {
+      const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
+      const current = level.difficulty?.phases ?? [];
       current.push(createDefaultPhase());
-      setAtPath(target, path, current);
-    };
-    if (entity === 'recipe') {
-      this.withGameMutation((game) => mutator(game.recipes[this.currentRecipeId]));
-    } else if (this.selectedWorld && this.selectedLevel) {
-      this.withWorldMutation(this.selectedWorld.id, (world) => {
-        const authoredLevel = world.levels.find((entry) => entry.levelId === this.selectedLevel.levelId);
-        mutator(authoredLevel);
-      });
-    }
-  }
-
-  createRecipe() {
-    const descriptor = this.state.editorDefinition.modeDescriptors[0];
-    if (!descriptor) return;
-    const id = `${slugify(descriptor.kind)}_${Object.keys(this.state.game.recipes).length + 1}`;
-    const defaultRecipe = createDefaultRecipe(descriptor, id);
-    delete defaultRecipe._suggestedId;
-    this.withGameMutation((game) => {
-      game.recipes[id] = defaultRecipe;
-      this.state.selectedRecipeId = id;
-      this.state.selectionMode = 'recipe';
+      setAtPath(level, 'difficulty.phases', current);
     });
   }
 
-  duplicateRecipe() {
-    const recipeId = this.currentRecipeId;
-    const recipe = this.currentRecipe;
-    if (!recipeId || !recipe) return;
-    let nextId = `${recipeId}_copy`;
-    while (this.state.game.recipes[nextId]) {
-      nextId = `${nextId}_copy`;
-    }
-    this.withGameMutation((game) => {
-      game.recipes[nextId] = deepClone(recipe);
-      game.recipes[nextId].title = `${recipe.title} Copy`;
-      this.state.selectedRecipeId = nextId;
-      this.state.selectionMode = 'recipe';
+  removePhase(index) {
+    this.removePath('level', `difficulty.phases.${index}`);
+  }
+
+  addBonusTier() {
+    if (!this.selectedWorld || !this.selectedLevel) return;
+    this.withWorldMutation(this.selectedWorld.id, (world) => {
+      const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
+      const tiers = level.scoring?.bonusTiers ?? [];
+      tiers.push({ threshold: 0, reward: 0 });
+      setAtPath(level, 'scoring.bonusTiers', tiers);
     });
   }
 
-  deleteRecipe() {
-    const recipeId = this.currentRecipeId;
-    if (!recipeId) return;
-    const usedBy = this.service.getUsedBy(this.state.worlds, recipeId);
-    if (usedBy.length > 0) {
-      this.state.status = { tone: 'warning', text: `Recipe "${recipeId}" is still used by levels and cannot be deleted.` };
-      this.render();
-      return;
-    }
-    this.withGameMutation((game) => {
-      delete game.recipes[recipeId];
-      this.state.selectedRecipeId = Object.keys(game.recipes)[0] ?? null;
-      this.state.selectionMode = this.state.selectedRecipeId ? 'recipe' : 'world';
-    });
+  removeBonusTier(index) {
+    this.removePath('level', `scoring.bonusTiers.${index}`);
   }
 
-  createLevel(forcedSlot = null) {
+  createLevel(preferredSlot = null) {
     const world = this.selectedWorld;
-    const recipeId = this.currentRecipeId ?? Object.keys(this.state.game.recipes ?? {})[0];
-    const resolvedRecipe = recipeId ? this.service.getResolvedRecipe(this.state.validation, recipeId) : null;
-    if (!world || !recipeId) return;
-    const slot = forcedSlot ?? nextAvailableSlot(world, this.state.game.levelSelect?.slots ?? []);
-    const levelNum = nextAvailableLevelNum(world);
-    const level = createDefaultLevel(world.id, levelNum, slot, recipeId, resolvedRecipe?.family);
+    const preset = this.state.editorDefinition.presets?.find((entry) => entry.id === this.state.selectedPresetId) ?? null;
+    const descriptor = this.state.editorDefinition.activityDescriptors?.find((entry) => entry.id === (preset?.activityType ?? this.state.editorDefinition.activityDescriptors?.[0]?.id));
+    if (!world || !descriptor) return;
+    const slot = preferredSlot ?? firstAvailableSlot(this.state.game, world);
+    const level = createDefaultLevel(world, descriptor, slot);
+    if (preset) {
+      level.objective = deepClone(preset.objective ?? level.objective);
+      level.content = deepClone(preset.content ?? level.content);
+      level.scoring = {
+        ...level.scoring,
+        ...deepClone(preset.scoring ?? {}),
+      };
+      level.presentation = {
+        ...level.presentation,
+        ...deepClone(preset.presentation ?? {}),
+      };
+      level.sourcePresetId = preset.id;
+      if (preset.label) {
+        level.label = preset.label;
+      }
+    }
     this.withWorldMutation(world.id, (authoredWorld) => {
       authoredWorld.levels.push(level);
-      this.state.selectedLevelId = level.levelId;
+      this.state.selectedLevelId = level.id;
       this.state.selectionMode = 'level';
     });
   }
 
   duplicateLevel() {
-    const world = this.selectedWorld;
-    const level = this.selectedLevel;
-    if (!world || !level) return;
-    const nextLevelNum = nextAvailableLevelNum(world);
-    const slot = nextAvailableSlot(world, this.state.game.levelSelect?.slots ?? []);
-    const copy = deepClone(level);
-    copy.levelNum = nextLevelNum;
-    copy.slot = slot;
-    copy.levelId = `${world.id}_${nextLevelNum}`;
-    copy.label = `${level.label} Copy`;
-    this.withWorldMutation(world.id, (authoredWorld) => {
-      authoredWorld.levels.push(copy);
-      this.state.selectedLevelId = copy.levelId;
+    if (!this.selectedWorld || !this.selectedLevel) return;
+    const slot = firstAvailableSlot(this.state.game, this.selectedWorld);
+    const nextLevelNum = Math.max(0, ...(this.selectedWorld.levels ?? []).map((entry) => entry.levelNum ?? 0)) + 1;
+    const duplicate = deepClone(this.selectedLevel);
+    duplicate.id = `${this.selectedWorld.id}_${nextLevelNum}`;
+    duplicate.levelNum = nextLevelNum;
+    duplicate.slot = slot;
+    duplicate.label = `${duplicate.label} Copy`;
+    this.withWorldMutation(this.selectedWorld.id, (world) => {
+      world.levels.push(duplicate);
+      this.state.selectedLevelId = duplicate.id;
       this.state.selectionMode = 'level';
     });
   }
 
   deleteLevel() {
-    const world = this.selectedWorld;
-    const level = this.selectedLevel;
-    if (!world || !level) return;
-    this.withWorldMutation(world.id, (authoredWorld) => {
-      authoredWorld.levels = authoredWorld.levels.filter((entry) => entry.levelId !== level.levelId);
-      this.state.selectedLevelId = authoredWorld.levels[0]?.levelId ?? null;
+    if (!this.selectedWorld || !this.selectedLevel) return;
+    this.withWorldMutation(this.selectedWorld.id, (world) => {
+      world.levels = world.levels.filter((entry) => entry.id !== this.selectedLevel.id);
+      this.state.selectedLevelId = world.levels[0]?.id ?? null;
       this.state.selectionMode = this.state.selectedLevelId ? 'level' : 'world';
     });
   }
 
-  renameCurrentRecipeId(nextIdRaw) {
-    const currentId = this.currentRecipeId;
-    const recipe = this.currentRecipe;
-    const nextId = slugify(nextIdRaw);
-    if (!currentId || !recipe || !nextId || nextId === currentId) {
-      return;
-    }
-    if (this.state.game.recipes[nextId]) {
-      this.state.status = { tone: 'warning', text: `Recipe id "${nextId}" already exists.` };
-      this.render();
-      return;
-    }
-    this.withGameMutation((game) => {
-      game.recipes[nextId] = game.recipes[currentId];
-      delete game.recipes[currentId];
-      this.state.worlds.forEach((world) => {
-        world.levels.forEach((level) => {
-          if (level.recipeId === currentId) {
-            level.recipeId = nextId;
-            this.markWorldDirty(world.id);
-          }
-        });
-      });
-      this.state.selectedRecipeId = nextId;
+  applyPreset() {
+    const preset = this.state.editorDefinition.presets?.find((entry) => entry.id === this.state.selectedPresetId);
+    if (!preset || !this.selectedWorld || !this.selectedLevel) return;
+    this.withWorldMutation(this.selectedWorld.id, (world) => {
+      const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
+      level.activityType = preset.activityType;
+      level.sourcePresetId = preset.id;
+      level.objective = deepClone(preset.objective ?? {});
+      level.content = deepClone(preset.content ?? {});
+      level.scoring = {
+        ...level.scoring,
+        ...deepClone(preset.scoring ?? {}),
+      };
+      level.presentation = {
+        ...level.presentation,
+        ...deepClone(preset.presentation ?? {}),
+      };
+      if (preset.label) {
+        level.label = preset.label;
+      }
     });
   }
 
-  async saveRecipes() {
+  async saveGame() {
     this.refreshValidation();
     if (!this.state.validation.valid) {
-      this.state.status = { tone: 'warning', text: 'Fix validation issues before saving recipes.' };
       this.render();
       return;
     }
@@ -689,7 +531,7 @@ export class GameContentEditor {
     try {
       await this.service.saveGame(this.state.game);
       this.state.dirtyGame = false;
-      this.state.status = { tone: 'success', text: 'Recipes and shared game settings saved.' };
+      this.state.status = { tone: 'success', text: 'Shared game config saved.' };
     } catch (error) {
       this.state.status = { tone: 'error', text: error instanceof Error ? error.message : String(error) };
     } finally {
@@ -699,20 +541,18 @@ export class GameContentEditor {
   }
 
   async saveSelectedWorld() {
-    const world = this.selectedWorld;
-    if (!world) return;
+    if (!this.selectedWorld) return;
     this.refreshValidation();
     if (!this.state.validation.valid) {
-      this.state.status = { tone: 'warning', text: 'Fix validation issues before saving this world.' };
       this.render();
       return;
     }
     this.state.saving = true;
     this.render();
     try {
-      await this.service.saveWorld(world);
-      this.state.dirtyWorldIds.delete(world.id);
-      this.state.status = { tone: 'success', text: `Saved world "${world.title}".` };
+      await this.service.saveWorld(this.selectedWorld);
+      this.state.dirtyWorldIds.delete(this.selectedWorld.id);
+      this.state.status = { tone: 'success', text: `Saved world "${this.selectedWorld.title}".` };
     } catch (error) {
       this.state.status = { tone: 'error', text: error instanceof Error ? error.message : String(error) };
     } finally {
@@ -724,7 +564,6 @@ export class GameContentEditor {
   async saveAll() {
     this.refreshValidation();
     if (!this.state.validation.valid) {
-      this.state.status = { tone: 'warning', text: 'Fix validation issues before saving all changes.' };
       this.render();
       return;
     }
@@ -733,7 +572,6 @@ export class GameContentEditor {
     try {
       if (this.state.dirtyGame) {
         await this.service.saveGame(this.state.game);
-        this.state.dirtyGame = false;
       }
       for (const worldId of [...this.state.dirtyWorldIds]) {
         const world = this.state.worlds.find((entry) => entry.id === worldId);
@@ -741,8 +579,9 @@ export class GameContentEditor {
           await this.service.saveWorld(world);
         }
       }
+      this.state.dirtyGame = false;
       this.state.dirtyWorldIds.clear();
-      this.state.status = { tone: 'success', text: 'Saved all game and world changes.' };
+      this.state.status = { tone: 'success', text: 'All changes saved.' };
     } catch (error) {
       this.state.status = { tone: 'error', text: error instanceof Error ? error.message : String(error) };
     } finally {
@@ -751,401 +590,127 @@ export class GameContentEditor {
     }
   }
 
-  errorsFor(prefix) {
-    return this.state.validation.errors.filter((entry) => entry.path === prefix || entry.path.startsWith(`${prefix}.`) || entry.path.startsWith(`${prefix}[`));
+  renderTopBar() {
+    return `
+      <header class="game-editor__topbar">
+        <div class="game-editor__title-group">
+          <h1>Math Garden Authoring Editor</h1>
+          <p>Descriptor-driven world and level authoring</p>
+        </div>
+        <div class="game-editor__actions">
+          <button type="button" data-action="toggle-advanced">${this.state.showAdvanced ? 'Basic Fields' : 'Advanced Fields'}</button>
+          <button type="button" data-action="reload-editor">Reload</button>
+          <button type="button" data-action="save-world" ${!this.selectedWorld || !this.state.dirtyWorldIds.has(this.selectedWorld.id) ? 'disabled' : ''}>Save World</button>
+          <button type="button" data-action="save-game" ${!this.state.dirtyGame ? 'disabled' : ''}>Save Game</button>
+          <button type="button" data-action="save-all" ${(!this.state.dirtyGame && this.state.dirtyWorldIds.size === 0) ? 'disabled' : ''}>Save All</button>
+        </div>
+        <div class="game-editor__status game-editor__status--${this.state.status.tone}">
+          ${this.state.saving ? 'Saving… ' : ''}${this.state.status.text}
+        </div>
+      </header>
+    `;
   }
 
-  renderRightPanel() {
-    if (this.state.selectionMode === 'recipe' && this.currentRecipe) {
-      return this.renderRecipePanel();
-    }
-    if (this.state.selectionMode === 'level' && this.selectedLevel) {
-      return this.renderLevelPanel();
-    }
-    return this.renderWorldPanel();
-  }
-
-  renderWorldPanel() {
+  renderSidebar() {
     const world = this.selectedWorld;
-    if (!world) return '<div class="game-editor__empty">Select a world.</div>';
-    const errors = this.errorsFor(`worlds.${world.id}`);
     return `
-      <section class="game-editor__detail-section">
-        <div class="game-editor__detail-header">
-          <h2>World Settings</h2>
-          <p>${world.id}</p>
-        </div>
-        ${this.renderErrorBlock(errors)}
-        <label class="game-editor__field">
-          <span>Title</span>
-          <input type="text" data-action="set-path" data-entity="world" data-path="title" value="${world.title ?? ''}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Subtitle</span>
-          <input type="text" data-action="set-path" data-entity="world" data-path="subtitle" value="${world.subtitle ?? ''}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Unlock Requirement Text</span>
-          <input type="text" data-action="set-path" data-entity="world" data-path="unlockRequirementText" value="${world.unlockRequirementText ?? ''}" />
-        </label>
-        <label class="game-editor__field game-editor__field--checkbox">
-          <input type="checkbox" data-action="set-path" data-entity="world" data-path="startsUnlocked" data-value-type="boolean" ${world.startsUnlocked ? 'checked' : ''} />
-          <span>Starts unlocked</span>
-        </label>
-        <label class="game-editor__field">
-          <span>Unlock After World</span>
-          <select data-action="set-path" data-entity="world" data-path="unlockAfterWorldId">
-            <option value="">None</option>
-            ${this.state.worlds.filter((entry) => entry.id !== world.id).map((entry) => `<option value="${entry.id}" ${entry.id === world.unlockAfterWorldId ? 'selected' : ''}>${entry.title}</option>`).join('')}
-          </select>
-        </label>
-        <div class="game-editor__field-group">
-          <h3>Sign Box</h3>
-          <div class="game-editor__range-inputs">
-            <input type="number" data-role="signbox-x" min="0" max="1" step="0.001" value="${world.signBox?.x ?? 0}" />
-            <input type="number" data-role="signbox-y" min="0" max="1" step="0.001" value="${world.signBox?.y ?? 0}" />
-            <input type="number" data-role="signbox-w" min="0" max="1" step="0.001" value="${world.signBox?.w ?? 0}" />
-            <input type="number" data-role="signbox-h" min="0" max="1" step="0.001" value="${world.signBox?.h ?? 0}" />
+      <aside class="game-editor__sidebar">
+        <section class="game-editor__sidebar-section">
+          <div class="game-editor__section-header"><h2>Worlds</h2></div>
+          ${this.state.worlds.map((entry) => `
+            <button type="button" class="game-editor__list-item ${entry.id === this.state.selectedWorldId && this.state.selectionMode === 'world' ? 'is-selected' : ''}" data-action="select-world" data-world-id="${entry.id}">
+              <span>${entry.title}</span>
+              ${this.state.dirtyWorldIds.has(entry.id) ? '<em>Dirty</em>' : ''}
+            </button>
+          `).join('')}
+        </section>
+        <section class="game-editor__sidebar-section">
+          <div class="game-editor__section-header">
+            <h2>Levels</h2>
+            <button type="button" data-action="create-level">New</button>
           </div>
-        </div>
-        <div class="game-editor__field-group">
-          <h3>Click Box</h3>
-          <div class="game-editor__range-inputs">
-            <input type="number" data-role="clickbox-x" min="0" max="1" step="0.001" value="${world.clickBox?.x ?? ''}" placeholder="x" />
-            <input type="number" data-role="clickbox-y" min="0" max="1" step="0.001" value="${world.clickBox?.y ?? ''}" placeholder="y" />
-            <input type="number" data-role="clickbox-w" min="0" max="1" step="0.001" value="${world.clickBox?.w ?? ''}" placeholder="w" />
-            <input type="number" data-role="clickbox-h" min="0" max="1" step="0.001" value="${world.clickBox?.h ?? ''}" placeholder="h" />
-          </div>
-        </div>
-      </section>
+          ${(world?.levels ?? []).slice().sort((a, b) => a.levelNum - b.levelNum).map((level) => `
+            <button type="button" class="game-editor__list-item ${level.id === this.state.selectedLevelId && this.state.selectionMode === 'level' ? 'is-selected' : ''}" data-action="select-level" data-world-id="${world.id}" data-level-id="${level.id}">
+              <span>${level.levelNum}. ${level.label}</span>
+              <small>${level.activityType}</small>
+            </button>
+          `).join('')}
+        </section>
+        <section class="game-editor__sidebar-section">
+          <div class="game-editor__section-header"><h2>Presets</h2></div>
+          ${(this.state.editorDefinition?.presets ?? []).map((preset) => `
+            <button type="button" class="game-editor__list-item ${preset.id === this.state.selectedPresetId ? 'is-selected' : ''}" data-action="select-preset" data-preset-id="${preset.id}">
+              <span>${preset.label}</span>
+              <small>${preset.activityType}</small>
+            </button>
+          `).join('')}
+        </section>
+      </aside>
     `;
   }
 
-  renderLevelPanel() {
-    const level = this.selectedLevel;
+  renderCenterPanel() {
     const world = this.selectedWorld;
-    if (!level || !world) return '<div class="game-editor__empty">Select a level.</div>';
-    const recipeOptions = Object.entries(this.state.game.recipes ?? {});
-    const resolvedLevel = this.service.getResolvedLevel(this.state.validation, level.levelId);
-    const descriptor = resolvedLevel?.resolvedRecipe?.descriptor ?? this.currentDescriptor;
-    const errors = this.errorsFor(`worlds.${world.id}`);
+    const resolvedLevel = this.selectedLevel ? this.service.getResolvedLevel(this.state.validation, this.selectedLevel.id) : null;
+    const preview = resolvedLevel ? this.service.getPreview(this.state.editorDefinition, resolvedLevel) : null;
+    const slotMap = new Map((world?.levels ?? []).map((level) => [level.slot, level]));
     return `
-      <section class="game-editor__detail-section">
-        <div class="game-editor__detail-header">
-          <h2>Level ${level.levelNum}</h2>
-          <div class="game-editor__inline-actions">
-            <button type="button" data-action="duplicate-level">Duplicate</button>
-            <button type="button" data-action="delete-level" class="danger">Delete</button>
+      <section class="game-editor__center-column">
+        <div class="game-editor__map-card">
+          <div class="game-editor__map-header">
+            <h2>${world?.title ?? 'Level Map'}</h2>
+            <span>${world?.levels?.length ?? 0} levels</span>
+          </div>
+          <div class="game-editor__slot-map" style="background-image:url(${this.state.game.levelSelect?.backgroundPath ?? ''})">
+            ${(this.state.game.levelSelect?.slots ?? []).map((slot) => {
+              const level = slotMap.get(slot.slot);
+              return `
+                <button
+                  type="button"
+                  class="game-editor__slot ${level ? 'game-editor__slot--filled' : 'game-editor__slot--empty'} ${level?.id === this.state.selectedLevelId ? 'game-editor__slot--selected' : ''}"
+                  data-action="${level ? 'select-level' : 'create-level'}"
+                  data-world-id="${world?.id ?? ''}"
+                  data-level-id="${level?.id ?? ''}"
+                  data-slot="${slot.slot}"
+                  style="left:${slot.x * 100}%;top:${slot.y * 100}%"
+                >
+                  ${level ? level.levelNum : '+'}
+                </button>
+              `;
+            }).join('')}
           </div>
         </div>
-        ${this.renderErrorBlock(errors.filter((entry) => entry.path.includes(level.levelId) || entry.path.includes(`levels[`)))}
-        <label class="game-editor__field">
-          <span>Level ID</span>
-          <input type="text" data-action="set-path" data-entity="level" data-path="levelId" value="${level.levelId}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Level Number</span>
-          <input type="number" data-action="set-path" data-entity="level" data-path="levelNum" data-value-type="number" value="${level.levelNum}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Label</span>
-          <input type="text" data-action="set-path" data-entity="level" data-path="label" value="${level.label ?? ''}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Slot</span>
-          <select data-action="set-path" data-entity="level" data-path="slot" data-value-type="number">
-            ${(this.state.game.levelSelect?.slots ?? []).map((slot) => `<option value="${slot.slot}" ${slot.slot === level.slot ? 'selected' : ''}>Slot ${slot.slot}</option>`).join('')}
-          </select>
-        </label>
-        <label class="game-editor__field">
-          <span>Recipe</span>
-          <select data-action="set-path" data-entity="level" data-path="recipeId">
-            ${recipeOptions.map(([recipeId, recipe]) => `<option value="${recipeId}" ${recipeId === level.recipeId ? 'selected' : ''}>${recipe.title} (${recipeId})</option>`).join('')}
-          </select>
-        </label>
-        <div class="game-editor__panel-note">
-          <strong>Resolved recipe:</strong> ${resolvedLevel?.resolvedRecipe?.title ?? 'Unknown'} · ${recipeKindLabel(descriptor)}
-          <button type="button" data-action="jump-to-recipe" data-recipe-id="${level.recipeId}">Edit recipe</button>
-        </div>
-        <label class="game-editor__field">
-          <span>Time Limit (seconds)</span>
-          <input type="number" data-action="set-path" data-entity="level" data-path="timeLimit" data-value-type="number" value="${level.timeLimit ?? ''}" />
-        </label>
-        ${this.renderGoalEditor(level.goal)}
-        <label class="game-editor__field">
-          <span>Clear Reward</span>
-          <input type="number" data-action="set-path" data-entity="level" data-path="clearReward" data-value-type="number" value="${level.clearReward ?? ''}" />
-        </label>
-        ${this.renderBonusTierEditor(level.bonusTiers ?? [])}
-        <div class="game-editor__field-group">
-          <h3>Level Rule Overrides</h3>
-          ${this.renderFieldSet('level', 'overrides.rules', level.overrides?.rules ?? {}, descriptor?.editor?.ruleFields ?? [], true)}
-        </div>
-        <div class="game-editor__field-group">
-          <h3>Level Scoring Overrides</h3>
-          ${this.renderFieldSet('level', 'overrides.scoring', level.overrides?.scoring ?? {}, descriptor?.editor?.scoringFields ?? [], true)}
-        </div>
-        <div class="game-editor__resolved-preview">
-          <h3>Resolved Effective Config</h3>
-          <pre>${toDisplayJson({
-            recipe: resolvedLevel?.resolvedRecipe?.title ?? null,
-            family: resolvedLevel?.resolvedRecipe?.family ?? null,
-            timeLimit: resolvedLevel?.timeLimit ?? null,
-            goal: resolvedLevel?.goal ?? null,
-            clearReward: resolvedLevel?.clearReward ?? null,
-            bonusTiers: resolvedLevel?.bonusTiers ?? [],
-            rules: resolvedLevel?.resolvedRecipe?.rules ?? null,
-            scoring: resolvedLevel?.resolvedRecipe?.scoring ?? null,
-          })}</pre>
+        <div class="game-editor__preview-stack">
+          <div class="game-editor__preview-card">
+            <h3>Level Summary</h3>
+            ${resolvedLevel ? `
+              <p><strong>${resolvedLevel.label}</strong></p>
+              <p>${formatGoal(resolvedLevel.goal)}</p>
+              <p>Reward: ${resolvedLevel.clearReward ?? 0} coins</p>
+              <p>Bonuses: ${formatBonusTiers(resolvedLevel.bonusTiers)}</p>
+              <p>Activity: ${resolvedLevel.activityType}</p>
+            ` : '<p>Select a level to preview it.</p>'}
+          </div>
+          ${this.renderPreview(preview)}
         </div>
       </section>
     `;
   }
 
-  renderRecipePanel() {
-    const recipeId = this.currentRecipeId;
-    const recipe = this.currentRecipe;
-    const descriptor = this.currentDescriptor;
-    if (!recipeId || !recipe || !descriptor) return '<div class="game-editor__empty">Select a recipe.</div>';
-    const usedBy = this.service.getUsedBy(this.state.worlds, recipeId);
-    const resolvedRecipe = this.service.getResolvedRecipe(this.state.validation, recipeId);
-    const preview = descriptor.editor?.preview?.(resolvedRecipe ?? {
-      id: recipeId,
-      title: recipe.title,
-      prompt: recipe.prompt,
-      rules: recipe.rules,
-      scoring: recipe.scoring,
-      kind: recipe.kind,
-    }) ?? null;
-    const errors = this.errorsFor('manifest');
-
-    return `
-      <section class="game-editor__detail-section">
-        <div class="game-editor__detail-header">
-          <h2>Recipe Library</h2>
-          <div class="game-editor__inline-actions">
-            <button type="button" data-action="duplicate-recipe">Duplicate</button>
-            <button type="button" data-action="delete-recipe" class="danger">Delete</button>
-          </div>
-        </div>
-        ${this.renderErrorBlock(errors)}
-        <label class="game-editor__field">
-          <span>Recipe ID</span>
-          <input type="text" value="${recipeId}" readonly />
-        </label>
-        <label class="game-editor__field">
-          <span>Rename Recipe ID</span>
-          <input type="text" data-action="rename-recipe-input" data-role="recipe-id-input" value="${recipeId}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Kind</span>
-          <select data-action="set-path" data-entity="recipe" data-path="kind">
-            ${this.state.editorDefinition.modeDescriptors.map((modeDescriptor) => `<option value="${modeDescriptor.kind}" ${modeDescriptor.kind === recipe.kind ? 'selected' : ''}>${recipeKindLabel(modeDescriptor)}</option>`).join('')}
-          </select>
-        </label>
-        <label class="game-editor__field">
-          <span>Title</span>
-          <input type="text" data-action="set-path" data-entity="recipe" data-path="title" value="${recipe.title ?? ''}" />
-        </label>
-        <label class="game-editor__field">
-          <span>Prompt</span>
-          <input type="text" data-action="set-path" data-entity="recipe" data-path="prompt" value="${recipe.prompt ?? ''}" />
-        </label>
-        <div class="game-editor__field-group">
-          <h3>Rules</h3>
-          ${this.renderFieldSet('recipe', 'rules', recipe.rules ?? {}, descriptor.editor?.ruleFields ?? [])}
-        </div>
-        <div class="game-editor__field-group">
-          <h3>Scoring</h3>
-          ${this.renderFieldSet('recipe', 'scoring', recipe.scoring ?? {}, descriptor.editor?.scoringFields ?? [])}
-        </div>
-        <div class="game-editor__used-by">
-          <h3>Used By</h3>
-          ${usedBy.length ? `<ul>${usedBy.map((entry) => `<li>${entry.worldTitle} · Level ${entry.levelNum}: ${entry.label}</li>`).join('')}</ul>` : '<p>No levels currently use this recipe.</p>'}
-        </div>
-        ${this.renderRecipePreview(preview)}
-      </section>
-    `;
-  }
-
-  renderFieldSet(entity, basePath, values, fieldDefs, isOverride = false) {
-    return fieldDefs.map((fieldDef) => {
-      const fieldPath = `${basePath}.${fieldDef.key}`;
-      const value = values?.[fieldDef.key];
-      switch (fieldDef.type) {
-        case 'select':
-          return `
-            <label class="game-editor__field">
-              <span>${fieldDef.label}</span>
-              <select data-action="set-path" data-entity="${entity}" data-path="${fieldPath}">
-                ${(fieldDef.options ?? []).map((option) => `<option value="${option.value}" ${option.value === value ? 'selected' : ''}>${option.label}</option>`).join('')}
-              </select>
-              ${fieldDef.optional ? `<button type="button" data-action="clear-path" data-entity="${entity}" data-path="${fieldPath}">Clear</button>` : ''}
-            </label>
-          `;
-        case 'range':
-          return `
-            <div class="game-editor__field-group game-editor__field-group--inline">
-              ${renderRangeInputs(fieldDef.label, fieldPath, value ?? ['', ''], fieldDef)}
-              ${fieldDef.optional ? `<button type="button" data-action="clear-path" data-entity="${entity}" data-path="${fieldPath}">Clear</button>` : ''}
-            </div>
-          `;
-        case 'number':
-          return `
-            <label class="game-editor__field">
-              <span>${fieldDef.label}</span>
-              <input type="number" data-action="set-path" data-entity="${entity}" data-path="${fieldPath}" data-value-type="number" min="${fieldDef.min ?? ''}" max="${fieldDef.max ?? ''}" step="${fieldDef.step ?? '1'}" value="${value ?? ''}" />
-              ${fieldDef.optional ? `<button type="button" data-action="clear-path" data-entity="${entity}" data-path="${fieldPath}">Clear</button>` : ''}
-            </label>
-          `;
-        case 'text':
-          return `
-            <label class="game-editor__field">
-              <span>${fieldDef.label}</span>
-              <input type="text" data-action="set-path" data-entity="${entity}" data-path="${fieldPath}" value="${value ?? ''}" />
-              ${fieldDef.optional ? `<button type="button" data-action="clear-path" data-entity="${entity}" data-path="${fieldPath}">Clear</button>` : ''}
-            </label>
-          `;
-        case 'matcher':
-          return this.renderMatcherEditor(entity, fieldPath, value ?? null, fieldDef);
-        case 'phases':
-          return this.renderPhaseEditor(entity, fieldPath, value ?? []);
-        default:
-          return '';
-      }
-    }).join('');
-  }
-
-  renderGoalEditor(goal) {
-    const goalTypes = this.state.editorDefinition.goalTypes ?? [];
-    return `
-      <div class="game-editor__field-group">
-        <h3>Goal</h3>
-        <label class="game-editor__field">
-          <span>Goal Type</span>
-          <select data-action="set-path" data-entity="level" data-path="goal.type">
-            ${goalTypes.map((entry) => `<option value="${entry.value}" ${entry.value === goal?.type ? 'selected' : ''}>${entry.label}</option>`).join('')}
-          </select>
-        </label>
-        <label class="game-editor__field">
-          <span>Goal Value</span>
-          <input type="number" data-action="set-path" data-entity="level" data-path="goal.value" data-value-type="number" value="${goal?.value ?? ''}" />
-        </label>
-        <p class="game-editor__field-help">${goalTypes.find((entry) => entry.value === goal?.type)?.description ?? ''}</p>
-      </div>
-    `;
-  }
-
-  renderBonusTierEditor(bonusTiers) {
-    return `
-        <div class="game-editor__field-group">
-          <h3>Bonus Tiers</h3>
-        ${(bonusTiers ?? []).map((tier, index) => `
-          <div class="game-editor__bonus-row">
-            <input type="number" data-action="set-path" data-entity="level" data-path="bonusTiers.${index}.threshold" data-value-type="number" value="${tier.threshold ?? ''}" />
-            <input type="number" data-action="set-path" data-entity="level" data-path="bonusTiers.${index}.reward" data-value-type="number" value="${tier.reward ?? ''}" />
-            <button type="button" data-action="clear-path" data-entity="level" data-path="bonusTiers.${index}">Remove</button>
-          </div>
-        `).join('')}
-        <button type="button" data-action="add-bonus-tier">Add Bonus Tier</button>
-      </div>
-    `;
-  }
-
-  renderMatcherEditor(entity, path, matcher, fieldDef) {
-    const descriptor = this.currentDescriptor;
-    const matcherOptions = descriptor?.editor?.matcherTypes ?? [];
-    const normalized = typeof matcher === 'string' ? { type: matcher } : matcher;
-    const type = normalized?.type ?? 'even';
-    return `
-      <div class="game-editor__matcher">
-        <div class="game-editor__matcher-header">
-          <span>${fieldDef.label}</span>
-          <button type="button" data-action="clear-path" data-entity="${entity}" data-path="${path}">Clear</button>
-        </div>
-        <label class="game-editor__field">
-          <span>Matcher Type</span>
-          <select data-action="matcher-set-type" data-path="${path}" data-matcher-type-select="true">
-            ${matcherOptions.map((option) => `<option value="${option.value}" ${option.value === type ? 'selected' : ''}>${option.label}</option>`).join('')}
-          </select>
-        </label>
-        ${type === 'divisible_by' ? `
-          <label class="game-editor__field">
-            <span>Divisor</span>
-            <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}.divisor" data-value-type="number" value="${normalized?.divisor ?? 2}" />
-          </label>
-          <label class="game-editor__field">
-            <span>Remainder</span>
-            <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}.remainder" data-value-type="number" value="${normalized?.remainder ?? 0}" />
-          </label>
-        ` : ''}
-        ${type === 'less_than_or_equal' || type === 'greater_than_or_equal' ? `
-          <label class="game-editor__field">
-            <span>Value</span>
-            <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}.value" data-value-type="number" value="${normalized?.value ?? 10}" />
-          </label>
-        ` : ''}
-        ${type === 'not' ? this.renderMatcherEditor(entity, `${path}.rule`, normalized?.rule ?? createDefaultMatcher(), { label: 'Nested Rule' }) : ''}
-        ${(type === 'any_of' || type === 'all_of') ? `
-          <div class="game-editor__nested-list">
-            ${(normalized?.rules ?? []).map((rule, index) => `
-              <div class="game-editor__nested-item">
-                ${this.renderMatcherEditor(entity, `${path}.rules.${index}`, rule, { label: `Rule ${index + 1}` })}
-                <button type="button" data-action="matcher-remove-child" data-path="${path}.rules.${index}">Remove Rule</button>
-              </div>
-            `).join('')}
-            <button type="button" data-action="matcher-add-child" data-path="${path}.rules">Add Rule</button>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
-  renderPhaseEditor(entity, path, phases) {
-    return `
-      <div class="game-editor__field-group">
-        <div class="game-editor__detail-header">
-          <h4>Phases</h4>
-          <button type="button" data-action="phase-add" data-path="${path}">Add Phase</button>
-        </div>
-        ${(phases ?? []).map((phase, index) => `
-          <div class="game-editor__phase-card">
-            <div class="game-editor__detail-header">
-              <strong>Phase ${index + 1}</strong>
-              <button type="button" data-action="phase-delete" data-path="${path}.${index}">Delete</button>
-            </div>
-            <label class="game-editor__field">
-              <span>Prompt</span>
-              <input type="text" data-action="set-path" data-entity="${entity}" data-path="${path}.${index}.prompt" value="${phase.prompt ?? ''}" />
-            </label>
-            <label class="game-editor__field">
-              <span>Switch After Caught</span>
-              <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}.${index}.switchAfterCaught" data-value-type="number" value="${phase.switchAfterCaught ?? ''}" />
-            </label>
-            ${renderRangeInputs('Number Range', `${path}.${index}.numberRange`, phase.numberRange ?? ['', ''], { min: 0, max: 100, step: 1 })}
-            ${renderRangeInputs('Spawn Delay', `${path}.${index}.spawnDelayRange`, phase.spawnDelayRange ?? ['', ''], { min: 0.1, max: 5, step: 0.05 })}
-            ${renderRangeInputs('Fall Speed', `${path}.${index}.fallSpeedRange`, phase.fallSpeedRange ?? ['', ''], { min: 20, max: 300, step: 5 })}
-            ${this.renderMatcherEditor(entity, `${path}.${index}.matcher`, phase.matcher ?? createDefaultMatcher(), { label: 'Phase Matcher' })}
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  renderRecipePreview(preview) {
+  renderPreview(preview) {
     if (!preview) {
-      return '<div class="game-editor__preview-card"><h3>Preview</h3><p>No preview available.</p></div>';
+      return '<div class="game-editor__preview-card"><h3>Preview</h3><p>Select a level to see example gameplay.</p></div>';
     }
     if (preview.type === 'collection') {
       return `
         <div class="game-editor__preview-card">
-          <h3>Sample Targets</h3>
-          ${(preview.phases ?? []).map((phase) => `
+          <h3>Sample Stream</h3>
+          ${preview.phases.map((phase) => `
             <div class="game-editor__preview-phase">
               <strong>${phase.label}</strong>
               ${phase.switchAfterCaught != null ? `<span>Switch after ${phase.switchAfterCaught} catches</span>` : ''}
               <div class="game-editor__sample-grid">
-                ${(phase.samples ?? []).map((sample) => `<span class="game-editor__sample-pill ${sample.match ? 'game-editor__sample-pill--good' : 'game-editor__sample-pill--bad'}">${sample.value}</span>`).join('')}
+                ${phase.samples.map((sample) => `<span class="game-editor__sample-pill ${sample.match ? 'game-editor__sample-pill--good' : 'game-editor__sample-pill--bad'}">${sample.value}</span>`).join('')}
               </div>
             </div>
           `).join('')}
@@ -1154,8 +719,8 @@ export class GameContentEditor {
     }
     return `
       <div class="game-editor__preview-card">
-        <h3>Example Question / Answer Pairs</h3>
-        ${(preview.rounds ?? []).map((round) => `
+        <h3>Example Questions</h3>
+        ${preview.rounds.map((round) => `
           <div class="game-editor__preview-round">
             <strong>${round.equation}</strong>
             <div>Correct: ${round.answer}</div>
@@ -1166,234 +731,306 @@ export class GameContentEditor {
     `;
   }
 
-  renderCenterPanel() {
-    const slots = this.state.game.levelSelect?.slots ?? [];
+  renderWorldPanel() {
     const world = this.selectedWorld;
-    const levelsBySlot = new Map((world?.levels ?? []).map((level) => [level.slot, level]));
-    const selectedLevel = this.selectedLevel;
-    const previewSource = (selectedLevel && this.service.getResolvedLevel(this.state.validation, selectedLevel.levelId)?.resolvedRecipe)
-      || this.service.getResolvedRecipe(this.state.validation, this.currentRecipeId)
-      || (this.currentRecipe ? {
-        id: this.currentRecipeId,
-        title: this.currentRecipe.title,
-        prompt: this.currentRecipe.prompt,
-        rules: this.currentRecipe.rules,
-        scoring: this.currentRecipe.scoring,
-        kind: this.currentRecipe.kind,
-      } : null);
-    const preview = previewSource && this.currentDescriptor?.editor?.preview
-      ? this.currentDescriptor.editor.preview(previewSource)
-      : null;
-
+    if (!world) return '<div class="game-editor__empty">Select a world.</div>';
     return `
-      <section class="game-editor__center-column">
-        <div class="game-editor__map-card">
-          <div class="game-editor__map-header">
-            <h2>${world?.title ?? 'Level Slots'}</h2>
-            <span>${world?.levels?.length ?? 0} levels</span>
-          </div>
-          <div class="game-editor__slot-map" style="background-image:url(${this.state.game.levelSelect?.backgroundPath ?? ''})">
-            ${slots.map((slot) => {
-              const level = levelsBySlot.get(slot.slot);
-              return `
-                <button
-                  type="button"
-                  class="game-editor__slot ${level ? 'game-editor__slot--filled' : 'game-editor__slot--empty'} ${selectedLevel?.levelId === level?.levelId ? 'game-editor__slot--selected' : ''}"
-                  data-action="${level ? 'select-level' : 'create-level'}"
-                  data-world-id="${world?.id ?? ''}"
-                  data-level-id="${level?.levelId ?? ''}"
-                  data-slot="${slot.slot}"
-                  style="left:${slot.x * 100}%;top:${slot.y * 100}%;width:${slot.r * 220}%;height:${slot.r * 220}%"
-                >
-                  ${level ? level.levelNum : '+'}
-                </button>
-              `;
-            }).join('')}
+      <section class="game-editor__detail-section">
+        <div class="game-editor__detail-header"><h2>World Settings</h2></div>
+        ${this.renderErrors(buildWorldErrorPrefix(world))}
+        ${this.renderTextField('world', 'title', 'Title', world.title)}
+        ${this.renderTextField('world', 'subtitle', 'Subtitle', world.subtitle ?? '')}
+        ${this.renderTextField('world', 'theme', 'Theme', world.theme ?? '')}
+        ${this.renderTextField('world', 'learningObjective', 'Learning Objective', world.learningObjective ?? '')}
+        ${this.renderTextField('world', 'unlockRequirementText', 'Unlock Requirement Text', world.unlockRequirementText ?? '')}
+        ${this.renderCheckboxField('world', 'startsUnlocked', 'Starts Unlocked', world.startsUnlocked === true)}
+        ${this.renderSelectField('world', 'unlockAfterWorldId', 'Unlock After World', world.unlockAfterWorldId ?? '', [
+          { value: '', label: 'None' },
+          ...this.state.worlds.filter((entry) => entry.id !== world.id).map((entry) => ({ value: entry.id, label: entry.title })),
+        ])}
+        ${this.renderBoxEditor('signBox', 'Sign Box', world.signBox)}
+        ${this.renderBoxEditor('clickBox', 'Click Box', world.clickBox)}
+      </section>
+    `;
+  }
+
+  renderLevelPanel() {
+    const level = this.selectedLevel;
+    const descriptor = this.selectedDescriptor;
+    if (!level || !descriptor) return '<div class="game-editor__empty">Select a level.</div>';
+    return `
+      <section class="game-editor__detail-section">
+        <div class="game-editor__detail-header">
+          <h2>${level.label}</h2>
+          <div class="game-editor__inline-actions">
+            <button type="button" data-action="duplicate-level">Duplicate</button>
+            <button type="button" data-action="delete-level" class="danger">Delete</button>
           </div>
         </div>
-        <div class="game-editor__preview-stack">
-          <div class="game-editor__preview-card">
-            <h3>Level Bubble Summary</h3>
-            ${selectedLevel ? `
-              <p><strong>${selectedLevel.label}</strong></p>
-              <p>${formatGoal(selectedLevel.goal)}</p>
-              <p>Reward: ${selectedLevel.clearReward ?? 0} coins</p>
-              <p>Bonuses: ${formatBonusTiers(selectedLevel.bonusTiers)}</p>
-            ` : '<p>Select a level to inspect its summary.</p>'}
-          </div>
-          ${this.renderRecipePreview(preview)}
+        ${this.renderTextField('level', 'id', 'Level ID', level.id)}
+        ${this.renderTextField('level', 'label', 'Label', level.label)}
+        ${this.renderNumberField('level', 'levelNum', 'Level Number', level.levelNum)}
+        ${this.renderSelectField('level', 'slot', 'Slot', level.slot, (this.state.game.levelSelect?.slots ?? []).map((slot) => ({ value: slot.slot, label: `Slot ${slot.slot}` })), 'number')}
+        ${this.renderSelectField('level', 'activityType', 'Activity Type', level.activityType, this.state.editorDefinition.activityDescriptors.map((entry) => ({ value: entry.id, label: entry.label })))}
+        <div class="game-editor__panel-note">
+          <strong>Preset Starter:</strong> ${level.sourcePresetId ?? 'None'}
+          <button type="button" data-action="apply-preset" ${!this.state.selectedPresetId ? 'disabled' : ''}>Apply Selected Preset</button>
+        </div>
+        ${descriptor.sections.map((section) => this.renderSection(level, descriptor, section)).join('')}
+        <div class="game-editor__resolved-preview">
+          <h3>Resolved Runtime Config</h3>
+          <pre>${toJson(this.service.getResolvedLevel(this.state.validation, level.id) ?? {})}</pre>
         </div>
       </section>
     `;
   }
 
-  renderErrorBlock(errors) {
-    if (!errors?.length) return '';
+  renderSection(level, descriptor, section) {
+    const visibleFields = (section.fields ?? []).filter((field) => {
+      if (!this.state.showAdvanced && field.authoringTier === 'advanced') {
+        return false;
+      }
+      return isFieldVisible(field, level);
+    });
+
     return `
-      <div class="game-editor__error-list">
-        ${errors.map((error) => `<div class="game-editor__error-item">${error.message}</div>`).join('')}
+      <div class="game-editor__field-group">
+        <h3>${section.label}</h3>
+        ${visibleFields.map((field) => this.renderField(level, descriptor, field)).join('')}
       </div>
     `;
   }
 
-  renderSidebar() {
-    const selectedWorld = this.selectedWorld;
-    const recipes = Object.entries(this.state.game.recipes ?? {});
+  renderField(level, descriptor, field) {
+    const localPath = field.id;
+    const value = getAtPath(level, localPath);
+    switch (field.editorControl) {
+      case 'select':
+        return this.renderSelectField('level', localPath, field.label, value ?? field.defaultValue ?? '', field.options ?? []);
+      case 'number':
+      case 'slider':
+        return this.renderNumberField('level', localPath, field.label, value ?? field.defaultValue ?? '');
+      case 'range_pair':
+        return this.renderRangeField('level', localPath, field.label, value ?? field.defaultValue ?? ['', '']);
+      case 'text':
+        return this.renderTextField('level', localPath, field.label, value ?? field.defaultValue ?? '');
+      case 'textarea':
+        return this.renderTextAreaField('level', localPath, field.label, value ?? field.defaultValue ?? '');
+      case 'bonus_tiers':
+        return this.renderBonusTierEditor(value ?? []);
+      case 'matcher_builder':
+        return this.renderMatcherBuilder(localPath, value);
+      case 'phase_builder':
+        return this.renderPhaseBuilder(value ?? []);
+      default:
+        return '';
+    }
+  }
+
+  renderTextField(entity, path, label, value) {
     return `
-      <aside class="game-editor__sidebar">
-        <section class="game-editor__sidebar-section">
-          <div class="game-editor__section-header">
-            <h2>Worlds</h2>
+      <label class="game-editor__field">
+        <span>${label}</span>
+        <input type="text" data-action="set-path" data-entity="${entity}" data-path="${path}" value="${value ?? ''}" />
+      </label>
+    `;
+  }
+
+  renderTextAreaField(entity, path, label, value) {
+    return `
+      <label class="game-editor__field">
+        <span>${label}</span>
+        <textarea data-action="set-path" data-entity="${entity}" data-path="${path}">${value ?? ''}</textarea>
+      </label>
+    `;
+  }
+
+  renderNumberField(entity, path, label, value) {
+    return `
+      <label class="game-editor__field">
+        <span>${label}</span>
+        <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}" data-value-type="number" value="${value ?? ''}" />
+      </label>
+    `;
+  }
+
+  renderCheckboxField(entity, path, label, value) {
+    return `
+      <label class="game-editor__field game-editor__field--checkbox">
+        <input type="checkbox" data-action="set-path" data-entity="${entity}" data-path="${path}" data-value-type="boolean" ${value ? 'checked' : ''} />
+        <span>${label}</span>
+      </label>
+    `;
+  }
+
+  renderSelectField(entity, path, label, value, options, valueType = 'text') {
+    return `
+      <label class="game-editor__field">
+        <span>${label}</span>
+        <select data-action="set-path" data-entity="${entity}" data-path="${path}" data-value-type="${valueType}">
+          ${options.map((option) => `<option value="${option.value}" ${String(option.value) === String(value) ? 'selected' : ''}>${option.label}</option>`).join('')}
+        </select>
+      </label>
+    `;
+  }
+
+  renderRangeField(entity, path, label, value) {
+    const [minValue, maxValue] = Array.isArray(value) ? value : ['', ''];
+    return `
+      <label class="game-editor__field">
+        <span>${label}</span>
+        <div class="game-editor__range-inputs">
+          <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}.0" data-value-type="number" value="${minValue ?? ''}" />
+          <span>to</span>
+          <input type="number" data-action="set-path" data-entity="${entity}" data-path="${path}.1" data-value-type="number" value="${maxValue ?? ''}" />
+        </div>
+      </label>
+    `;
+  }
+
+  renderBonusTierEditor(tiers) {
+    return `
+      <div class="game-editor__field-group">
+        <h4>Bonus Tiers</h4>
+        ${tiers.map((tier, index) => `
+          <div class="game-editor__bonus-row">
+            <input type="number" data-action="set-path" data-entity="level" data-path="scoring.bonusTiers.${index}.threshold" data-value-type="number" value="${tier.threshold ?? ''}" />
+            <input type="number" data-action="set-path" data-entity="level" data-path="scoring.bonusTiers.${index}.reward" data-value-type="number" value="${tier.reward ?? ''}" />
+            <button type="button" data-action="remove-bonus-tier" data-index="${index}">Remove</button>
           </div>
-          ${this.state.worlds.map((world) => `
-            <button type="button" class="game-editor__list-item ${world.id === this.state.selectedWorldId && this.state.selectionMode === 'world' ? 'is-selected' : ''}" data-action="select-world" data-world-id="${world.id}">
-              <span>${world.title}</span>
-              ${this.state.dirtyWorldIds.has(world.id) ? '<em>Dirty</em>' : ''}
-            </button>
-          `).join('')}
-        </section>
-        <section class="game-editor__sidebar-section">
-          <div class="game-editor__section-header">
-            <h2>Levels</h2>
-            <button type="button" data-action="create-level">New</button>
+        `).join('')}
+        <button type="button" data-action="add-bonus-tier">Add Bonus Tier</button>
+      </div>
+    `;
+  }
+
+  renderMatcherBuilder(path, matcher) {
+    const value = matcher ?? { type: 'even' };
+    return `
+      <div class="game-editor__matcher">
+        <div class="game-editor__detail-header">
+          <strong>Rule</strong>
+          <span>${value.type ?? 'even'}</span>
+        </div>
+        ${this.renderSelectField('level', `${path}.type`, 'Rule Type', value.type ?? 'even', [
+          { value: 'parity', label: 'Parity' },
+          { value: 'modulo', label: 'Modulo' },
+          { value: 'prime', label: 'Prime' },
+          { value: 'comparison', label: 'Comparison' },
+          { value: 'compound', label: 'Compound' },
+        ])}
+        ${value.type === 'parity' ? this.renderSelectField('level', `${path}.parity`, 'Parity', value.parity ?? 'even', [
+          { value: 'even', label: 'Even' },
+          { value: 'odd', label: 'Odd' },
+        ]) : ''}
+        ${value.type === 'modulo' ? `${this.renderNumberField('level', `${path}.mod`, 'Modulo Base', value.mod ?? 2)}${this.renderNumberField('level', `${path}.remainder`, 'Remainder', value.remainder ?? 0)}` : ''}
+        ${value.type === 'comparison' ? `${this.renderSelectField('level', `${path}.comparison`, 'Comparison', value.comparison ?? 'less_than_or_equal', [
+          { value: 'less_than_or_equal', label: 'Less Than Or Equal' },
+          { value: 'greater_than_or_equal', label: 'Greater Than Or Equal' },
+        ])}${this.renderNumberField('level', `${path}.value`, 'Value', value.value ?? 10)}` : ''}
+        ${value.type === 'compound' ? this.renderCompoundMatcher(`${path}.matcher`, value.matcher ?? { type: 'even' }) : ''}
+      </div>
+    `;
+  }
+
+  renderCompoundMatcher(path, matcher) {
+    const value = matcher ?? createDefaultMatcher();
+    return `
+      <div class="game-editor__matcher">
+        <div class="game-editor__detail-header">
+          <strong>Compound Matcher</strong>
+          <select data-action="set-matcher-type" data-path="${path}" data-matcher-type="${value.type ?? 'even'}">
+            ${['even', 'odd', 'prime', 'divisible_by', 'less_than_or_equal', 'greater_than_or_equal', 'not', 'any_of', 'all_of'].map((type) => `<option value="${type}" ${type === value.type ? 'selected' : ''}>${type}</option>`).join('')}
+          </select>
+        </div>
+        ${value.type === 'divisible_by' ? `${this.renderNumberField('level', `${path}.divisor`, 'Divisor', value.divisor ?? 2)}${this.renderNumberField('level', `${path}.remainder`, 'Remainder', value.remainder ?? 0)}` : ''}
+        ${(value.type === 'less_than_or_equal' || value.type === 'greater_than_or_equal') ? this.renderNumberField('level', `${path}.value`, 'Value', value.value ?? 10) : ''}
+        ${value.type === 'not' ? this.renderCompoundMatcher(`${path}.rule`, value.rule ?? createDefaultMatcher()) : ''}
+        ${(value.type === 'any_of' || value.type === 'all_of') ? `
+          <div class="game-editor__nested-list">
+            ${(value.rules ?? []).map((rule, index) => `
+              <div class="game-editor__nested-item">
+                ${this.renderCompoundMatcher(`${path}.rules.${index}`, rule)}
+                <button type="button" data-action="remove-compound-rule" data-path="${path}.rules.${index}">Remove Rule</button>
+              </div>
+            `).join('')}
+            <button type="button" data-action="add-compound-rule" data-path="${path}.rules">Add Rule</button>
           </div>
-          ${(selectedWorld?.levels ?? []).slice().sort((a, b) => a.levelNum - b.levelNum).map((level) => `
-            <button type="button" class="game-editor__list-item ${level.levelId === this.state.selectedLevelId && this.state.selectionMode === 'level' ? 'is-selected' : ''}" data-action="select-level" data-world-id="${selectedWorld.id}" data-level-id="${level.levelId}">
-              <span>${level.levelNum}. ${level.label}</span>
-              <small>Slot ${level.slot}</small>
-            </button>
-          `).join('')}
-        </section>
-        <section class="game-editor__sidebar-section">
-          <div class="game-editor__section-header">
-            <h2>Recipe Library</h2>
-            <button type="button" data-action="create-recipe">New</button>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  renderPhaseBuilder(phases) {
+    return `
+      <div class="game-editor__field-group">
+        <div class="game-editor__detail-header">
+          <h4>Phases</h4>
+          <button type="button" data-action="phase-add">Add Phase</button>
+        </div>
+        ${phases.map((phase, index) => `
+          <div class="game-editor__phase-card">
+            <div class="game-editor__detail-header">
+              <strong>Phase ${index + 1}</strong>
+              <button type="button" data-action="phase-remove" data-index="${index}">Delete</button>
+            </div>
+            ${this.renderNumberField('level', `difficulty.phases.${index}.switchAfterCaught`, 'Switch After Caught', phase.switchAfterCaught ?? '')}
+            ${this.renderTextField('level', `difficulty.phases.${index}.presentation.prompt`, 'Phase Prompt', phase.presentation?.prompt ?? '')}
+            ${this.renderMatcherBuilder(`difficulty.phases.${index}.objective.rule`, phase.objective?.rule ?? { type: 'parity', parity: 'even' })}
+            ${this.renderRangeField('level', `difficulty.phases.${index}.content.domain.range`, 'Phase Range', phase.content?.domain?.range ?? ['', ''])}
           </div>
-          ${recipes.map(([recipeId, recipe]) => `
-            <button type="button" class="game-editor__list-item ${recipeId === this.state.selectedRecipeId && this.state.selectionMode === 'recipe' ? 'is-selected' : ''}" data-action="select-recipe" data-recipe-id="${recipeId}">
-              <span>${recipe.title}</span>
-              <small>${recipeId}</small>
-            </button>
-          `).join('')}
-        </section>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderBoxEditor(basePath, label, box) {
+    const value = box ?? { x: '', y: '', w: '', h: '' };
+    return `
+      <div class="game-editor__field-group">
+        <h3>${label}</h3>
+        <div class="game-editor__range-inputs">
+          <input type="number" data-action="set-path" data-entity="world" data-path="${basePath}.x" data-value-type="number" value="${value.x ?? ''}" placeholder="x" />
+          <input type="number" data-action="set-path" data-entity="world" data-path="${basePath}.y" data-value-type="number" value="${value.y ?? ''}" placeholder="y" />
+          <input type="number" data-action="set-path" data-entity="world" data-path="${basePath}.w" data-value-type="number" value="${value.w ?? ''}" placeholder="w" />
+          <input type="number" data-action="set-path" data-entity="world" data-path="${basePath}.h" data-value-type="number" value="${value.h ?? ''}" placeholder="h" />
+        </div>
+      </div>
+    `;
+  }
+
+  renderErrors(prefix) {
+    const errors = this.state.validation.errors.filter((entry) => entry.path === prefix || entry.path.startsWith(`${prefix}.`) || entry.path.startsWith(`${prefix}[`));
+    if (!errors.length) return '';
+    return `
+      <div class="game-editor__error-list">
+        ${errors.map((entry) => `<div class="game-editor__error-item">${entry.message}</div>`).join('')}
+      </div>
+    `;
+  }
+
+  renderDetails() {
+    const validationSummary = this.state.validation.errors.length
+      ? `<div class="game-editor__validation-summary">${this.state.validation.errors.length} validation issue(s)</div>`
+      : '<div class="game-editor__validation-summary game-editor__validation-summary--ok">Validation clean</div>';
+    return `
+      <aside class="game-editor__details">
+        ${validationSummary}
+        ${this.state.selectionMode === 'level' ? this.renderLevelPanel() : this.renderWorldPanel()}
       </aside>
     `;
   }
 
-  renderTopBar() {
-    return `
-      <header class="game-editor__topbar">
-        <div class="game-editor__title-group">
-          <h1>Math Garden Content Editor</h1>
-          <p>Worlds, levels, recipes, and previews</p>
-        </div>
-        <div class="game-editor__meta">
-          <label class="game-editor__field">
-            <span>Game</span>
-            <input type="text" value="${this.state.editorDefinition?.label ?? this.gameId}" readonly />
-          </label>
-          <label class="game-editor__field">
-            <span>Current World</span>
-            <select data-action="select-world-dropdown">
-              ${this.state.worlds.map((world) => `<option value="${world.id}" ${world.id === this.state.selectedWorldId ? 'selected' : ''}>${world.title}</option>`).join('')}
-            </select>
-          </label>
-        </div>
-        <div class="game-editor__actions">
-          <button type="button" data-action="reload-editor">Reload</button>
-          <button type="button" data-action="save-world" ${this.selectedWorld && !this.state.dirtyWorldIds.has(this.selectedWorld.id) ? 'disabled' : ''}>Save World</button>
-          <button type="button" data-action="save-recipes" ${!this.state.dirtyGame ? 'disabled' : ''}>Save Recipes</button>
-          <button type="button" data-action="save-all" ${(!this.state.dirtyGame && this.state.dirtyWorldIds.size === 0) ? 'disabled' : ''}>Save All</button>
-        </div>
-        <div class="game-editor__status game-editor__status--${this.state.status.tone}">
-          ${this.state.saving ? 'Saving… ' : ''}${this.state.status.text}
-        </div>
-      </header>
-    `;
-  }
-
   render() {
-    const validationSummary = this.state.validation.errors.length
-      ? `<div class="game-editor__validation-summary">${this.state.validation.errors.length} validation issue(s)</div>`
-      : '<div class="game-editor__validation-summary game-editor__validation-summary--ok">Validation clean</div>';
-
     this.host.innerHTML = `
       <div class="game-editor">
         ${this.renderTopBar()}
         <div class="game-editor__body">
           ${this.renderSidebar()}
           ${this.renderCenterPanel()}
-          <aside class="game-editor__details">
-            ${validationSummary}
-            ${this.renderRightPanel()}
-          </aside>
+          ${this.renderDetails()}
         </div>
       </div>
     `;
-
-    const worldSelect = this.host.querySelector('[data-action="select-world-dropdown"]');
-    if (worldSelect) {
-      worldSelect.addEventListener('change', (event) => {
-        this.state.selectedWorldId = event.target.value;
-        this.state.selectionMode = 'world';
-        this.state.selectedLevelId = null;
-        this.render();
-      });
-    }
-
-    const recipeRenameInput = this.host.querySelector('[data-role="recipe-id-input"]');
-    if (recipeRenameInput) {
-      recipeRenameInput.addEventListener('change', (event) => {
-        this.renameCurrentRecipeId(event.target.value);
-      });
-    }
-
-    this.host.querySelectorAll('input[type="checkbox"][data-value-type="boolean"]').forEach((input) => {
-      input.addEventListener('change', () => {
-        this.setEntityPath(input.dataset.entity, input.dataset.path, input.checked);
-      });
-    });
-
-    this.host.querySelectorAll('[data-matcher-type-select="true"]').forEach((select) => {
-      select.addEventListener('change', () => {
-        this.setMatcherType(select.dataset.path, select.value);
-      });
-    });
-
-    this.host.querySelectorAll('[data-action="add-bonus-tier"]').forEach((button) => {
-      button.addEventListener('click', () => {
-        if (!this.selectedWorld || !this.selectedLevel) return;
-        this.withWorldMutation(this.selectedWorld.id, (world) => {
-          const authoredLevel = world.levels.find((entry) => entry.levelId === this.selectedLevel.levelId);
-          authoredLevel.bonusTiers = authoredLevel.bonusTiers ?? [];
-          authoredLevel.bonusTiers.push({ threshold: 0, reward: 0 });
-        });
-      });
-    });
-
-    const bindBoxInputs = (roles, key) => {
-      const inputs = roles.map((role) => this.host.querySelector(`[data-role="${role}"]`)).filter(Boolean);
-      inputs.forEach((input) => {
-        input.addEventListener('input', () => {
-          const world = this.selectedWorld;
-          if (!world) return;
-          const values = roles.map((role) => this.host.querySelector(`[data-role="${role}"]`)?.value ?? '');
-          this.withWorldMutation(world.id, (authoredWorld) => {
-            if (values.every((entry) => entry !== '')) {
-              authoredWorld[key] = {
-                x: Number(values[0]),
-                y: Number(values[1]),
-                w: Number(values[2]),
-                h: Number(values[3]),
-              };
-            } else {
-              delete authoredWorld[key];
-            }
-          });
-        });
-      });
-    };
-    bindBoxInputs(['signbox-x', 'signbox-y', 'signbox-w', 'signbox-h'], 'signBox');
-    bindBoxInputs(['clickbox-x', 'clickbox-y', 'clickbox-w', 'clickbox-h'], 'clickBox');
   }
 }

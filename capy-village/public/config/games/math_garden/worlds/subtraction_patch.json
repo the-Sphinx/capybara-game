@@ -2,207 +2,543 @@
   "id": "subtraction_patch",
   "title": "Subtraction Patch",
   "subtitle": "Take away and compare",
+  "label": "Subtraction Patch",
+  "theme": "subtraction patch",
+  "learningObjective": "Take away and compare",
   "unlockRequirementText": "Complete Addition Field",
+  "startsUnlocked": false,
   "unlockAfterWorldId": "addition_field",
-  "startsUnlocked": true,
-  "signBox": { "x": 0.2206, "y": 0.4837, "w": 0.093, "h": 0.0559 },
+  "signBox": {
+    "x": 0.2206,
+    "y": 0.4837,
+    "w": 0.093,
+    "h": 0.0559
+  },
+  "clickBox": null,
+  "defaults": {},
   "levels": [
     {
-      "levelId": "subtraction_patch_1",
+      "id": "subtraction_patch_1",
+      "label": "Tiny Takeaways",
       "levelNum": 1,
       "slot": 1,
-      "label": "Tiny Takeaways",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 60,
-      "goal": { "type": "correctAnswers", "value": 5 },
-      "clearReward": 14,
-      "bonusTiers": [{ "threshold": 7, "reward": 4 }, { "threshold": 9, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [0, 5],
-          "answerCount": 3
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          5
+        ],
+        "answerCount": 3,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {
+        "timeLimit": 60,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 5
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Try again!",
+        "clearReward": 14,
+        "bonusTiers": [
+          {
+            "threshold": 7,
+            "reward": 4
+          },
+          {
+            "threshold": 9,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_2",
+      "id": "subtraction_patch_2",
+      "label": "Backtrack Path",
       "levelNum": 2,
       "slot": 2,
-      "label": "Backtrack Path",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 58,
-      "goal": { "type": "correctAnswers", "value": 6 },
-      "clearReward": 16,
-      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [0, 7],
-          "answerCount": 3
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          7
+        ],
+        "answerCount": 3,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {
+        "timeLimit": 58,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 6
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Try again!",
+        "clearReward": 16,
+        "bonusTiers": [
+          {
+            "threshold": 8,
+            "reward": 4
+          },
+          {
+            "threshold": 10,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_3",
+      "id": "subtraction_patch_3",
+      "label": "Distractor Trail",
       "levelNum": 3,
       "slot": 3,
-      "label": "Distractor Trail",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 56,
-      "goal": { "type": "correctAnswers", "value": 6 },
-      "clearReward": 18,
-      "bonusTiers": [{ "threshold": 8, "reward": 4 }, { "threshold": 10, "reward": 6 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [0, 8],
-          "answerCount": 5
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          8
+        ],
+        "answerCount": 5,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {
+        "timeLimit": 56,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 6
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Try again!",
+        "clearReward": 18,
+        "bonusTiers": [
+          {
+            "threshold": 8,
+            "reward": 4
+          },
+          {
+            "threshold": 10,
+            "reward": 6
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_4",
+      "id": "subtraction_patch_4",
+      "label": "Deeper Patch",
       "levelNum": 4,
       "slot": 4,
-      "label": "Deeper Patch",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 54,
-      "goal": { "type": "correctAnswers", "value": 7 },
-      "clearReward": 22,
-      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 11, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [0, 10],
-          "answerCount": 4
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 4,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {
+        "timeLimit": 54,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 7
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 0,
+        "wrongFeedback": "Try again!",
+        "clearReward": 22,
+        "bonusTiers": [
+          {
+            "threshold": 9,
+            "reward": 5
+          },
+          {
+            "threshold": 11,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_5",
+      "id": "subtraction_patch_5",
+      "label": "Accuracy Check",
       "levelNum": 5,
       "slot": 5,
-      "label": "Accuracy Check",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 52,
-      "goal": { "type": "correctAnswers", "value": 7 },
-      "clearReward": 26,
-      "bonusTiers": [{ "threshold": 9, "reward": 5 }, { "threshold": 11, "reward": 7 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 10],
-          "answerCount": 4
-        },
-        "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Careful!"
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          1,
+          10
+        ],
+        "answerCount": 4,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {
+        "timeLimit": 52,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 7
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Careful!",
+        "clearReward": 26,
+        "bonusTiers": [
+          {
+            "threshold": 9,
+            "reward": 5
+          },
+          {
+            "threshold": 11,
+            "reward": 7
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_6",
+      "id": "subtraction_patch_6",
+      "label": "Quick Differences",
       "levelNum": 6,
       "slot": 6,
-      "label": "Quick Differences",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 47,
-      "goal": { "type": "correctAnswers", "value": 8 },
-      "clearReward": 30,
-      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "numberRange": [1, 12],
-          "answerCount": 4
-        },
-        "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Not quite!"
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          1,
+          12
+        ],
+        "answerCount": 4,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": null,
+        "rightRange": null
+      },
+      "difficulty": {
+        "timeLimit": 47,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 8
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Not quite!",
+        "clearReward": 30,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 6
+          },
+          {
+            "threshold": 12,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_7",
+      "id": "subtraction_patch_7",
+      "label": "Busy Bees",
       "levelNum": 7,
       "slot": 7,
-      "label": "Busy Bees",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 44,
-      "goal": { "type": "correctAnswers", "value": 8 },
-      "clearReward": 34,
-      "bonusTiers": [{ "threshold": 10, "reward": 6 }, { "threshold": 12, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "leftRange": [6, 16],
-          "rightRange": [1, 9],
-          "answerCount": 5
-        },
-        "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Keep trying!"
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 5,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": [
+          6,
+          16
+        ],
+        "rightRange": [
+          1,
+          9
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 44,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 8
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Keep trying!",
+        "clearReward": 34,
+        "bonusTiers": [
+          {
+            "threshold": 10,
+            "reward": 6
+          },
+          {
+            "threshold": 12,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_8",
+      "id": "subtraction_patch_8",
+      "label": "Fast and Careful",
       "levelNum": 8,
       "slot": 8,
-      "label": "Fast and Careful",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 40,
-      "goal": { "type": "correctAnswers", "value": 9 },
-      "clearReward": 40,
-      "bonusTiers": [{ "threshold": 11, "reward": 6 }, { "threshold": 13, "reward": 8 }],
-      "overrides": {
-        "rules": {
-          "leftRange": [7, 18],
-          "rightRange": [1, 10],
-          "answerCount": 5
-        },
-        "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Careful!"
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 5,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": [
+          7,
+          18
+        ],
+        "rightRange": [
+          1,
+          10
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 40,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 9
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Careful!",
+        "clearReward": 40,
+        "bonusTiers": [
+          {
+            "threshold": 11,
+            "reward": 6
+          },
+          {
+            "threshold": 13,
+            "reward": 8
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_9",
+      "id": "subtraction_patch_9",
+      "label": "Patch Patrol",
       "levelNum": 9,
       "slot": 9,
-      "label": "Patch Patrol",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 38,
-      "goal": { "type": "correctAnswers", "value": 10 },
-      "clearReward": 48,
-      "bonusTiers": [{ "threshold": 12, "reward": 8 }, { "threshold": 14, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "leftRange": [8, 20],
-          "rightRange": [2, 10],
-          "answerCount": 5
-        },
-        "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Focus!"
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 5,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": [
+          8,
+          20
+        ],
+        "rightRange": [
+          2,
+          10
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 38,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 10
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Focus!",
+        "clearReward": 48,
+        "bonusTiers": [
+          {
+            "threshold": 12,
+            "reward": 8
+          },
+          {
+            "threshold": 14,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     },
     {
-      "levelId": "subtraction_patch_10",
+      "id": "subtraction_patch_10",
+      "label": "Subtraction Boss",
       "levelNum": 10,
       "slot": 10,
-      "label": "Subtraction Boss",
-      "recipeId": "subtraction_basic",
-      "timeLimit": 35,
-      "goal": { "type": "correctAnswers", "value": 11 },
-      "clearReward": 56,
-      "bonusTiers": [{ "threshold": 13, "reward": 8 }, { "threshold": 15, "reward": 10 }],
-      "overrides": {
-        "rules": {
-          "leftRange": [10, 22],
-          "rightRange": [2, 11],
-          "answerCount": 5
-        },
-        "scoring": {
-          "wrongPenalty": 1,
-          "wrongFeedback": "Stay sharp!"
+      "activityType": "answer_prompt",
+      "schemaVersion": 1,
+      "sourcePresetId": "subtraction_basic",
+      "objective": {
+        "operation": "subtraction"
+      },
+      "content": {
+        "numberRange": [
+          0,
+          10
+        ],
+        "answerCount": 5,
+        "fixedOperand": null,
+        "targetValue": null,
+        "leftRange": [
+          10,
+          22
+        ],
+        "rightRange": [
+          2,
+          11
+        ]
+      },
+      "difficulty": {
+        "timeLimit": 35,
+        "goal": {
+          "type": "correctAnswers",
+          "value": 11
         }
+      },
+      "scoring": {
+        "pointsPerCorrect": 10,
+        "wrongPenalty": 1,
+        "wrongFeedback": "Stay sharp!",
+        "clearReward": 56,
+        "bonusTiers": [
+          {
+            "threshold": 13,
+            "reward": 8
+          },
+          {
+            "threshold": 15,
+            "reward": 10
+          }
+        ]
+      },
+      "presentation": {
+        "title": "Subtraction Garden",
+        "prompt": "Tap the correct answer!"
       }
     }
   ]

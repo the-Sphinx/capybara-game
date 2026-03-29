@@ -30,6 +30,10 @@ export class MathGardenGame extends EngineGame {
       ? 'Addition'
       : operation === 'subtraction'
         ? 'Subtraction'
+        : operation === 'multiplication'
+          ? 'Multiplication'
+          : operation === 'division'
+            ? 'Division'
         : operation === 'mixed'
           ? 'Mixed Math'
           : '';

@@ -74,7 +74,10 @@ class GameManager {
     });
 
     const recipeIds = config.arcade.recipeIds ?? Object.keys(config.arcade.weights ?? {});
-    const arcadeRecipes = recipeIds.map((recipeId) => config.recipes.get(recipeId)).filter(Boolean);
+    const authoredArcadeRecipes = config.arcade.recipes ?? [];
+    const arcadeRecipes = authoredArcadeRecipes.length > 0
+      ? authoredArcadeRecipes
+      : recipeIds.map((recipeId) => config.recipes.get(recipeId)).filter(Boolean);
 
     return {
       ...config,
