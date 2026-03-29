@@ -24,7 +24,6 @@
       "slot": 1,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -74,7 +73,6 @@
       "slot": 2,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -124,7 +122,6 @@
       "slot": 3,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -174,7 +171,6 @@
       "slot": 4,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -224,7 +220,6 @@
       "slot": 5,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -274,7 +269,6 @@
       "slot": 6,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -324,7 +318,6 @@
       "slot": 7,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -374,7 +367,6 @@
       "slot": 8,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -430,7 +422,6 @@
       "slot": 9,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },
@@ -486,7 +477,6 @@
       "slot": 10,
       "activityType": "answer_prompt",
       "schemaVersion": 1,
-      "sourcePresetId": "addition_basic",
       "objective": {
         "operation": "addition"
       },

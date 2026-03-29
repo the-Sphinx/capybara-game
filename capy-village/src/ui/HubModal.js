@@ -227,10 +227,10 @@ function renderArcadePanel(overlay) {
   const cat         = _selectedCategory;
   const bestScores  = saveManager.getArcadeBestScores(cat.id);
   const arcadeCfg   = gameManager.getArcadeConfig(cat.gameId) ?? {};
-  const arcadeRecipes = arcadeCfg.recipes ?? [];
+  const arcadeActivities = arcadeCfg.activities ?? [];
 
   // Build a title lookup from bundled arcade config
-  const modeTitle = (id) => arcadeRecipes.find(m => m.id === id)?.title ?? id;
+  const modeTitle = (id) => arcadeActivities.find((activity) => activity.id === id)?.title ?? id;
   const bestEntries = Object.entries(bestScores);
 
   const bestScoresHtml = bestEntries.length > 0 ? `

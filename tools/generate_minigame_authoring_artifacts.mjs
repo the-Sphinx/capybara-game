@@ -12,7 +12,7 @@ import { classicCollectMode } from '../capy-village/src/games/plugins/watermelon
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const schemaDir = path.join(repoRoot, 'capy-village', 'src', 'config', 'games', 'schemas');
-const docsPath = path.join(repoRoot, 'docs', 'minigame_mode_authoring.md');
+const docsPath = path.join(repoRoot, 'docs', 'legacy', 'minigame_recipe_authoring.md');
 
 const plugins = [
   { gameId: 'math_garden', modeDescriptors: [collectNumbersMode, answerEquationMode] },
@@ -21,6 +21,7 @@ const plugins = [
 ];
 
 await fs.mkdir(schemaDir, { recursive: true });
+await fs.mkdir(path.dirname(docsPath), { recursive: true });
 
 for (const plugin of plugins) {
   const schema = buildGameSchema(plugin);

@@ -73,18 +73,12 @@ class GameManager {
       worlds,
     });
 
-    const recipeIds = config.arcade.recipeIds ?? Object.keys(config.arcade.weights ?? {});
-    const authoredArcadeRecipes = config.arcade.recipes ?? [];
-    const arcadeRecipes = authoredArcadeRecipes.length > 0
-      ? authoredArcadeRecipes
-      : recipeIds.map((recipeId) => config.recipes.get(recipeId)).filter(Boolean);
-
     return {
       ...config,
       plugin,
       arcade: {
         ...config.arcade,
-        recipes: arcadeRecipes,
+        activities: config.arcade.activities ?? [],
       },
     };
   }
@@ -117,20 +111,20 @@ class GameManager {
     return this._gameConfigs.get(gameId)?.levelSelect ?? null;
   }
 
-  getRecipes(gameId) {
-    return this._gameConfigs.get(gameId)?.recipes ?? new Map();
+  getActivities(gameId) {
+    return this._gameConfigs.get(gameId)?.activities ?? new Map();
   }
 
-  getRecipe(gameId, recipeId) {
-    return this._gameConfigs.get(gameId)?.recipes?.get(recipeId) ?? null;
+  getActivity(gameId, activityId) {
+    return this._gameConfigs.get(gameId)?.activities?.get(activityId) ?? null;
   }
 
-  resolveRecipeForLevel(gameId, levelRef) {
+  resolveActivityForLevel(gameId, levelRef) {
     const level = typeof levelRef === 'string'
       ? this.getLevelById(gameId, levelRef)
       : levelRef;
     if (!level) return null;
-    return level.resolvedRecipe ?? null;
+    return level.resolvedActivity ?? null;
   }
 
   createModeHandler(gameId, shell) {
@@ -145,13 +139,13 @@ class GameManager {
     const sourceLevel = launchConfig.levelId
       ? (this.getLevelById(gameId, launchConfig.levelId) ?? launchConfig)
       : launchConfig;
-    const resolvedRecipe = this.resolveRecipeForLevel(gameId, sourceLevel);
+    const resolvedActivity = this.resolveActivityForLevel(gameId, sourceLevel);
     return {
       ...sourceLevel,
       ...launchConfig,
       levelId: sourceLevel.levelId,
       worldId: sourceLevel.worldId,
-      resolvedRecipe,
+      resolvedActivity,
     };
   }
 

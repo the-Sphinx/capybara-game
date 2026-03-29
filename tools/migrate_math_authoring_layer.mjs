@@ -78,7 +78,6 @@ function collectLevelFromRecipe(worldId, level, recipe) {
     slot: level.slot,
     activityType: 'collect_stream',
     schemaVersion: 1,
-    sourcePresetId: level.recipeId,
     objective: {
       rule: matcherToObjectiveRule(mergedRules),
     },
@@ -127,7 +126,6 @@ function answerLevelFromRecipe(level, recipe) {
     slot: level.slot,
     activityType: 'answer_prompt',
     schemaVersion: 1,
-    sourcePresetId: level.recipeId,
     objective: {
       operation: mergedRules.operation ?? 'addition',
     },
@@ -157,10 +155,10 @@ function answerLevelFromRecipe(level, recipe) {
   };
 }
 
-function presetFromRecipe(id, recipe) {
+function starterFromRecipe(id, recipe) {
   if (recipe.kind === 'collect_numbers') {
     return {
-      id,
+      id: id.startsWith('starter_') ? id : `starter_${id}`,
       label: recipe.title,
       description: recipe.prompt,
       activityType: 'collect_stream',
@@ -184,7 +182,7 @@ function presetFromRecipe(id, recipe) {
   }
 
   return {
-    id,
+    id: id.startsWith('starter_') ? id : `starter_${id}`,
     label: recipe.title,
     description: recipe.prompt,
     activityType: 'answer_prompt',
@@ -227,32 +225,32 @@ const migratedGame = {
     enabled: rawGame.arcade?.enabled !== false,
     activities: (rawGame.arcade?.recipeIds ?? []).map((recipeId) => {
       const recipe = recipes[recipeId];
-      const preset = presetFromRecipe(recipeId, recipe);
+      const starter = starterFromRecipe(recipeId, recipe);
       return {
         id: recipeId,
-        label: preset.label,
-        activityType: preset.activityType,
+        label: starter.label,
+        activityType: starter.activityType,
         schemaVersion: 1,
-        objective: preset.objective,
-        content: preset.content,
+        objective: starter.objective,
+        content: starter.content,
         difficulty: {
           timeLimit: 60,
           goal: {
-            type: preset.activityType === 'answer_prompt' ? 'correctAnswers' : 'catchCount',
-            value: preset.activityType === 'answer_prompt' ? 8 : 12,
+            type: starter.activityType === 'answer_prompt' ? 'correctAnswers' : 'catchCount',
+            value: starter.activityType === 'answer_prompt' ? 8 : 12,
           },
         },
         scoring: {
-          ...preset.scoring,
+          ...starter.scoring,
           clearReward: 0,
           bonusTiers: [],
         },
-        presentation: preset.presentation,
+        presentation: starter.presentation,
         weight: rawGame.arcade?.weights?.[recipeId] ?? 1,
       };
     }),
   },
-  presets: Object.entries(recipes).map(([id, recipe]) => presetFromRecipe(id, recipe)),
+  starters: Object.entries(recipes).map(([id, recipe]) => starterFromRecipe(id, recipe)),
 };
 
 for (const world of worlds) {

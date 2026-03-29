@@ -339,9 +339,9 @@
       }
     ]
   },
-  "presets": [
+  "starters": [
     {
-      "id": "addition_basic",
+      "id": "starter_addition_basic",
       "label": "Addition Garden",
       "description": "Tap the correct answer!",
       "activityType": "answer_prompt",
@@ -371,7 +371,7 @@
       }
     },
     {
-      "id": "subtraction_basic",
+      "id": "starter_subtraction_basic",
       "label": "Subtraction Garden",
       "description": "Tap the correct answer!",
       "activityType": "answer_prompt",
@@ -401,7 +401,7 @@
       }
     },
     {
-      "id": "mixed_equations",
+      "id": "starter_mixed_equations",
       "label": "Mixed Math",
       "description": "Tap the correct answer!",
       "activityType": "answer_prompt",
@@ -431,7 +431,7 @@
       }
     },
     {
-      "id": "collect_even_basic",
+      "id": "starter_collect_even_basic",
       "label": "Collect Even Numbers",
       "description": "Catch even numbers!",
       "activityType": "collect_stream",
@@ -465,7 +465,7 @@
       }
     },
     {
-      "id": "collect_odd_basic",
+      "id": "starter_collect_odd_basic",
       "label": "Collect Odd Numbers",
       "description": "Catch odd numbers!",
       "activityType": "collect_stream",
@@ -499,7 +499,7 @@
       }
     },
     {
-      "id": "collect_prime_basic",
+      "id": "starter_collect_prime_basic",
       "label": "Collect Prime Numbers",
       "description": "Catch prime numbers!",
       "activityType": "collect_stream",
@@ -532,7 +532,7 @@
       }
     },
     {
-      "id": "collect_multiples_of_2",
+      "id": "starter_collect_multiples_of_2",
       "label": "Double Trail",
       "description": "Catch multiples of 2!",
       "activityType": "collect_stream",
@@ -567,7 +567,7 @@
       }
     },
     {
-      "id": "collect_multiples_of_3",
+      "id": "starter_collect_multiples_of_3",
       "label": "Triple Trail",
       "description": "Catch multiples of 3!",
       "activityType": "collect_stream",
@@ -602,7 +602,7 @@
       }
     },
     {
-      "id": "collect_multiples_of_5",
+      "id": "starter_collect_multiples_of_5",
       "label": "High Five",
       "description": "Catch multiples of 5!",
       "activityType": "collect_stream",
@@ -637,7 +637,7 @@
       }
     },
     {
-      "id": "collect_divisible_by_4",
+      "id": "starter_collect_divisible_by_4",
       "label": "Four at a Time",
       "description": "Catch numbers divisible by 4!",
       "activityType": "collect_stream",
@@ -672,7 +672,7 @@
       }
     },
     {
-      "id": "collect_divisible_by_6",
+      "id": "starter_collect_divisible_by_6",
       "label": "Six in Step",
       "description": "Catch numbers divisible by 6!",
       "activityType": "collect_stream",
@@ -707,7 +707,7 @@
       }
     },
     {
-      "id": "collect_divisible_by_8",
+      "id": "starter_collect_divisible_by_8",
       "label": "Eight Together",
       "description": "Catch numbers divisible by 8!",
       "activityType": "collect_stream",
@@ -742,7 +742,7 @@
       }
     },
     {
-      "id": "collect_divisible_by_10",
+      "id": "starter_collect_divisible_by_10",
       "label": "Perfect Tens",
       "description": "Catch numbers divisible by 10!",
       "activityType": "collect_stream",
@@ -777,7 +777,7 @@
       }
     },
     {
-      "id": "collect_custom_rule",
+      "id": "starter_collect_custom_rule",
       "label": "Number Rule Catch",
       "description": "Catch the right numbers!",
       "activityType": "collect_stream",

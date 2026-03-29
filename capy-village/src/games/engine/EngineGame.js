@@ -82,10 +82,10 @@ export class EngineGame extends BaseGame {
   _resolveMode() {
     if (this._isArcade) {
       const arcadeConfig = this._gameConfig.arcade ?? {};
-      const recipes = arcadeConfig.recipes ?? [];
-      return weightedPick(recipes, arcadeConfig.weights ?? {});
+      const activities = arcadeConfig.activities ?? [];
+      return weightedPick(activities, arcadeConfig.weights ?? {});
     }
-    return this._levelConfig?.resolvedRecipe ?? gameManager.resolveRecipeForLevel(this.gameId, this._levelConfig);
+    return this._levelConfig?.resolvedActivity ?? gameManager.resolveActivityForLevel(this.gameId, this._levelConfig);
   }
 
   get mode() {

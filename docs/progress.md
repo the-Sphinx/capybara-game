@@ -2,6 +2,37 @@
 
 ## 2026-03-29
 
+### Authoring Layer Finalization
+- Implemented `docs/tasks/authoring_finalization_checklist.md`.
+- Promoted descriptors to the true Math Garden authoring source of truth for:
+- editor field definitions
+- inheritance resolution
+- validation
+- schema generation
+- authoring docs
+- runtime activity mapping
+- Added shared authoring helpers under:
+- `capy-village/src/authoring/inheritance/resolveInheritance.js`
+- `capy-village/src/authoring/validation/validateLevel.js`
+- `capy-village/src/authoring/schema/generateSchema.js`
+- `capy-village/src/authoring/docs/generateAuthoringDoc.js`
+- Moved Math-specific validation, preview generation, and runtime activity building into the activity descriptors themselves:
+- `collect_stream`
+- `answer_prompt`
+- Renamed editor-only presets to `starters` and updated Math config so starter ids now use the `starter_` prefix.
+- Removed saved `sourcePresetId` usage from authored Math world levels so levels remain fully standalone after starter application.
+- Updated the Game Editor UI and service layer to use the new starter terminology and flow.
+- Replaced the generated Math authoring doc with:
+- `docs/authoring/activity_based_authoring.md`
+- Relegated the older recipe-oriented minigame doc to a deprecated pointer and moved legacy generated recipe docs under:
+- `docs/legacy/minigame_recipe_authoring.md`
+- Renamed Math runtime naming to `resolvedActivity` / `arcade.activities` in the current activity-based path to reduce recipe-thinking leakage.
+
+### Self-Check
+- Verified `npm run generate:authoring` succeeds in `capy-village`.
+- Verified `npm run build` succeeds in `capy-village`.
+- Verified the Game Editor still boots in-browser after the starter rename and descriptor finalization.
+
 ### Authoring Layer Transition
 - Implemented `docs/tasks/authoring_layer_transition_plan.md`.
 - Replaced the Math Garden authoring model with a level-first structure built around:

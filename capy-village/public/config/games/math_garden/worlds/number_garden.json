@@ -24,7 +24,6 @@
       "slot": 1,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_even_basic",
       "objective": {
         "rule": {
           "type": "parity",
@@ -85,7 +84,6 @@
       "slot": 2,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_even_basic",
       "objective": {
         "rule": {
           "type": "parity",
@@ -146,7 +144,6 @@
       "slot": 3,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_even_basic",
       "objective": {
         "rule": {
           "type": "parity",
@@ -207,7 +204,6 @@
       "slot": 4,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_odd_basic",
       "objective": {
         "rule": {
           "type": "parity",
@@ -268,7 +264,6 @@
       "slot": 5,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_custom_rule",
       "objective": {
         "rule": {
           "type": "parity",
@@ -389,7 +384,6 @@
       "slot": 6,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_even_basic",
       "objective": {
         "rule": {
           "type": "parity",
@@ -450,7 +444,6 @@
       "slot": 7,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_custom_rule",
       "objective": {
         "rule": {
           "type": "parity",
@@ -552,7 +545,6 @@
       "slot": 8,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_even_basic",
       "objective": {
         "rule": {
           "type": "parity",
@@ -613,7 +605,6 @@
       "slot": 9,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_custom_rule",
       "objective": {
         "rule": {
           "type": "parity",
@@ -734,7 +725,6 @@
       "slot": 10,
       "activityType": "collect_stream",
       "schemaVersion": 1,
-      "sourcePresetId": "collect_custom_rule",
       "objective": {
         "rule": {
           "type": "parity",

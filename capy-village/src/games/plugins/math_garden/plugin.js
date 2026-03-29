@@ -17,7 +17,7 @@ export const mathGardenPlugin = {
       label: 'Math Garden',
       activityDescriptors: [],
       goalTypes: [],
-      presets: [],
+      starters: [],
       authoringTiers: ['basic', 'advanced'],
     };
   },

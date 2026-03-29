@@ -1,5 +1,40 @@
 # REVIEW BUNDLE
 
+## 0. Authoring Finalization
+
+### What Changed
+- Implemented `docs/tasks/authoring_finalization_checklist.md`.
+- Finished the Math Garden authoring transition by making descriptors the active source of truth for:
+- UI field rendering
+- inheritance resolution
+- validation
+- schema output
+- authoring docs
+- runtime activity construction
+- Added shared authoring infrastructure under `capy-village/src/authoring/` for:
+- `resolveInheritance`
+- `validateLevel`
+- schema generation
+- doc generation
+- Moved Math-specific cross-field validation, preview generation, and runtime mapping into the two activity descriptors instead of keeping that logic centralized in `mathGardenAuthoring.js`.
+- Renamed editor-only presets to `starters`, required starter ids to use the `starter_` prefix, and removed persisted `sourcePresetId` from authored world levels so levels no longer carry starter dependencies.
+- Updated `GameContentEditor` and `GameContentService` to use the new starter terminology and editor flow.
+- Replaced the generated Math authoring doc with `docs/authoring/activity_based_authoring.md`.
+- Converted the old `docs/minigame_mode_authoring.md` into a deprecation pointer and moved legacy recipe docs under `docs/legacy/`.
+- Reduced recipe-thinking leakage in the current Math path by renaming runtime references to `resolvedActivity` / `arcade.activities`.
+
+### Reviewer Focus
+- Confirm Math activity descriptors now contain the active validation, preview, and runtime-building logic for `collect_stream` and `answer_prompt`.
+- Confirm `mathGardenAuthoring.js` is now a thin composer that delegates to shared inheritance/validation utilities plus descriptor methods.
+- Confirm authored Math levels remain valid and runnable without any starter metadata.
+- Confirm the generated Math schema/doc output now uses `starters` and no longer emits `recipeId`, `sourcePresetId`, or top-level `presets`.
+- Confirm the Game Editor still loads and displays the renamed starter library cleanly.
+
+### Verification
+- Ran `npm run generate:authoring` successfully in `capy-village`.
+- Ran `npm run build` successfully in `capy-village`.
+- Opened `game-editor.html` through the Vite dev server and confirmed the editor booted with world, level, and starter data loaded.
+
 ## 0. Authoring Layer Transition
 
 ### What Changed

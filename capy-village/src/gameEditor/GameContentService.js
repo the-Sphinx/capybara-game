@@ -145,8 +145,8 @@ export class GameContentService {
     return validation.normalized?.levels?.find((level) => level.levelId === levelId || level.id === levelId) ?? null;
   }
 
-  getPreset(editorDefinition, presetId) {
-    return editorDefinition?.presets?.find((preset) => preset.id === presetId) ?? null;
+  getStarter(editorDefinition, starterId) {
+    return editorDefinition?.starters?.find((starter) => starter.id === starterId) ?? null;
   }
 
   getPreview(editorDefinition, levelOrResolvedLevel) {

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Math Garden world config",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "required": [
     "id",
     "title",
@@ -34,7 +34,10 @@
       "type": "boolean"
     },
     "unlockAfterWorldId": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "signBox": {
       "type": "object",
@@ -57,7 +60,7 @@
         "oneOf": [
           {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "required": [
               "id",
               "label",
@@ -88,34 +91,208 @@
               "activityType": {
                 "const": "collect_stream"
               },
-              "sourcePresetId": {
-                "type": "string"
-              },
               "objective": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "rule": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "parity",
+                          "modulo",
+                          "prime",
+                          "comparison",
+                          "compound"
+                        ]
+                      },
+                      "parity": {
+                        "type": "string",
+                        "enum": [
+                          "even",
+                          "odd"
+                        ]
+                      },
+                      "mod": {
+                        "type": "number"
+                      },
+                      "remainder": {
+                        "type": "number"
+                      },
+                      "comparison": {
+                        "type": "string",
+                        "enum": [
+                          "less_than_or_equal",
+                          "greater_than_or_equal"
+                        ]
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "matcher": {
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ]
+                  }
+                },
+                "required": [
+                  "rule"
+                ]
               },
               "content": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "domain": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "numbers"
+                        ]
+                      },
+                      "range": {
+                        "type": [
+                          "array",
+                          "null"
+                        ],
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "range"
+                    ]
+                  },
+                  "itemCount": {
+                    "type": "number"
+                  },
+                  "spawnDelayRange": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "fallSpeedRange": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "domain",
+                  "itemCount"
+                ]
               },
               "difficulty": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "timeLimit": {
+                    "type": "number"
+                  },
+                  "goal": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "catchCount",
+                          "score",
+                          "combo"
+                        ]
+                      },
+                      "value": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ]
+                  },
+                  "phases": {
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "timeLimit",
+                  "goal"
+                ]
               },
               "scoring": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "pointsPerCorrect": {
+                    "type": "number"
+                  },
+                  "wrongPenalty": {
+                    "type": "number"
+                  },
+                  "wrongFeedback": {
+                    "type": "string"
+                  },
+                  "clearReward": {
+                    "type": "number"
+                  },
+                  "bonusTiers": {
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "pointsPerCorrect",
+                  "wrongPenalty",
+                  "clearReward"
+                ]
               },
               "presentation": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "hint": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ]
               }
             }
           },
           {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "required": [
               "id",
               "label",
@@ -146,28 +323,154 @@
               "activityType": {
                 "const": "answer_prompt"
               },
-              "sourcePresetId": {
-                "type": "string"
-              },
               "objective": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "addition",
+                      "subtraction",
+                      "multiplication",
+                      "division",
+                      "mixed"
+                    ]
+                  }
+                },
+                "required": [
+                  "operation"
+                ]
               },
               "content": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "numberRange": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "answerCount": {
+                    "type": "number"
+                  },
+                  "fixedOperand": {
+                    "type": "number"
+                  },
+                  "targetValue": {
+                    "type": "number"
+                  },
+                  "leftRange": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "rightRange": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "numberRange",
+                  "answerCount"
+                ]
               },
               "difficulty": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "timeLimit": {
+                    "type": "number"
+                  },
+                  "goal": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "correctAnswers",
+                          "score",
+                          "combo"
+                        ]
+                      },
+                      "value": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ]
+                  }
+                },
+                "required": [
+                  "timeLimit",
+                  "goal"
+                ]
               },
               "scoring": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "pointsPerCorrect": {
+                    "type": "number"
+                  },
+                  "wrongPenalty": {
+                    "type": "number"
+                  },
+                  "wrongFeedback": {
+                    "type": "string"
+                  },
+                  "clearReward": {
+                    "type": "number"
+                  },
+                  "bonusTiers": {
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "pointsPerCorrect",
+                  "wrongPenalty",
+                  "clearReward"
+                ]
               },
               "presentation": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "hint": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ]
               }
             }
           }

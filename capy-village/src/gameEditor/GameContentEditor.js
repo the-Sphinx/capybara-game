@@ -150,7 +150,7 @@ export class GameContentEditor {
       validation: { valid: false, errors: [], normalized: null },
       selectedWorldId: null,
       selectedLevelId: null,
-      selectedPresetId: null,
+      selectedStarterId: null,
       selectionMode: 'world',
       dirtyGame: false,
       dirtyWorldIds: new Set(),
@@ -178,7 +178,7 @@ export class GameContentEditor {
       editorDefinition: payload.editorDefinition,
       selectedWorldId: this.state.selectedWorldId ?? payload.worlds[0]?.id ?? null,
       selectedLevelId: null,
-      selectedPresetId: payload.editorDefinition.presets?.[0]?.id ?? null,
+      selectedStarterId: payload.editorDefinition.starters?.[0]?.id ?? null,
       selectionMode: 'world',
       dirtyGame: false,
       dirtyWorldIds: new Set(),
@@ -274,8 +274,8 @@ export class GameContentEditor {
         this.state.selectionMode = 'level';
         this.render();
         break;
-      case 'select-preset':
-        this.state.selectedPresetId = target.dataset.presetId;
+      case 'select-starter':
+        this.state.selectedStarterId = target.dataset.starterId;
         this.render();
         break;
       case 'create-level':
@@ -287,8 +287,8 @@ export class GameContentEditor {
       case 'duplicate-level':
         this.duplicateLevel();
         break;
-      case 'apply-preset':
-        this.applyPreset();
+      case 'apply-starter':
+        this.applyStarter();
         break;
       case 'add-bonus-tier':
         this.addBonusTier();
@@ -444,25 +444,24 @@ export class GameContentEditor {
 
   createLevel(preferredSlot = null) {
     const world = this.selectedWorld;
-    const preset = this.state.editorDefinition.presets?.find((entry) => entry.id === this.state.selectedPresetId) ?? null;
-    const descriptor = this.state.editorDefinition.activityDescriptors?.find((entry) => entry.id === (preset?.activityType ?? this.state.editorDefinition.activityDescriptors?.[0]?.id));
+    const starter = this.state.editorDefinition.starters?.find((entry) => entry.id === this.state.selectedStarterId) ?? null;
+    const descriptor = this.state.editorDefinition.activityDescriptors?.find((entry) => entry.id === (starter?.activityType ?? this.state.editorDefinition.activityDescriptors?.[0]?.id));
     if (!world || !descriptor) return;
     const slot = preferredSlot ?? firstAvailableSlot(this.state.game, world);
     const level = createDefaultLevel(world, descriptor, slot);
-    if (preset) {
-      level.objective = deepClone(preset.objective ?? level.objective);
-      level.content = deepClone(preset.content ?? level.content);
+    if (starter) {
+      level.objective = deepClone(starter.objective ?? level.objective);
+      level.content = deepClone(starter.content ?? level.content);
       level.scoring = {
         ...level.scoring,
-        ...deepClone(preset.scoring ?? {}),
+        ...deepClone(starter.scoring ?? {}),
       };
       level.presentation = {
         ...level.presentation,
-        ...deepClone(preset.presentation ?? {}),
+        ...deepClone(starter.presentation ?? {}),
       };
-      level.sourcePresetId = preset.id;
-      if (preset.label) {
-        level.label = preset.label;
+      if (starter.label) {
+        level.label = starter.label;
       }
     }
     this.withWorldMutation(world.id, (authoredWorld) => {
@@ -497,25 +496,24 @@ export class GameContentEditor {
     });
   }
 
-  applyPreset() {
-    const preset = this.state.editorDefinition.presets?.find((entry) => entry.id === this.state.selectedPresetId);
-    if (!preset || !this.selectedWorld || !this.selectedLevel) return;
+  applyStarter() {
+    const starter = this.state.editorDefinition.starters?.find((entry) => entry.id === this.state.selectedStarterId);
+    if (!starter || !this.selectedWorld || !this.selectedLevel) return;
     this.withWorldMutation(this.selectedWorld.id, (world) => {
       const level = world.levels.find((entry) => entry.id === this.selectedLevel.id);
-      level.activityType = preset.activityType;
-      level.sourcePresetId = preset.id;
-      level.objective = deepClone(preset.objective ?? {});
-      level.content = deepClone(preset.content ?? {});
+      level.activityType = starter.activityType;
+      level.objective = deepClone(starter.objective ?? {});
+      level.content = deepClone(starter.content ?? {});
       level.scoring = {
         ...level.scoring,
-        ...deepClone(preset.scoring ?? {}),
+        ...deepClone(starter.scoring ?? {}),
       };
       level.presentation = {
         ...level.presentation,
-        ...deepClone(preset.presentation ?? {}),
+        ...deepClone(starter.presentation ?? {}),
       };
-      if (preset.label) {
-        level.label = preset.label;
+      if (starter.label) {
+        level.label = starter.label;
       }
     });
   }
@@ -637,11 +635,11 @@ export class GameContentEditor {
           `).join('')}
         </section>
         <section class="game-editor__sidebar-section">
-          <div class="game-editor__section-header"><h2>Presets</h2></div>
-          ${(this.state.editorDefinition?.presets ?? []).map((preset) => `
-            <button type="button" class="game-editor__list-item ${preset.id === this.state.selectedPresetId ? 'is-selected' : ''}" data-action="select-preset" data-preset-id="${preset.id}">
-              <span>${preset.label}</span>
-              <small>${preset.activityType}</small>
+          <div class="game-editor__section-header"><h2>Starters</h2></div>
+          ${(this.state.editorDefinition?.starters ?? []).map((starter) => `
+            <button type="button" class="game-editor__list-item ${starter.id === this.state.selectedStarterId ? 'is-selected' : ''}" data-action="select-starter" data-starter-id="${starter.id}">
+              <span>${starter.label}</span>
+              <small>${starter.activityType}</small>
             </button>
           `).join('')}
         </section>
@@ -773,8 +771,8 @@ export class GameContentEditor {
         ${this.renderSelectField('level', 'slot', 'Slot', level.slot, (this.state.game.levelSelect?.slots ?? []).map((slot) => ({ value: slot.slot, label: `Slot ${slot.slot}` })), 'number')}
         ${this.renderSelectField('level', 'activityType', 'Activity Type', level.activityType, this.state.editorDefinition.activityDescriptors.map((entry) => ({ value: entry.id, label: entry.label })))}
         <div class="game-editor__panel-note">
-          <strong>Preset Starter:</strong> ${level.sourcePresetId ?? 'None'}
-          <button type="button" data-action="apply-preset" ${!this.state.selectedPresetId ? 'disabled' : ''}>Apply Selected Preset</button>
+          <strong>Starter Template:</strong> ${this.state.selectedStarterId ?? 'None selected'}
+          <button type="button" data-action="apply-starter" ${!this.state.selectedStarterId ? 'disabled' : ''}>Apply Selected Starter</button>
         </div>
         ${descriptor.sections.map((section) => this.renderSection(level, descriptor, section)).join('')}
         <div class="game-editor__resolved-preview">
